@@ -1,0 +1,73 @@
+{
+  "Hero": {
+    "title": "Kostenloses Girokonto eröffnen und Chance auf 5.000 € sichern!",
+    "subtitle": "Das 35-jährige Jubiläum von DKB Gewinnspiel - Wir verlosen 35 x 5.000 € 🎁",
+    "cta": "Zum Girokonto"
+  },
+  "Promotions": {
+    "heading": "Kostenloses Girokonto eröffnen und Chance auf 5.000 € sichern!",
+    "subtitle": "Kostenloses Konto eröffnen und über Banking für das Gewinnspiel anmelden",
+    "point1": "Mit Visa-Karte bis 31.08.2025 zahlen – jede Zahlung ab 5 Euro ist ein Los",
+    "point2": "Mehr Zahlungen, mehr Lose, mehr Chancen auf 5.000 €",
+    "cta": "Zum Girokonto",
+    "creditTitle": "Kreditkarten-Aktion: 30 € für Ihre neue Kreditkarte",
+    "creditDesc1": "Beantragen Sie bis 11. August 2025 eine Kreditkarte für Ihre nächste Reise und erhalten Sie eine Gutschrift von 30 Euro!",
+    "creditDesc2": "Zahlen Sie kostenlos überall, wo Visa akzeptiert wird – ob in New York, Bali oder Rom.",
+    "creditDesc3": "Genießen Sie vollständige finanzielle Flexibilität mit einem personalisierten Kreditlimit.",
+    "creditCta": "Zur Kreditkarte"
+  },
+  "Anniversary": {
+    "title": "35 Jahre DKB – Großes Jubiläums-Gewinnspiel",
+    "subtitle": "Wir feiern unseren 35. Geburtstag und als DKB-Girokonto-Kunde erhalten Sie diese Geschenke für Ihre Treue:",
+    "point1": "Wir verlosen 35 x 5.000 Euro",
+    "point2": "Jede Zahlung ab 5 Euro mit der Visa-Debitkarte oder der Visa-Kreditkarte ist ein Los",
+    "point3": "Anmeldung bis 31. August 2025",
+    "cta": "Zum Gewinnspiel"
+  },
+  "ProductHighlights": {
+    "etfTitle": "Besser ETFs im Portfolio als niedrige Zinsen",
+    "etfDesc": "Machen Sie es wie unsere mehr als 800.000 zufriedenen Kunden und lassen Sie Ihr Geld für sich arbeiten!",
+    "etfPoint1": "Portfolio bis 22. August eröffnen und bis Jahresende günstiger handeln",
+    "etfPoint2": "Sparpläne ohne Ausführungsgebühren (zzgl. Produktkosten und Vorteile)",
+    "etfPoint3": "Wertpapiere über Baader Trading für nur 1,90 Euro kaufen",
+    "etfCta": "Zum Depot",
+    "popularTitle": "Beliebte Produkte",
+    "product1Title": "Passende Finanzierung finden",
+    "product1Subtitle": "Günstige Kredite",
+    "product1Desc": "Ob Sie einen schnellen Sofortkredit oder eine flexible Baufinanzierung benötigen – wir haben die Lösung.",
+    "product2Title": "LBS Bausparen",
+    "product2Subtitle": "50 Euro Aktion",
+    "product2Desc": "Jetzt können Sie einen Bausparvertrag mit der LBS abschließen und einen Gutschein Ihrer Wahl erhalten.",
+    "product3Title": "Das Konto für zwei",
+    "product3Subtitle": "Kostenloses Gemeinschaftskonto",
+    "product3Desc": "Das perfekte Partnerkonto, Haushaltskonto für die WG inklusive 2 Visa-Karten.",
+    "knowledgeTitle": "Finanzwissen",
+    "knowledge1Title": "Ihre perfekte Karte finden",
+    "knowledge1Subtitle": "Kartenarten",
+    "knowledge1Desc": "Wir zeigen Ihnen den Unterschied zwischen Debit-, Kredit- und Girokarten.",
+    "knowledge2Title": "Gebühren vermeiden",
+    "knowledge2Subtitle": "Kartenzahlung im Ausland",
+    "knowledge2Desc": "Erfahren Sie, worauf Sie bei Kartenzahlungen auf Reisen achten sollten.",
+    "knowledge3Title": "Besser zusammen",
+    "knowledge3Subtitle": "Ein Konto, zwei Karten",
+    "knowledge3Desc": "Erfahren Sie mehr über das Konto für zwei: ideal als Haushaltskonto."
+  },
+  "Sustainability": {
+    "title": "So nachhaltig kann eine Bank sein",
+    "point1": "Nachhaltigste Bank unter den Top 20 in Deutschland",
+    "point2": "Größter Finanzierer erneuerbarer Energien in Deutschland",
+    "point3": "Top-Arbeitgeber für mehr als 5.000 Menschen",
+    "point4": "Gesellschaftliches Engagement durch die DKB-Stiftung, gegründet 2004",
+    "point5": "CO2-neutraler Bürobetrieb",
+    "point6": "Förderer sozialer Nachhaltigkeit im Sport",
+    "cta": "Mehr über nachhaltiges Engagement"
+  },
+  "Footer": {
+    "appTitle": "Ob Sie schnell Ihren Kontostand prüfen oder eine Überweisung tätigen möchten: Mit unserer DKB-App erledigen Sie Ihre Bankgeschäfte sicher, einfach und bequem von überall.",
+    "appCta": "DKB-App entdecken"
+  },
+  "nav": {
+    "english": "Englisch",
+    "german": "Deutsch"
+  }
+}

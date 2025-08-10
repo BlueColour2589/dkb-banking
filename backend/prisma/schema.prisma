@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String         @id @default(uuid())
+  email        String         @unique
+  firstName    String?
+  lastName     String?
+  phone        String?
+  passwordHash String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  jointOwners  JointOwner[]
+}
+
+model JointAccount {
+  id            String        @id @default(uuid())
+  accountNumber String        @unique @default(uuid()) // Will generate account number
+  name          String
+  accountType   AccountType   @default(CHECKING)
+  currency      String        @default("EUR")
+  balance       Float         @default(0.0)
+  status        AccountStatus @default(ACTIVE)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  owners        JointOwner[]
+  transactions  Transaction[]
+}
+
+model JointOwner {
+  id             String        @id @default(uuid())
+  jointAccount   JointAccount  @relation(fields: [jointAccountId], references: [id], onDelete: Cascade)
+  jointAccountId String
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId         String
+  role           OwnerRole     @default(SECONDARY)
+  permissions    Permission[]  @default([VIEW, TRANSFER])
+  joinedAt       DateTime      @default(now())
+
+  @@unique([jointAccountId, userId])
+}
+
+model Transaction {
+  id              String            @id @default(uuid())
+  account         JointAccount      @relation(fields: [accountId], references: [id])
+  accountId       String
+  amount          Float
+  type            TransactionType
+  status          TransactionStatus @default(COMPLETED)
+  description     String
+  reference       String?
+  fromAccount     String?           // For transfers
+  toAccount       String?           // For transfers
+  processedBy     String?           // User ID who initiated
+  createdAt       DateTime          @default(now())
+  processedAt     DateTime?
+}
+
+// Enums
+enum AccountType {
+  CHECKING
+  SAVINGS
+  BUSINESS
+  INVESTMENT
+}
+
+enum AccountStatus {
+  ACTIVE
+  INACTIVE
+  FROZEN
+  CLOSED
+}
+
+enum OwnerRole {
+  PRIMARY
+  SECONDARY
+  AUTHORIZED_USER
+}
+
+enum Permission {
+  VIEW
+  TRANSFER
+  FULL_ACCESS
+  APPROVE_REQUIRED
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  TRANSFER_IN
+  TRANSFER_OUT
+  PAYMENT
+  FEE
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}

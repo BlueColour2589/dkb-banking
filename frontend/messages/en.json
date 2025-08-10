@@ -1,0 +1,35 @@
+{
+  "Navbar": {
+    "home": "Home",
+    "products": "Products",
+    "contact": "Contact"
+  },
+  "Hero": {
+    "title": "Your Trusted Bank for Every Step",
+    "subtitle": "Secure, transparent, and here for you — from your first savings account to your next investment.",
+    "cta": "Open an Account"
+  },
+  "Promotions": {
+    "heading": "Latest Promotions",
+    "loanTitle": "Special Loan Rates",
+    "loanDesc": "Get the financing you need with interest rates starting at just 1.9%.",
+    "savingsTitle": "Savings Bonus",
+    "savingsDesc": "Earn up to €250 when you open a premium savings account."
+  },
+  "ProductHighlights": {
+    "heading": "Our Top Products",
+    "highlight1": "Premium Current Account",
+    "highlight1Desc": "Enjoy zero transaction fees and exclusive benefits.",
+    "highlight2": "Digital Wealth Management",
+    "highlight2Desc": "Invest smart with our secure online platform."
+  },
+  "Sustainability": {
+    "heading": "Invest Sustainably",
+    "desc": "We support projects that make a positive impact on the environment and society."
+  },
+  "Footer": {
+    "rights": "All rights reserved",
+    "privacy": "Privacy Policy",
+    "terms": "Terms & Conditions"
+  }
+}

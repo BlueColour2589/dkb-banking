@@ -1,0 +1,73 @@
+{
+  "Hero": {
+    "title": "Open a free checking account and secure your chance to win €5,000!",
+    "subtitle": "The 35th anniversary of DKB competition - We are giving away 35 x 5,000 € 🎁",
+    "cta": "To the current account"
+  },
+  "Promotions": {
+    "heading": "Open a free checking account and secure your chance to win €5,000!",
+    "subtitle": "Open a free account and register for the competition via banking",
+    "point1": "Pay with Visa card until 31.08.2025 – every payment of 5 euros or more is a ticket",
+    "point2": "More payments, more tickets, more chances to win €5,000",
+    "cta": "To the current account",
+    "creditTitle": "Credit card promotion: €30 for your new credit card",
+    "creditDesc1": "Apply for a credit card for your next trip by August 11, 2025, and receive a credit of 30 euros—so we'll cover the first year's card price!",
+    "creditDesc2": "Pay for free anywhere Visa is accepted worldwide – whether in New York, Bali or Rome.",
+    "creditDesc3": "Enjoy complete financial flexibility with a personalized credit limit, an emergency card in case of loss, and the perfect holiday reading thanks to a digital kiosk.",
+    "creditCta": "To the credit card"
+  },
+  "Anniversary": {
+    "title": "35 years of DKB - Big anniversary competition",
+    "subtitle": "We're celebrating our 35th birthday, and as a DKB current account customer, you'll receive these gifts for your loyalty:",
+    "point1": "We are giving away 35 x 5,000 euros",
+    "point2": "Every payment of 5 euros or more with the Visa debit card or the Visa credit card is a ticket",
+    "point3": "Register by August 31, 2025",
+    "cta": "To the competition"
+  },
+  "ProductHighlights": {
+    "etfTitle": "Better to have ETFs in your portfolio than low interest rates",
+    "etfDesc": "Do as our more than 800,000 satisfied customers do and let your money work for you !",
+    "etfPoint1": "Open a portfolio by August 22nd and trade more favorably until the end of the year",
+    "etfPoint2": "Savings plans without execution fees (plus product costs and benefits)",
+    "etfPoint3": "Buy securities through Baader Trading for only 1.90 euros",
+    "etfCta": "To the depot",
+    "popularTitle": "Popular Products",
+    "product1Title": "Find your suitable financing",
+    "product1Subtitle": "Cheap loans",
+    "product1Desc": "Whether you need a quick, instant loan or flexible home financing – we have the solution.",
+    "product2Title": "LBS building savings",
+    "product2Subtitle": "50 Euro promotion",
+    "product2Desc": "Now you can get a building savings plan with LBS and a voucher of your choice during the promotional period until September 30, 2025.",
+    "product3Title": "The account for two",
+    "product3Subtitle": "Free joint account",
+    "product3Desc": "The perfect partner account, household account for the shared apartment including 2 Visa cards.",
+    "knowledgeTitle": "Financial knowledge",
+    "knowledge1Title": "Find your perfect card",
+    "knowledge1Subtitle": "Card types",
+    "knowledge1Desc": "We'll show you the difference between debit, credit, and checking cards.",
+    "knowledge2Title": "Avoid fees",
+    "knowledge2Subtitle": "Card payment abroad",
+    "knowledge2Desc": "Learn what to consider when making card payments while traveling and how to avoid costs.",
+    "knowledge3Title": "Better together",
+    "knowledge3Subtitle": "One account, two cards",
+    "knowledge3Desc": "Learn more about the account for two: ideal as a household account and for shared expenses."
+  },
+  "Sustainability": {
+    "title": "This is how sustainable a bank can be",
+    "point1": "Most sustainable bank among the top 20 in Germany",
+    "point2": "Largest financier of renewable energies in Germany", 
+    "point3": "Top employer for more than 5,000 people",
+    "point4": "Social commitment through the DKB Foundation, founded in 2004",
+    "point5": "CO2-neutral office operations",
+    "point6": "Promoter of social sustainability in sport",
+    "cta": "More about sustainable commitment"
+  },
+  "Footer": {
+    "appTitle": "Whether you want to quickly check your account balance or make a transfer: With our DKB app, you can handle your banking transactions securely, easily, and conveniently from anywhere.",
+    "appCta": "Discover the DKB app"
+  },
+  "nav": {
+    "english": "English",
+    "german": "German"
+  }
+}

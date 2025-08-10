@@ -1,0 +1,35 @@
+{
+  "Navbar": {
+    "home": "Startseite",
+    "products": "Produkte",
+    "contact": "Kontakt"
+  },
+  "Hero": {
+    "title": "Ihre vertrauenswürdige Bank für jeden Schritt",
+    "subtitle": "Sicher, transparent und für Sie da – vom ersten Sparkonto bis zur nächsten Investition.",
+    "cta": "Konto eröffnen"
+  },
+  "Promotions": {
+    "heading": "Aktuelle Angebote",
+    "loanTitle": "Sonderkonditionen für Kredite",
+    "loanDesc": "Erhalten Sie die Finanzierung, die Sie brauchen, ab nur 1,9% Zinsen.",
+    "savingsTitle": "Sparbonus",
+    "savingsDesc": "Verdienen Sie bis zu 250 € bei Eröffnung eines Premium-Sparkontos."
+  },
+  "ProductHighlights": {
+    "heading": "Unsere Top-Produkte",
+    "highlight1": "Premium Girokonto",
+    "highlight1Desc": "Genießen Sie gebührenfreie Transaktionen und exklusive Vorteile.",
+    "highlight2": "Digitale Vermögensverwaltung",
+    "highlight2Desc": "Investieren Sie smart mit unserer sicheren Online-Plattform."
+  },
+  "Sustainability": {
+    "heading": "Nachhaltig investieren",
+    "desc": "Wir unterstützen Projekte, die einen positiven Einfluss auf Umwelt und Gesellschaft haben."
+  },
+  "Footer": {
+    "rights": "Alle Rechte vorbehalten",
+    "privacy": "Datenschutz",
+    "terms": "AGB"
+  }
+}
