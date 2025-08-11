@@ -1,6 +1,6 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
 
-export const api = {
+export const apiClient = {
   // Auth endpoints
   login: async (credentials: { email: string; password: string }) => {
     const response = await fetch(`${API_BASE_URL}/auth/login`, {
@@ -25,7 +25,12 @@ export const api = {
   },
 
   // Account endpoints
-  getAccounts: async (token: string) => {
+  getAccounts: async () => {
+    const response = await fetch(`${API_BASE_URL}/accounts`);
+    return response.json();
+  },
+
+  getAccountsWithAuth: async (token: string) => {
     const response = await fetch(`${API_BASE_URL}/accounts`, {
       headers: {
         'Authorization': `Bearer ${token}`,
@@ -65,4 +70,4 @@ export const api = {
   },
 };
 
-export default api;
+export default apiClient;
