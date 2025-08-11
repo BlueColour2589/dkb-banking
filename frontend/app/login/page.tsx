@@ -11,10 +11,26 @@ export default function LoginPage() {
     password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [isWakingUp, setIsWakingUp] = useState(false);
   const [error, setError] = useState("");
 
   const { login } = useAuth();
   const router = useRouter();
+
+  // Wake up the backend server
+  const wakeUpBackend = async () => {
+    try {
+      setIsWakingUp(true);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/accounts`, {
+        method: 'HEAD', // Just check if server responds
+      });
+      console.log('Backend wake-up call completed');
+    } catch (error) {
+      console.log('Backend is waking up...');
+    } finally {
+      setIsWakingUp(false);
+    }
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -44,6 +60,10 @@ export default function LoginPage() {
     }
 
     try {
+      // Wake up backend first if it might be sleeping
+      await wakeUpBackend();
+      
+      // Now attempt login
       await login(formData);
       // Redirect to dashboard after successful login
       router.push("/dashboard");
@@ -53,6 +73,16 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const getLoadingMessage = () => {
+    if (isWakingUp) {
+      return "Connecting to server... (first login may take 30 seconds)";
+    }
+    if (isLoading) {
+      return "Logging in...";
+    }
+    return "Login to DKB-Banking";
   };
 
   return (
@@ -68,6 +98,21 @@ export default function LoginPage() {
               <h1 className="text-2xl font-bold text-gray-800">DKB-Banking</h1>
               <p className="text-gray-600">Secure login to your account</p>
             </div>
+
+            {/* Loading Message */}
+            {(isLoading || isWakingUp) && (
+              <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-3"></div>
+                  <p className="text-blue-600 text-sm">
+                    {isWakingUp 
+                      ? "Starting server... (This may take up to 30 seconds on first visit)"
+                      : "Logging in..."
+                    }
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Error Message */}
             {error && (
@@ -90,7 +135,7 @@ export default function LoginPage() {
                   required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Enter your email address"
-                  disabled={isLoading}
+                  disabled={isLoading || isWakingUp}
                 />
               </div>
 
@@ -106,18 +151,25 @@ export default function LoginPage() {
                   required
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Enter your password"
-                  disabled={isLoading}
+                  disabled={isLoading || isWakingUp}
                 />
               </div>
 
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || isWakingUp}
                 className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-3 rounded-lg font-semibold transition-colors"
               >
-                {isLoading ? "Logging in..." : "Login to DKB-Banking"}
+                {getLoadingMessage()}
               </button>
             </form>
+
+            {/* Test Credentials Info */}
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+              <h3 className="font-semibold text-gray-800 mb-2">Test Credentials:</h3>
+              <p className="text-sm text-gray-600">Email: john@dkb.com</p>
+              <p className="text-sm text-gray-600">Password: password123</p>
+            </div>
 
             {/* Additional Options */}
             <div className="mt-6 text-center space-y-3">
@@ -138,19 +190,6 @@ export default function LoginPage() {
               <p className="text-sm text-blue-700">
                 Your security is our priority. We use the latest encryption technology to protect your data.
               </p>
-            </div>
-          </div>
-
-          {/* Download App */}
-          <div className="text-center mt-8">
-            <p className="text-gray-600 mb-4">Download our mobile app for secure banking on the go</p>
-            <div className="flex justify-center space-x-4">
-              <button className="bg-black text-white px-4 py-2 rounded-lg text-sm">      
-                📱 App Store
-              </button>
-              <button className="bg-black text-white px-4 py-2 rounded-lg text-sm">      
-                🤖 Google Play
-              </button>
             </div>
           </div>
 
