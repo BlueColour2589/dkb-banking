@@ -122,8 +122,9 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Login error details:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     const res = NextResponse.json(
-      { success: false, error: 'Internal server error', details: error.message },
+      { success: false, error: 'Internal server error', details: errorMessage },
       { status: 500 }
     );
     corsHeaders(origin).forEach((v, k) => res.headers.set(k, v));
