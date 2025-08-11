@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiClient } from "@/lib/api";
+import { apiClient } from "../../../../lib/api";
 
 export default function TransactionsTable() {
   const [transactions, setTransactions] = useState<any[]>([]);
