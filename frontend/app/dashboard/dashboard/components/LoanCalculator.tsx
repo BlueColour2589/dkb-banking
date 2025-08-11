@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { apiClient } from "@/lib/api";
+import { apiClient } from "../../../../lib/api";
 
 export default function LoanCalculator() {
   const [amount, setAmount] = useState(5000);
