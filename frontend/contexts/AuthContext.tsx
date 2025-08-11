@@ -21,43 +21,108 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
+  
   const isAuthenticated = !!user;
+
+  // Safe localStorage access for SSR
+  const getStoredToken = (): string | null => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('authToken');
+    }
+    return null;
+  };
+
+  const setStoredToken = (token: string): void => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('authToken', token);
+    }
+  };
+
+  const removeStoredToken = (): void => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('authToken');
+    }
+  };
 
   // Check if user is authenticated on app start
   useEffect(() => {
     const initializeAuth = async () => {
+      if (isInitialized) return;
+      
       try {
-        const token = localStorage.getItem('authToken');
+        const token = getStoredToken();
         if (token) {
+          console.log('Found stored token, validating...');
           const response = await apiClient.getCurrentUser();
-          setUser(response.data || null);
+          
+          // Handle different possible response structures
+          const userData = response.data || response.user || response;
+          setUser(userData || null);
+          
+          console.log('User validated successfully');
+        } else {
+          console.log('No stored token found');
         }
       } catch (error) {
         console.error('Failed to initialize auth:', error);
         // Clear invalid token
-        localStorage.removeItem('authToken');
+        removeStoredToken();
+        setUser(null);
       } finally {
         setIsLoading(false);
+        setIsInitialized(true);
       }
     };
 
-    initializeAuth();
-  }, []);
+    // Only run on client side
+    if (typeof window !== 'undefined') {
+      initializeAuth();
+    }
+  }, [isInitialized]);
 
   const login = async (credentials: LoginRequest) => {
     try {
       setIsLoading(true);
-      const response = await apiClient.login(credentials);
+      console.log('Attempting login...');
       
-      // Store token if provided
-      if (response.token) {
-        localStorage.setItem('authToken', response.token);
+      const response = await apiClient.login(credentials);
+      console.log('Login response:', response);
+      
+      // Handle different possible response structures
+      const token = response.token || response.data?.token || response.accessToken;
+      const userData = response.user || response.data?.user || response.data;
+      
+      if (token) {
+        setStoredToken(token);
+        console.log('Token stored successfully');
+      } else {
+        console.warn('No token received in login response');
       }
       
-      setUser(response.user || null);
-    } catch (error) {
+      if (userData && (userData.id || userData._id || userData.email)) {
+        setUser(userData);
+        console.log('User data set successfully');
+      } else {
+        console.error('Invalid user data in response:', userData);
+        throw new Error('Invalid user data received');
+      }
+      
+    } catch (error: any) {
       console.error('Login failed:', error);
-      throw error;
+      removeStoredToken();
+      setUser(null);
+      
+      // Provide more specific error messages
+      if (error.response?.status === 401) {
+        throw new Error('Invalid email or password');
+      } else if (error.response?.status === 429) {
+        throw new Error('Too many login attempts. Please try again later.');
+      } else if (error.message) {
+        throw error;
+      } else {
+        throw new Error('Login failed. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -66,17 +131,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (userData: RegisterRequest) => {
     try {
       setIsLoading(true);
+      console.log('Attempting registration...');
+      
       const response = await apiClient.register(userData);
       
-      // Store token if provided
-      if (response.token) {
-        localStorage.setItem('authToken', response.token);
+      // Handle different possible response structures
+      const token = response.token || response.data?.token || response.accessToken;
+      const user = response.user || response.data?.user || response.data;
+      
+      if (token) {
+        setStoredToken(token);
       }
       
-      setUser(response.user || null);
-    } catch (error) {
+      if (user && (user.id || user._id || user.email)) {
+        setUser(user);
+      } else {
+        console.error('Invalid user data in registration response:', user);
+        throw new Error('Registration successful but invalid user data received');
+      }
+      
+    } catch (error: any) {
       console.error('Registration failed:', error);
-      throw error;
+      removeStoredToken();
+      setUser(null);
+      
+      // Provide more specific error messages
+      if (error.response?.status === 409) {
+        throw new Error('An account with this email already exists');
+      } else if (error.message) {
+        throw error;
+      } else {
+        throw new Error('Registration failed. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -85,29 +171,41 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async () => {
     try {
       setIsLoading(true);
-      const token = localStorage.getItem('authToken');
+      const token = getStoredToken();
       
       if (token) {
-        await apiClient.logout(token);
+        try {
+          await apiClient.logout(token);
+        } catch (error) {
+          console.error('Logout API call failed:', error);
+          // Continue with local logout even if API call fails
+        }
       }
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
       // Always clear user and token, even if logout API call fails
       setUser(null);
-      localStorage.removeItem('authToken');
+      removeStoredToken();
       setIsLoading(false);
     }
   };
 
   const refreshUser = async () => {
     try {
+      const token = getStoredToken();
+      if (!token) {
+        setUser(null);
+        return;
+      }
+      
       const response = await apiClient.getCurrentUser();
-      setUser(response.data || null);
+      const userData = response.data || response.user || response;
+      setUser(userData || null);
     } catch (error) {
       console.error('Failed to refresh user:', error);
       setUser(null);
-      localStorage.removeItem('authToken');
+      removeStoredToken();
     }
   };
 
@@ -132,5 +230,4 @@ export const useAuth = (): AuthContextType => {
   return context;
 };
 
-// Default export
 export default AuthProvider;
