@@ -1,5 +1,4 @@
 'use client';
-
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { apiClient, User, LoginRequest, RegisterRequest } from '../lib/api';
 
@@ -22,7 +21,6 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
   const isAuthenticated = !!user;
 
   // Check if user is authenticated on app start
@@ -31,14 +29,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       try {
         const token = localStorage.getItem('authToken');
         if (token) {
-          const userData = await apiClient.getCurrentUser();
-          setUser(userData);
+          const response = await apiClient.getCurrentUser();
+          setUser(response.data || null);
         }
       } catch (error) {
         console.error('Failed to initialize auth:', error);
         // Clear invalid token
         localStorage.removeItem('authToken');
-        apiClient.removeToken();
       } finally {
         setIsLoading(false);
       }
@@ -51,7 +48,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
       const response = await apiClient.login(credentials);
-      setUser(response.user);
+      
+      // Store token if provided
+      if (response.token) {
+        localStorage.setItem('authToken', response.token);
+      }
+      
+      setUser(response.user || null);
     } catch (error) {
       console.error('Login failed:', error);
       throw error;
@@ -64,7 +67,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
       const response = await apiClient.register(userData);
-      setUser(response.user);
+      
+      // Store token if provided
+      if (response.token) {
+        localStorage.setItem('authToken', response.token);
+      }
+      
+      setUser(response.user || null);
     } catch (error) {
       console.error('Registration failed:', error);
       throw error;
@@ -76,22 +85,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async () => {
     try {
       setIsLoading(true);
-      await apiClient.logout();
+      const token = localStorage.getItem('authToken');
+      
+      if (token) {
+        await apiClient.logout(token);
+      }
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
+      // Always clear user and token, even if logout API call fails
       setUser(null);
+      localStorage.removeItem('authToken');
       setIsLoading(false);
     }
   };
 
   const refreshUser = async () => {
     try {
-      const userData = await apiClient.getCurrentUser();
-      setUser(userData);
+      const response = await apiClient.getCurrentUser();
+      setUser(response.data || null);
     } catch (error) {
       console.error('Failed to refresh user:', error);
       setUser(null);
+      localStorage.removeItem('authToken');
     }
   };
 
