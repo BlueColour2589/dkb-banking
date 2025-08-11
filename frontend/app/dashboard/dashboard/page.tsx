@@ -3,7 +3,7 @@ import DashboardLayout from "./layout";
 import AccountSummary from "./components/AccountSummary";
 import TransactionsTable from "./components/TransactionsTable";
 import LoanCalculator from "./components/LoanCalculator";
-import InvestmentPanel from "./components/InvestmentPanel";
+import InvestmentPanel from "./components/InvestmentsPanel";
 import TransferModal from "./components/TransferModal";
 
 export default function DashboardPage() {
