@@ -2,7 +2,6 @@ import Header from "@/components/Header";
 import AccountSummary from "@/components/AccountSummary";
 import TransactionsTable from "@/components/TransactionsTable";
 import SecurityInfo from "@/components/SecurityInfo";
-import Notifications from "@/components/Notifications";
 
 export default function DashboardPage() {
   return (
@@ -12,7 +11,6 @@ export default function DashboardPage() {
         <AccountSummary />
         <TransactionsTable />
         <SecurityInfo />
-        <Notifications />
       </div>
     </div>
   );
