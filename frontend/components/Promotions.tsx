@@ -1,10 +1,7 @@
 "use client";
-import { useTranslations } from "next-intl";
 import Image from "next/image";
 
 export default function Promotions() {
-  const t = useTranslations("Promotions");
-
   return (
     <>
       {/* Main Blue Promotion Section */}
@@ -33,7 +30,7 @@ export default function Promotions() {
                 </li>
               </ul>
               <a 
-                href="/en/register"
+                href="/register"
                 className="inline-block bg-cyan-400 hover:bg-cyan-500 text-blue-900 px-8 py-4 rounded-lg font-bold transition-all duration-200 shadow-lg hover:shadow-xl text-lg"
               >
                 To the current account

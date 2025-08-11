@@ -1,10 +1,7 @@
 "use client";
-import { useTranslations } from "next-intl";
 import Image from "next/image";
 
 export default function ProductHighlights() {
-  const t = useTranslations("ProductHighlights");
-
   return (
     <section className="bg-white py-16 px-6">
       <div className="max-w-6xl mx-auto">
@@ -33,7 +30,7 @@ export default function ProductHighlights() {
                 </li>
               </ul>
               <a 
-                href="/en/investing"
+                href="/investing"
                 className="text-blue-600 hover:text-blue-700 font-semibold"
               >
                 To the depot →
@@ -81,7 +78,7 @@ export default function ProductHighlights() {
                   Whether you need a quick, instant loan or flexible home financing – we have the solution.
                 </p>
                 <a 
-                  href="/en/loans"
+                  href="/loans"
                   className="text-blue-600 hover:text-blue-700 font-semibold text-sm"
                 >
                   To all loans →
@@ -106,7 +103,7 @@ export default function ProductHighlights() {
                   Now you can get a building savings plan with LBS and a voucher of your choice during the promotional period until September 30, 2025.
                 </p>
                 <a 
-                  href="/en/accounts"
+                  href="/accounts"
                   className="text-blue-600 hover:text-blue-700 font-semibold text-sm"
                 >
                   To building savings →
@@ -131,7 +128,7 @@ export default function ProductHighlights() {
                   The perfect partner account, household account for the shared apartment including 2 Visa cards.
                 </p>
                 <a 
-                  href="/en/accounts"
+                  href="/accounts"
                   className="text-blue-600 hover:text-blue-700 font-semibold text-sm"
                 >
                   To joint account →
@@ -163,7 +160,7 @@ export default function ProductHighlights() {
                   We'll show you the difference between debit, credit, and checking cards.
                 </p>
                 <a 
-                  href="/en/accounts"
+                  href="/accounts"
                   className="text-blue-600 hover:text-blue-700 font-semibold text-sm"
                 >
                   To all articles →
@@ -188,7 +185,7 @@ export default function ProductHighlights() {
                   Learn what to consider when making card payments while traveling and how to avoid costs.
                 </p>
                 <a 
-                  href="/en/accounts"
+                  href="/accounts"
                   className="text-blue-600 hover:text-blue-700 font-semibold text-sm"
                 >
                   To all articles →
@@ -213,7 +210,7 @@ export default function ProductHighlights() {
                   Learn more about the account for two: ideal as a household account and for shared expenses.
                 </p>
                 <a 
-                  href="/en/accounts"
+                  href="/accounts"
                   className="text-blue-600 hover:text-blue-700 font-semibold text-sm"
                 >
                   To all articles →

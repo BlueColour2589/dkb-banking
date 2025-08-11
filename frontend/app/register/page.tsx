@@ -1,16 +1,10 @@
-import Navbar from "../../../components/Navbar";
-import Footer from "../../../components/Footer";
+import Navbar from "../../components/Navbar";
+import Footer from "../../components/Footer";
 
-interface PageProps {
-  params: Promise<{ locale: string }>;
-}
-
-export default async function RegisterPage({ params }: PageProps) {
-  const { locale } = await params;
-
+export default function RegisterPage() {
   return (
     <>
-      <Navbar locale={locale} />
+      <Navbar />
       
       <main className="min-h-screen bg-gray-50 py-16 px-6">
         <div className="max-w-2xl mx-auto">
@@ -199,7 +193,7 @@ export default async function RegisterPage({ params }: PageProps) {
           <div className="text-center mt-8">
             <p className="text-gray-600">
               Already have a DKB account? 
-              <a href={`/${locale}/login`} className="text-blue-600 hover:text-blue-700 font-semibold ml-2">
+              <a href="/login" className="text-blue-600 hover:text-blue-700 font-semibold ml-2">
                 Login here
               </a>
             </p>
@@ -208,7 +202,7 @@ export default async function RegisterPage({ params }: PageProps) {
           {/* Back to Home */}
           <div className="text-center mt-8">
             <a 
-              href={`/${locale}`}
+              href="/"
               className="text-blue-600 hover:text-blue-700 font-semibold"
             >
               ← Back to Homepage
