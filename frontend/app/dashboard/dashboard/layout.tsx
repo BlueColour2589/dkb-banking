@@ -1,7 +1,7 @@
 "use client";
 
 import { ReactNode, useEffect, useState } from "react";
-import { apiClient, User } from "@/lib/api";
+import { apiClient, User } from "../../../../lib/api";
 import { useRouter, usePathname } from "next/navigation";
 import {
   HomeIcon,
