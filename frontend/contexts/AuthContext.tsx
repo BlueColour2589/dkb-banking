@@ -132,8 +132,5 @@ export const useAuth = (): AuthContextType => {
   return context;
 };
 
-// Named export
-export { AuthProvider };
-
 // Default export
 export default AuthProvider;
