@@ -10,7 +10,7 @@ export default async function InvestingPage({ params }: PageProps) {
 
   return (
     <>
-      <Navbar locale={locale} />
+      <Navbar />
       
       <main className="min-h-screen bg-white">
         {/* Hero Section */}
