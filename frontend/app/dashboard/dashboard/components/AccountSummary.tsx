@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { apiClient } from "@/lib/api";
+import { apiClient } from "../../../../lib/api";
 
 export default function AccountSummary() {
   const [accounts, setAccounts] = useState<any[]>([]);
