@@ -1,6 +1,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
-import AuthProvider from '../contexts/AuthContext';
+import { AuthProvider } from '../contexts/AuthContext';
 
 export const metadata: Metadata = {
   title: 'DKB - Banking Made Simple',
