@@ -50,6 +50,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const initializeAuth = async () => {
       if (isInitialized) return;
       
+      // Debug environment variables
+      console.log('Environment check:', {
+        NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+        NEXT_PUBLIC_API_BASE_URL: process.env.NEXT_PUBLIC_API_BASE_URL,
+        NODE_ENV: process.env.NODE_ENV
+      });
+      
       try {
         const token = getStoredToken();
         if (token) {
@@ -83,12 +90,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (credentials: LoginRequest) => {
     try {
       setIsLoading(true);
-      console.log('Attempting login...');
+      console.log('Attempting login with API URL:', process.env.NEXT_PUBLIC_API_URL);
+      console.log('Login credentials:', { email: credentials.email, password: '***' });
       
       const response = await apiClient.login(credentials);
       console.log('Login response:', response);
       
-      // Handle login response structure
+      // Handle login response structure (AuthResponse)
+      if (!response.success) {
+        throw new Error(response.error || response.message || 'Login failed');
+      }
+
       const token = response.token;
       const userData = response.user;
       
@@ -96,14 +108,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setStoredToken(token);
         console.log('Token stored successfully');
       } else {
-        console.warn('No token received in login response');
+        throw new Error('No token received in login response');
       }
       
       if (userData && (userData.id || userData.email)) {
         setUser(userData);
         console.log('User data set successfully');
       } else {
-        console.error('Invalid user data in response:', userData);
         throw new Error('Invalid user data received');
       }
       
@@ -134,7 +145,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       const response = await apiClient.register(userData);
       
-      // Handle registration response structure
+      // Handle registration response structure (AuthResponse)
+      if (!response.success) {
+        throw new Error(response.error || response.message || 'Registration failed');
+      }
+
       const token = response.token;
       const user = response.user;
       
@@ -145,7 +160,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       if (user && (user.id || user.email)) {
         setUser(user);
       } else {
-        console.error('Invalid user data in registration response:', user);
         throw new Error('Registration successful but invalid user data received');
       }
       
