@@ -30,18 +30,47 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get user's accounts
-    const accounts = await prisma.account.findMany({
+    // Get user's joint accounts through JointOwner relationship
+    const userWithAccounts = await prisma.user.findUnique({
       where: {
-        userId: tokenData.userId
+        id: tokenData.userId
       },
       include: {
-        transactions: {
-          orderBy: { createdAt: 'desc' },
-          take: 5 // Latest 5 transactions
+        jointOwners: {
+          include: {
+            jointAccount: {
+              include: {
+                transactions: {
+                  orderBy: { createdAt: 'desc' },
+                  take: 5 // Latest 5 transactions
+                }
+              }
+            }
+          }
         }
       }
     });
+
+    if (!userWithAccounts) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    // Format accounts for frontend
+    const accounts = userWithAccounts.jointOwners.map(owner => ({
+      id: owner.jointAccount.id,
+      name: owner.jointAccount.name,
+      accountNumber: owner.jointAccount.accountNumber,
+      type: owner.jointAccount.accountType,
+      balance: owner.jointAccount.balance,
+      currency: owner.jointAccount.currency,
+      status: owner.jointAccount.status,
+      role: owner.role,
+      permissions: owner.permissions,
+      transactions: owner.jointAccount.transactions
+    }));
 
     return NextResponse.json({
       success: true,
