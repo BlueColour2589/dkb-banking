@@ -29,6 +29,16 @@ export async function POST(request: NextRequest) {
   try {
     console.log('Login API called from origin:', origin);
     
+    // DEBUG: Check what DATABASE_URL is being used
+    const dbUrl = process.env.DATABASE_URL;
+    if (dbUrl) {
+      console.log('DATABASE_URL first 50 chars:', dbUrl.substring(0, 50) + '...');
+      console.log('DATABASE_URL contains oregon-postgres:', dbUrl.includes('oregon-postgres'));
+      console.log('DATABASE_URL contains external hostname:', dbUrl.includes('.render.com'));
+    } else {
+      console.error('DATABASE_URL is undefined!');
+    }
+    
     const secret = process.env.NEXTAUTH_SECRET;
     if (!secret) {
       console.error('NEXTAUTH_SECRET is missing');
@@ -55,6 +65,8 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('Looking for user with email:', email);
+    console.log('About to call prisma.user.findUnique...');
+    
     const user = await prisma.user.findUnique({ where: { email } });
     
     if (!user) {
