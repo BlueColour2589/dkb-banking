@@ -1,16 +1,10 @@
-import Navbar from "../../../components/Navbar";
-import Footer from "../../../components/Footer";
+import Navbar from "../../components/Navbar";
+import Footer from "../../components/Footer";
 
-interface PageProps {
-  params: Promise<{ locale: string }>;
-}
-
-export default async function LoansPage({ params }: PageProps) {
-  const { locale } = await params;
-
+export default function LoansPage() {
   return (
     <>
-      <Navbar locale={locale} />
+      <Navbar />
       
       <main className="min-h-screen bg-white">
         {/* Hero Section */}
@@ -194,7 +188,7 @@ export default async function LoansPage({ params }: PageProps) {
         {/* Back to Home */}
         <div className="text-center py-8">
           <a 
-            href={`/${locale}`}
+            href="/"
             className="text-blue-600 hover:text-blue-700 font-semibold"
           >
             ← Back to Homepage
