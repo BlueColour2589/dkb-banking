@@ -232,6 +232,30 @@ export const apiClient = {
   },
 
   // User profile endpoints
+  getCurrentUser: async (token?: string): Promise<ApiResponse<User>> => {
+    try {
+      const authToken = token || (typeof window !== 'undefined' ? localStorage.getItem('authToken') : null);
+      if (!authToken) {
+        throw new Error('No auth token available');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/user/profile`, {
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Get current user error:', error);
+      throw error;
+    }
+  },
+
   getUserProfile: async (token: string): Promise<ApiResponse<User>> => {
     try {
       const response = await fetch(`${API_BASE_URL}/user/profile`, {
