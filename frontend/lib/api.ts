@@ -1,13 +1,13 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+// Use relative paths for same-domain API calls
+const API_BASE_URL = '/api';
 
-// Type definitions
+// Type definitions (keeping your existing types)
 export interface User {
   id: string;
   email: string;
   name: string;
   createdAt?: string;
   updatedAt?: string;
-  // Add other user properties as needed
 }
 
 export interface LoginRequest {
@@ -20,7 +20,6 @@ export interface RegisterRequest {
   password: string;
   name: string;
   confirmPassword?: string;
-  // Add other registration fields as needed
 }
 
 export interface Account {
@@ -81,7 +80,8 @@ export const apiClient = {
       });
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
       
       return await response.json();
@@ -102,7 +102,8 @@ export const apiClient = {
       });
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
       
       return await response.json();
@@ -122,7 +123,8 @@ export const apiClient = {
       });
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
       
       return await response.json();
@@ -138,7 +140,8 @@ export const apiClient = {
       const response = await fetch(`${API_BASE_URL}/accounts`);
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
       
       return await response.json();
@@ -157,7 +160,8 @@ export const apiClient = {
       });
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
       
       return await response.json();
@@ -176,7 +180,8 @@ export const apiClient = {
       });
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
       
       return await response.json();
@@ -195,7 +200,8 @@ export const apiClient = {
       });
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
       
       return await response.json();
@@ -221,7 +227,8 @@ export const apiClient = {
       });
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
       
       return await response.json();
@@ -246,7 +253,8 @@ export const apiClient = {
       });
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
       
       return await response.json();
@@ -265,7 +273,8 @@ export const apiClient = {
       });
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
       
       return await response.json();
@@ -287,7 +296,8 @@ export const apiClient = {
       });
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
       }
       
       return await response.json();
