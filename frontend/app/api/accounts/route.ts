@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import * as jwt from 'jsonwebtoken';
 
+// Add this line to force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 const prisma = new PrismaClient();
 
 // Helper function to verify JWT token
