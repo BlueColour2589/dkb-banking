@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json();
 
-    // Find user in database
+    // Find user in database (your schema uses passwordHash, not password)
     const user = await prisma.user.findUnique({
       where: { email }
     });
@@ -21,8 +21,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check password
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    // Check password (your field is passwordHash)
+    const isValidPassword = await bcrypt.compare(password, user.passwordHash);
     if (!isValidPassword) {
       return NextResponse.json(
         { error: 'Invalid credentials' },
