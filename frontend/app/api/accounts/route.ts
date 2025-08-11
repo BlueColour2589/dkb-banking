@@ -7,6 +7,20 @@ export const dynamic = 'force-dynamic';
 
 const prisma = new PrismaClient();
 
+// Add CORS headers
+function corsHeaders() {
+  return {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  };
+}
+
+// Handle preflight OPTIONS request
+export async function OPTIONS() {
+  return new NextResponse(null, { status: 200, headers: corsHeaders() });
+}
+
 // Helper function to verify JWT token
 function verifyToken(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
@@ -29,7 +43,7 @@ export async function GET(request: NextRequest) {
     if (!tokenData) {
       return NextResponse.json(
         { error: 'Unauthorized' },
-        { status: 401 }
+        { status: 401, headers: corsHeaders() }
       );
     }
 
@@ -57,7 +71,7 @@ export async function GET(request: NextRequest) {
     if (!userWithAccounts) {
       return NextResponse.json(
         { error: 'User not found' },
-        { status: 404 }
+        { status: 404, headers: corsHeaders() }
       );
     }
 
@@ -78,13 +92,15 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: { accounts }
-    });
+    }, { headers: corsHeaders() });
 
   } catch (error) {
     console.error('Accounts fetch error:', error);
     return NextResponse.json(
       { error: 'Internal server error' },
-      { status: 500 }
+      { status: 500, headers: corsHeaders() }
     );
+  } finally {
+    await prisma.$disconnect();
   }
 }
