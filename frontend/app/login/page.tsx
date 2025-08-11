@@ -6,10 +6,7 @@ import Footer from "../../components/Footer";
 import { useAuth } from "../../contexts/AuthContext";
 
 export default function LoginPage() {
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-  });
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [isLoading, setIsLoading] = useState(false);
   const [isWakingUp, setIsWakingUp] = useState(false);
   const [error, setError] = useState("");
@@ -17,27 +14,40 @@ export default function LoginPage() {
   const { login } = useAuth();
   const router = useRouter();
 
-  // Wake up the backend server
+  // 💥 Updated backend ping function
   const wakeUpBackend = async () => {
     try {
       setIsWakingUp(true);
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/accounts`, {
-        method: 'HEAD', // Just check if server responds
-      });
-      console.log('Backend wake-up call completed');
-    } catch (error) {
-      console.log('Backend is waking up...');
+      const base =
+        process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, "") || "";
+      const targets = [
+        `${base || ""}/api/health`,
+        `${base || ""}/api/accounts`,
+      ];
+
+      for (const url of targets) {
+        try {
+          const res = await fetch(url, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+            cache: "no-store",
+          });
+          if (res.ok) break;
+        } catch {
+          // Try next
+        }
+      }
+
+      console.log("Backend wake-up call completed");
+    } catch {
+      console.log("Backend is waking up...");
     } finally {
       setIsWakingUp(false);
     }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-    // Clear error when user starts typing
+    setFormData({ ...formData, [e.target.name]: e.target.value });
     if (error) setError("");
   };
 
@@ -46,29 +56,24 @@ export default function LoginPage() {
     setIsLoading(true);
     setError("");
 
-    // Basic validation
     if (!formData.email || !formData.password) {
       setError("Please fill in all fields");
       setIsLoading(false);
       return;
     }
 
-    if (!formData.email.includes('@')) {
+    if (!formData.email.includes("@")) {
       setError("Please enter a valid email address");
       setIsLoading(false);
       return;
     }
 
     try {
-      // Wake up backend first if it might be sleeping
       await wakeUpBackend();
-      
-      // Now attempt login
       await login(formData);
-      // Redirect to dashboard after successful login
       router.push("/dashboard");
     } catch (error: any) {
-      console.error('Login error:', error);
+      console.error("Login error:", error);
       setError(error.message || "Login failed. Please check your credentials.");
     } finally {
       setIsLoading(false);
@@ -88,10 +93,8 @@ export default function LoginPage() {
   return (
     <>
       <Navbar />
-
       <main className="min-h-screen bg-gray-50 py-16 px-6">
         <div className="max-w-md mx-auto">
-          {/* Login Card */}
           <div className="bg-white rounded-lg shadow-lg p-8">
             <div className="text-center mb-8">
               <div className="text-blue-600 font-bold text-3xl mb-2">DKB</div>
@@ -99,29 +102,23 @@ export default function LoginPage() {
               <p className="text-gray-600">Secure login to your account</p>
             </div>
 
-            {/* Loading Message */}
             {(isLoading || isWakingUp) && (
               <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <div className="flex items-center">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-3"></div>
                   <p className="text-blue-600 text-sm">
-                    {isWakingUp 
-                      ? "Starting server... (This may take up to 30 seconds on first visit)"
-                      : "Logging in..."
-                    }
+                    {getLoadingMessage()}
                   </p>
                 </div>
               </div>
             )}
 
-            {/* Error Message */}
             {error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">      
+              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
                 <p className="text-red-600 text-sm">{error}</p>
               </div>
             )}
 
-            {/* Login Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -164,47 +161,36 @@ export default function LoginPage() {
               </button>
             </form>
 
-            {/* Test Credentials Info */}
             <div className="mt-6 p-4 bg-gray-50 rounded-lg">
               <h3 className="font-semibold text-gray-800 mb-2">Test Credentials:</h3>
               <p className="text-sm text-gray-600">Email: john@dkb.com</p>
               <p className="text-sm text-gray-600">Password: password123</p>
             </div>
 
-            {/* Additional Options */}
             <div className="mt-6 text-center space-y-3">
-              <a href="#" className="block text-blue-600 hover:text-blue-700 text-sm">   
+              <a href="#" className="block text-blue-600 hover:text-blue-700 text-sm">
                 Forgot your password?
               </a>
-              <a
-                href="/register"
-                className="block text-blue-600 hover:text-blue-700 text-sm"
-              >
+              <a href="/register" className="block text-blue-600 hover:text-blue-700 text-sm">
                 Don't have an account? Register here
               </a>
             </div>
 
-            {/* Security Notice */}
             <div className="mt-8 p-4 bg-blue-50 rounded-lg">
-              <h3 className="font-semibold text-blue-800 mb-2">Security Notice</h3>      
+              <h3 className="font-semibold text-blue-800 mb-2">Security Notice</h3>
               <p className="text-sm text-blue-700">
                 Your security is our priority. We use the latest encryption technology to protect your data.
               </p>
             </div>
           </div>
 
-          {/* Back to Home */}
           <div className="text-center mt-8">
-            <a
-              href="/"
-              className="text-blue-600 hover:text-blue-700 font-semibold"
-            >
+            <a href="/" className="text-blue-600 hover:text-blue-700 font-semibold">
               ← Back to Homepage
             </a>
           </div>
         </div>
       </main>
-
       <Footer />
     </>
   );
