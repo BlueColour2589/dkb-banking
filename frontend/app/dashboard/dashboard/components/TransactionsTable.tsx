@@ -10,7 +10,7 @@ export default function TransactionsTable() {
     apiClient.getAccounts().then((res) => {
       if (res.accounts.length > 0) {
         const firstAccId = res.accounts[0].id;
-        apiClient.getTransactions(firstAccId.toString(), page).then((data) => {
+        apiClient.getTransactions(firstAccId.toString(), page.toString()).then((data) => {
           setTransactions(data.transactions || []);
         });
       }
@@ -39,7 +39,7 @@ export default function TransactionsTable() {
             </tr>
           ))}
         </tbody>
-      </table>
+        </table>
       <div className="flex justify-between mt-4">
         <button className="btn-secondary" disabled={page === 1} onClick={() => setPage(page - 1)}>Prev</button>
         <button className="btn-secondary" onClick={() => setPage(page + 1)}>Next</button>
