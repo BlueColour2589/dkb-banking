@@ -1,13 +1,14 @@
 'use client';
 import { useEffect, useState } from 'react';
-import { apiClient } from '@/lib/api';
+import { apiClient, Account } from '@/lib/api';
 
 export default function AccountsPanel() {
-  const [accounts, setAccounts] = useState<any[]>([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
 
   useEffect(() => {
     apiClient.getAccounts().then(data => {
-      setAccounts(data.accounts || []);
+      // Fixed: Changed from data.accounts to data.data
+      setAccounts(data.data || []);
     }).catch(err => console.error(err));
   }, []);
 
