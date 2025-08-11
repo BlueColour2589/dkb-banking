@@ -1,16 +1,30 @@
 "use client";
-
 import { useState } from "react";
-import { apiClient } from "../../../../lib/api";
 
 export default function LoanCalculator() {
   const [amount, setAmount] = useState(5000);
   const [term, setTerm] = useState(12);
   const [type, setType] = useState("personal");
+
+  // Simple client-side calculation
+  const calculate = () => {
+    const interestRate = type === "mortgage" ? 3.5 : type === "car" ? 5.0 : 7.5;
+    const monthlyRate = interestRate / 100 / 12;
+    const monthlyPayment = (amount * monthlyRate * Math.pow(1 + monthlyRate, term)) / 
+                          (Math.pow(1 + monthlyRate, term) - 1);
+    const totalAmount = monthlyPayment * term;
+
+    return {
+      monthlyPayment: monthlyPayment.toFixed(2),
+      totalAmount: totalAmount.toFixed(2),
+      interestRate: interestRate
+    };
+  };
+
   const [result, setResult] = useState<any>(null);
 
-  const calculate = () => {
-    apiClient.calculateLoan({ amount, term, type }).then(setResult);
+  const handleCalculate = () => {
+    setResult(calculate());
   };
 
   return (
@@ -24,7 +38,7 @@ export default function LoanCalculator() {
           <option value="mortgage">Mortgage</option>
           <option value="car">Car Loan</option>
         </select>
-        <button className="btn-primary w-full" onClick={calculate}>Calculate</button>
+        <button className="btn-primary w-full" onClick={handleCalculate}>Calculate</button>
       </div>
       {result && (
         <div className="mt-4 space-y-1">
