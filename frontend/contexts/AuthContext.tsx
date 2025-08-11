@@ -56,9 +56,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           console.log('Found stored token, validating...');
           const response = await apiClient.getCurrentUser();
           
-          // Handle different possible response structures
-          const userData = response.data || response.user || response;
-          setUser(userData || null);
+          // Handle ApiResponse<User> structure
+          setUser(response.data || null);
           
           console.log('User validated successfully');
         } else {
@@ -89,9 +88,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await apiClient.login(credentials);
       console.log('Login response:', response);
       
-      // Handle different possible response structures
-      const token = response.token || response.data?.token || response.accessToken;
-      const userData = response.user || response.data?.user || response.data;
+      // Handle login response structure
+      const token = response.token;
+      const userData = response.user;
       
       if (token) {
         setStoredToken(token);
@@ -100,7 +99,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         console.warn('No token received in login response');
       }
       
-      if (userData && (userData.id || userData._id || userData.email)) {
+      if (userData && (userData.id || userData.email)) {
         setUser(userData);
         console.log('User data set successfully');
       } else {
@@ -135,15 +134,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       const response = await apiClient.register(userData);
       
-      // Handle different possible response structures
-      const token = response.token || response.data?.token || response.accessToken;
-      const user = response.user || response.data?.user || response.data;
+      // Handle registration response structure
+      const token = response.token;
+      const user = response.user;
       
       if (token) {
         setStoredToken(token);
       }
       
-      if (user && (user.id || user._id || user.email)) {
+      if (user && (user.id || user.email)) {
         setUser(user);
       } else {
         console.error('Invalid user data in registration response:', user);
@@ -200,8 +199,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
       
       const response = await apiClient.getCurrentUser();
-      const userData = response.data || response.user || response;
-      setUser(userData || null);
+      setUser(response.data || null);
     } catch (error) {
       console.error('Failed to refresh user:', error);
       setUser(null);
