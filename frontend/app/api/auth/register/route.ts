@@ -21,14 +21,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // Hash password (your schema uses passwordHash field)
+    const passwordHash = await bcrypt.hash(password, 10);
 
     // Create new user
     const user = await prisma.user.create({
       data: {
         email,
-        password: hashedPassword,
+        passwordHash, // Use passwordHash field name
         firstName,
         lastName
       }
