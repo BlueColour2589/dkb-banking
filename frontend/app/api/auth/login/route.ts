@@ -7,27 +7,12 @@ export const dynamic = 'force-dynamic';
 
 const prisma = new PrismaClient();
 
-// Configure allowed origins (add all your Vercel domains)
-const DEFAULT_ALLOWED_ORIGINS = [
-  'https://dkb-banking-4nb9sospf-jrs-projects-57b86e94.vercel.app',
-  'https://dkb-banking-hwcf7m80u-jrs-projects-57b86e94.vercel.app', // Added this
-  'https://dkb-banking-three.vercel.app',
-  'http://localhost:3000',
-];
-
-const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS
-  ? process.env.ALLOWED_ORIGINS.split(',').map(s => s.trim())
-  : DEFAULT_ALLOWED_ORIGINS
-);
-
 function corsHeaders(origin: string | null) {
-  const allowed = origin && ALLOWED_ORIGINS.includes(origin);
   const headers = new Headers();
-  if (allowed) headers.set('Access-Control-Allow-Origin', origin);
-  headers.set('Vary', 'Origin');
+  // Temporarily allow all origins for debugging
+  headers.set('Access-Control-Allow-Origin', '*');
   headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
   headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-  headers.set('Access-Control-Allow-Credentials', 'true');
   return headers;
 }
 
