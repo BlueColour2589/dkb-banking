@@ -3,7 +3,11 @@ import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import * as jwt from 'jsonwebtoken';
 
+// Add this line
+export const dynamic = 'force-dynamic';
+
 const prisma = new PrismaClient();
+// ... rest of your code
 
 export async function POST(request: NextRequest) {
   try {
