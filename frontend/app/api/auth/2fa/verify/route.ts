@@ -64,11 +64,15 @@ export async function POST(request: NextRequest) {
         }
       }
     } else {
-      // ✅ Correct usage of authenticator.verify with window
+      // ✅ Fixed: Explicitly type the options object
       isValid = authenticator.verify({
         token,
         secret: user.twoFactorSecret,
-        window: 2, // Allow ±2 time steps (60 seconds drift)
+        window: 2,
+      } as {
+        token: string;
+        secret: string;
+        window?: number;
       });
     }
 
