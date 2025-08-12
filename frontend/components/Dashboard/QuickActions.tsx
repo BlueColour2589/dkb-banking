@@ -1,4 +1,5 @@
 // frontend/components/Dashboard/QuickActions.tsx
+'use client';
 
 interface Action {
   label: string;
