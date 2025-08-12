@@ -1,4 +1,3 @@
-// pages/index.tsx
 import Sidebar from '@/components/Sidebar/Sidebar';
 import TopBar from '@/components/Header/TopBar';
 import Greeting from '@/components/Header/Greeting';
@@ -12,18 +11,20 @@ export default function DashboardPage() {
     <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900">
       <Sidebar />
       <main className="flex-1 p-6 space-y-6">
-        <Greeting />
         <TopBar />
+        <Greeting />
         <Notifications />
-        <AccountSummary
-          balance={18034200}
-          currency="EUR"
-          incomeChange={10}
-        />
-        <QuickActions />
-        <TransactionList />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2 space-y-6">
+            <AccountSummary balance={18034200} currency="EUR" incomeChange={10} />
+            <TransactionList />
+          </div>
+          <div className="space-y-6">
+            <QuickActions />
+          </div>
+        </div>
         <footer className="text-sm text-gray-500 dark:text-gray-400 mt-8">
-          Logged in from IP: 154.160.0.204 🇬🇭
+          Logged in from IP: 154.160.0.204
         </footer>
       </main>
     </div>
