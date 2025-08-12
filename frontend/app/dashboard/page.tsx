@@ -5,8 +5,6 @@ import Notifications from '@/components/Header/Notifications';
 import AccountSummary from '@/components/Dashboard/AccountSummary';
 import TransactionList from '@/components/Dashboard/TransactionList';
 import QuickActions from '@/components/Dashboard/QuickActions';
-import Analytics from '@/components/Dashboard/Analytics';
-
 
 export default function DashboardPage() {
   return (
@@ -15,7 +13,6 @@ export default function DashboardPage() {
       <main className="flex-1 p-6 space-y-6">
         <Greeting />
         <Notifications />
-        <Analytics />
         <AccountSummary
           balance={18034200}
           currency="EUR"
