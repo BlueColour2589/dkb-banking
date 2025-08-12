@@ -1,43 +1,30 @@
-// frontend/components/Dashboard/AccountSummary.tsx
-import React from 'react';
+'use client';
 
-interface Account {
-  name: string;
-  balance: number;
-  currency?: string;
-  accountNumber?: string;
-}
-
-interface AccountSummaryProps {
-  accounts: Account[];
-}
-
-const AccountSummary: React.FC<AccountSummaryProps> = ({ accounts }) => {
+export default function AccountSummary() {
   return (
-    <section className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
-      <h2 className="text-lg font-semibold text-gray-900 mb-4">Account Summary</h2>
+    <section className="bg-white dark:bg-gray-900 rounded-lg border border-blue-100 dark:border-gray-800 shadow-sm p-6">
+      <h2 className="text-lg font-semibold text-blue-800 dark:text-blue-300 mb-4">Account Summary</h2>
+
       <div className="space-y-4">
-        {accounts.map((account, index) => (
-          <div
-            key={index}
-            className="flex items-center justify-between border-b border-gray-100 pb-3"
-          >
-            <div>
-              <p className="text-sm text-gray-500">{account.name}</p>
-              {account.accountNumber && (
-                <p className="text-xs text-gray-400">•••• {account.accountNumber.slice(-4)}</p>
-              )}
-            </div>
-            <div className="text-right">
-              <p className="text-base font-medium text-gray-900">
-                {account.currency || '€'}{account.balance.toLocaleString()}
-              </p>
-            </div>
+        <div className="flex items-start justify-between">
+          <div>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Account Type</p>
+            <p className="text-base font-medium text-gray-900 dark:text-gray-100">Joint Account</p>
+
+            <p className="text-sm text-gray-600 dark:text-gray-400 mt-4">Account Holders</p>
+            <p className="text-base font-medium text-gray-900 dark:text-gray-100">
+              Mark Peters & Celestina White
+            </p>
           </div>
-        ))}
+
+          <div className="text-right">
+            <p className="text-sm text-gray-600 dark:text-gray-400">Balance</p>
+            <p className="text-2xl font-bold text-green-700 dark:text-green-400">
+              €18,094,200.00
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   );
-};
-
-export default AccountSummary;
+}
