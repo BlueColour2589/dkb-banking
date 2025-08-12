@@ -20,26 +20,21 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
   };
 
   return (
-    <section className="bg-white dark:bg-gray-900 rounded-lg border border-blue-100 dark:border-gray-800 shadow-sm p-6">
-      <h2 className="text-lg font-semibold text-blue-800 dark:text-blue-300 mb-4">Account Summary</h2>
-      <div className="space-y-4">
-        <div className="flex items-start justify-between">
-          <div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Account Type</p>
-            <p className="text-base font-medium text-gray-900 dark:text-gray-100">{primaryAccount.name}</p>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mt-4">Account Holders</p>
-            <p className="text-base font-medium text-gray-900 dark:text-gray-100">
-              Mark Peters & Celestina White
-            </p>
-          </div>
-          <div className="text-right">
-            <p className="text-sm text-gray-600 dark:text-gray-400">Balance</p>
-            <p className="text-2xl font-bold text-green-700 dark:text-green-400">
-              {primaryAccount.currency || '€'}{primaryAccount.balance.toLocaleString()}.00
-            </p>
+    <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
+      <h3 className="text-xl font-bold text-blue-600 mb-4">Account Summary</h3>
+      <div className="flex justify-between items-center">
+        <div>
+          <h4 className="text-lg font-semibold text-blue-800">{primaryAccount.name}</h4>
+          <p className="text-blue-400 text-sm">
+            {primaryAccount.accountNumber || 'http://worldied2o%kAIR/numiantdua/a19hfUp3/'}
+          </p>
+        </div>
+        <div className="text-right">
+          <div className="text-3xl font-bold text-blue-700">
+            {primaryAccount.currency || '€'}{primaryAccount.balance.toLocaleString()}
           </div>
         </div>
       </div>
-    </section>
+    </div>
   );
 }
