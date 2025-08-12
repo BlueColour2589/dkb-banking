@@ -18,6 +18,9 @@ async function main() {
       lastName: 'White',
       phone: '+49 30 12345678',
       passwordHash,
+      twoFactorEnabled: false,
+      twoFactorSecret: null,
+      backupCodes: [],
     },
   });
 
@@ -30,6 +33,9 @@ async function main() {
       lastName: 'Peters',
       phone: '+49 30 87654321',
       passwordHash,
+      twoFactorEnabled: false,
+      twoFactorSecret: null,
+      backupCodes: [],
     },
   });
 
@@ -49,6 +55,7 @@ async function main() {
         currency: 'EUR',
         balance: 18000000.00,
         status: 'ACTIVE',
+        accountNumber: 'DE12345678901234567890',
         owners: {
           create: [
             {
@@ -94,6 +101,7 @@ async function main() {
         reference: 'INV-2024-Q4-001',
         processedBy: user1.id,
         processedAt: new Date(),
+        createdAt: new Date(Date.now() - 60 * 24 * 60 * 60 * 1000),
       },
     });
 
@@ -130,8 +138,8 @@ async function main() {
       },
     ];
 
-    for (const txn of transactions) {
-      await prisma.transaction.create({
+    await Promise.all(transactions.map(txn =>
+      prisma.transaction.create({
         data: {
           accountId: jointAccount.id,
           amount: txn.amount,
@@ -141,9 +149,11 @@ async function main() {
           reference: txn.reference,
           processedBy: Math.random() > 0.5 ? user1.id : user2.id,
           processedAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
+          createdAt: new Date(Date.now() - Math.random() * 60 * 24 * 60 * 60 * 1000),
         },
-      });
-    }
+      })
+    ));
+
     console.log('✅ Created realistic transaction history');
   } else {
     console.log('✅ Transactions already exist');
@@ -162,6 +172,7 @@ async function main() {
         currency: 'EUR',
         balance: 45000.00,
         status: 'ACTIVE',
+        accountNumber: 'DE09876543210987654321',
         owners: {
           create: {
             userId: user1.id,
