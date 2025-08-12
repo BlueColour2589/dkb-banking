@@ -1,5 +1,3 @@
-// frontend/components/Header/Notifications.tsx
-
 interface Notification {
   message: string;
   timestamp: string;
@@ -22,20 +20,18 @@ export default function Notifications({ items }: NotificationsProps) {
   ];
 
   return (
-    <section className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
-      <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3">
-        Notifications
-      </h2>
-      <ul className="space-y-3">
-        {notifications.map((note, index) => (
-          <li key={index} className="flex justify-between items-start">
-            <p className="text-sm text-gray-700 dark:text-gray-300">{note.message}</p>
-            <span className="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-              {note.timestamp}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </section>
+    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-3">
+          <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
+            {notifications.length}
+          </div>
+          <span className="text-blue-700 font-medium">
+            You have {notifications.length} new notifications
+          </span>
+        </div>
+        <span className="text-blue-500 text-xl">›</span>
+      </div>
+    </div>
   );
 }
