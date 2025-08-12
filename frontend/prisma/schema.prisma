@@ -8,15 +8,21 @@ datasource db {
 }
 
 model User {
-  id           String         @id @default(uuid())
-  email        String         @unique
-  firstName    String?
-  lastName     String?
-  phone        String?
-  passwordHash String
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  jointOwners  JointOwner[]
+  id              String         @id @default(uuid())
+  email           String         @unique
+  firstName       String?
+  lastName        String?
+  phone           String?
+  passwordHash    String
+  
+  // 2FA Fields - ADDED
+  twoFactorEnabled    Boolean  @default(false)
+  twoFactorSecret     String?  // TOTP secret for authenticator apps
+  backupCodes         String[] // Array of hashed backup recovery codes
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  jointOwners     JointOwner[]
 }
 
 model JointAccount {
@@ -42,7 +48,7 @@ model JointOwner {
   role           OwnerRole     @default(SECONDARY)
   permissions    Permission[]  @default([VIEW, TRANSFER])
   joinedAt       DateTime      @default(now())
-
+  
   @@unique([jointAccountId, userId])
 }
 
