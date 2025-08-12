@@ -1,7 +1,8 @@
 // frontend/components/Sidebar/Sidebar.tsx
+'use client';
 
 import Link from 'next/link';
-import { useNavigation } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard' },
@@ -11,18 +12,17 @@ const navItems = [
 ];
 
 export default function Sidebar() {
-  const router = useRouter();
-
+  const pathname = usePathname();
+  
   return (
     <aside className="w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 min-h-screen px-6 py-8">
       <div className="mb-10">
         <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">DKB Banking</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400">Welcome back</p>
       </div>
-
       <nav className="space-y-2">
         {navItems.map((item) => {
-          const isActive = router.pathname === item.href;
+          const isActive = pathname === item.href;
           return (
             <Link
               key={item.href}
@@ -38,7 +38,6 @@ export default function Sidebar() {
           );
         })}
       </nav>
-
       <div className="mt-12 text-xs text-gray-400 dark:text-gray-600">
         Version 1.0.0
       </div>
