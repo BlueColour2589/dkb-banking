@@ -20,7 +20,7 @@ export default function Sidebar() {
         {/* Header */}
         <div className="mb-10">
           <h1 className="text-xl font-bold text-blue-800 dark:text-blue-300">DKB Banking</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Welcome, David</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Mark Peters & Celestina White</p>
         </div>
 
         {/* Navigation */}
