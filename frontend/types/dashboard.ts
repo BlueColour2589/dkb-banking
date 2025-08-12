@@ -3,7 +3,7 @@
 export interface NavItem {
   label: string;
   href: string;
-  icon?: string;
+  icon?: LucideIcon;
 }
 
 export interface SidebarProps {
