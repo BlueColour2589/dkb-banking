@@ -1,27 +1,22 @@
-// components/Sidebar/SidebarItem.tsx
-import { FC } from 'react';
-import Link from 'next/link';
+// components/Sidebar/Sidebar.tsx
+import SidebarItem from './SidebarItem';
+import { SidebarItemProps } from './types';
 
-interface SidebarItemProps {
-  label: string;
-  icon: string;
-  href: string;
-  active?: boolean;
-}
+const navItems: SidebarItemProps[] = [
+  { label: 'Dashboard', icon: '🏠', href: '/' },
+  { label: 'Account', icon: '💳', href: '/account' },
+  { label: 'Transactions', icon: '📄', href: '/transactions' },
+  { label: 'Settings', icon: '⚙️', href: '/settings' },
+];
 
-const SidebarItem: FC<SidebarItemProps> = ({ label, icon, href, active }) => {
+export default function Sidebar() {
   return (
-    <Link href={href}>
-      <div
-        className={`flex items-center gap-3 px-4 py-2 rounded cursor-pointer transition-colors ${
-          active ? 'bg-blue-100 text-blue-700 font-semibold' : 'text-gray-700 hover:bg-gray-100'
-        }`}
-      >
-        <span className="text-lg">{icon}</span>
-        <span>{label}</span>
-      </div>
-    </Link>
+    <aside className="w-64 bg-white dark:bg-gray-800 p-6 border-r border-gray-200 dark:border-gray-700">
+      <nav className="space-y-4">
+        {navItems.map((item) => (
+          <SidebarItem key={item.href} {...item} />
+        ))}
+      </nav>
+    </aside>
   );
-};
-
-export default SidebarItem;
+}
