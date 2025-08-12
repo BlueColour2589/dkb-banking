@@ -1,5 +1,6 @@
 // pages/index.tsx
 import Sidebar from '@/components/Sidebar/Sidebar';
+import TopBar from '@/components/Header/TopBar';
 import Greeting from '@/components/Header/Greeting';
 import Notifications from '@/components/Header/Notifications';
 import AccountSummary from '@/components/Dashboard/AccountSummary';
