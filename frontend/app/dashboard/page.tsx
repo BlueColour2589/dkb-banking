@@ -8,6 +8,7 @@ import IPInfo from "@/components/IPInfo";
 import AccountSummary from '@/components/Dashboard/AccountSummary';
 import TransactionList from '@/components/Dashboard/TransactionList';
 import QuickActions from '@/components/Dashboard/QuickActions';
+import IPInfo from '@/components/Dashboard/IPInfo';
 
 export default function DashboardPage() {
   const quickActions = [
