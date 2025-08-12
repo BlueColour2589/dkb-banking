@@ -4,6 +4,7 @@ import Sidebar from '@/components/Sidebar/Sidebar';
 import TopBar from '@/components/Header/TopBar';
 import Greeting from '@/components/Header/Greeting';
 import Notifications from '@/components/Header/Notifications';
+import IPInfo from "@/components/IPInfo";
 import AccountSummary from '@/components/Dashboard/AccountSummary';
 import TransactionList from '@/components/Dashboard/TransactionList';
 import QuickActions from '@/components/Dashboard/QuickActions';
@@ -45,23 +46,16 @@ export default function DashboardPage() {
                 balance: 18034200,
                 currency: "EUR",
                 accountNumber: "e954d43c-ee0f-48aa-a7d3-6fc2667904c1"
-              },
-              {
-                name: "Personal Account", 
-                balance: 5000,
-                currency: "EUR",
-                accountNumber: "1234567890123456"
               }
+              // Removed Personal Account as requested
             ]} />
             <TransactionList />
+            <IPInfo /> {/* ✅ Inserted here for realism and session tracking */}
           </div>
           <div className="space-y-6">
             <QuickActions actions={quickActions} />
           </div>
         </div>
-        <footer className="text-sm text-gray-500 dark:text-gray-400 mt-8">
-          Logged in from IP: 154.160.0.204
-        </footer>
       </main>
     </div>
   );
