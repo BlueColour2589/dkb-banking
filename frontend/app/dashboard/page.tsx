@@ -37,47 +37,49 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Mobile Header */}
-      <MobileHeader toggleSidebar={() => setSidebarOpen(true)} />
+      {/* Mobile Header - Fixed at top for mobile */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-30">
+        <MobileHeader toggleSidebar={() => setSidebarOpen(true)} />
+      </div>
       
-      <div className="flex">
-        {/* Sidebar - Only ONE instance */}
+      <div className="flex min-h-screen">
+        {/* Sidebar - Handles its own overlay */}
         <Sidebar 
           isOpen={sidebarOpen} 
           setIsOpen={setSidebarOpen} 
         />
         
-        {/* Main Content */}
-        <main className="flex-1 min-h-screen lg:ml-0">
+        {/* Main Content - Properly spaced for sidebar */}
+        <main className="flex-1 min-h-screen transition-all duration-300 ease-in-out lg:ml-64">
           <div className="p-4 lg:p-8 space-y-6 lg:space-y-8">
             {/* Desktop Header Block - Hidden on mobile */}
-            <div className="hidden lg:block space-y-2">
-              <div className="animate-fade-in stagger-1">
+            <div className="hidden lg:block space-y-4">
+              <div className="animate-fade-in opacity-0 [animation-delay:0.1s] [animation-fill-mode:forwards]">
                 <TopBar />
               </div>
-              <div className="animate-fade-in stagger-2">
+              <div className="animate-fade-in opacity-0 [animation-delay:0.2s] [animation-fill-mode:forwards]">
                 <Greeting />
               </div>
-              <div className="animate-fade-in stagger-3">
+              <div className="animate-fade-in opacity-0 [animation-delay:0.3s] [animation-fill-mode:forwards]">
                 <Notifications />
               </div>
             </div>
             
-            {/* Mobile Header Block - Visible on mobile */}
-            <div className="lg:hidden space-y-4">
-              <div className="animate-fade-in">
+            {/* Mobile Header Block - Visible on mobile, with proper top spacing */}
+            <div className="lg:hidden space-y-4 pt-20">
+              <div className="animate-fade-in opacity-0 [animation-delay:0.1s] [animation-fill-mode:forwards]">
                 <Greeting />
               </div>
-              <div className="animate-fade-in">
+              <div className="animate-fade-in opacity-0 [animation-delay:0.2s] [animation-fill-mode:forwards]">
                 <Notifications />
               </div>
             </div>
             
-            {/* Main Grid - Responsive */}
+            {/* Main Grid - Responsive with improved animations */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
               {/* Left Column - Account & Transactions */}
               <div className="xl:col-span-2 space-y-4 lg:space-y-6">
-                <div className="animate-scale-in stagger-4">
+                <div className="animate-scale-in opacity-0 [animation-delay:0.4s] [animation-fill-mode:forwards]">
                   <AccountSummary
                     accounts={[
                       {
@@ -89,17 +91,17 @@ export default function DashboardPage() {
                     ]}
                   />
                 </div>
-                <div className="animate-scale-in stagger-5">
+                <div className="animate-scale-in opacity-0 [animation-delay:0.5s] [animation-fill-mode:forwards]">
                   <TransactionList />
                 </div>
               </div>
               
               {/* Right Column - Quick Actions & IP Info */}
               <div className="space-y-4 lg:space-y-6">
-                <div className="animate-scale-in stagger-4">
+                <div className="animate-scale-in opacity-0 [animation-delay:0.4s] [animation-fill-mode:forwards]">
                   <QuickActions actions={quickActions} />
                 </div>
-                <div className="animate-scale-in stagger-5">
+                <div className="animate-scale-in opacity-0 [animation-delay:0.5s] [animation-fill-mode:forwards]">
                   <IPInfo />
                 </div>
               </div>
