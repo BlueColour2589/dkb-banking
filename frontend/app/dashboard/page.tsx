@@ -77,7 +77,7 @@ export default function DashboardPage() {
               <div className="xl:col-span-2 space-y-4 lg:space-y-6">
                 {/* ✅ Account Summary */}
                 <div className="animate-scale-in opacity-0 [animation-delay:0.4s] [animation-fill-mode:forwards]">
-                  <AccountSummary accounts={accounts} loading={loading} />
+                  <AccountSummary accounts={accounts} />
                 </div>
 
                 {/* 💸 Transfer Form */}
