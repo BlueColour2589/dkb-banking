@@ -12,9 +12,11 @@ import QuickActions from '@/components/Dashboard/QuickActions';
 import IPInfo from '@/components/Dashboard/IPInfo';
 import { QuickAction } from '@/types/dashboard';
 import TransferForm from '@/components/TransferForm';
+import { useAccounts } from '@/hooks/useAccounts'; // ✅ Import the hook
 
 export default function DashboardPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { accounts, loading } = useAccounts(); // ✅ Use the hook
 
   const quickActions: QuickAction[] = [
     {
@@ -37,7 +39,7 @@ export default function DashboardPage() {
     },
   ];
 
-  const accountId = 'e954d43c-ee0f-48aa-a7d3-6fc2667904c1'; // Replace with dynamic ID if needed
+  const accountId = accounts?.[0]?.accountNumber || ''; // ✅ Fallback if no data
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -73,17 +75,9 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
               <div className="xl:col-span-2 space-y-4 lg:space-y-6">
+                {/* ✅ Account Summary */}
                 <div className="animate-scale-in opacity-0 [animation-delay:0.4s] [animation-fill-mode:forwards]">
-                  <AccountSummary
-                    accounts={[
-                      {
-                        name: 'Joint Account',
-                        balance: 18094200,
-                        currency: '€',
-                        accountNumber: accountId,
-                      },
-                    ]}
-                  />
+                  <AccountSummary accounts={accounts} loading={loading} />
                 </div>
 
                 {/* 💸 Transfer Form */}
