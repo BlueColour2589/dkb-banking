@@ -44,6 +44,12 @@ export default function Sidebar() {
             );
           })}
         </nav>
+
+        // In your Sidebar component, add this to the aside element:
+<aside 
+  id="main-sidebar"
+  className="w-80 bg-blue-600 text-white min-h-screen px-6 py-8 flex flex-col justify-between"
+>
         
         {/* Session Info */}
         <div className="mt-8 space-y-1 text-xs text-blue-200">
