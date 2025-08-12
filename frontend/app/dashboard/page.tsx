@@ -9,20 +9,7 @@ import AccountSummary from '@/components/Dashboard/AccountSummary';
 import TransactionList from '@/components/Dashboard/TransactionList';
 import QuickActions from '@/components/Dashboard/QuickActions';
 import IPInfo from '@/components/Dashboard/IPInfo';
-
-interface QuickAction {
-  id: string;
-  label: string;
-  onClick: () => void;
-  primary: boolean;
-}
-
-interface Account {
-  name: string;
-  balance: number;
-  currency: string;
-  accountNumber: string;
-}
+import { QuickAction, Account } from '@/types/dashboard';
 
 export default function DashboardPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
