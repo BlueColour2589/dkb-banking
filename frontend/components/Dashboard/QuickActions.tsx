@@ -1,14 +1,29 @@
-// components/Dashboard/QuickActions.tsx
-import { FC } from 'react';
-import Button from '@/components/Shared/Button';
+// frontend/components/Dashboard/QuickActions.tsx
 
-const QuickActions: FC = () => {
+interface Action {
+  label: string;
+  onClick: () => void;
+}
+
+interface QuickActionsProps {
+  actions: Action[];
+}
+
+export default function QuickActions({ actions }: QuickActionsProps) {
   return (
-    <div className="flex gap-4 flex-wrap">
-      <Button label="Transfer" variant="primary" />
-      <Button label="Pay Bills" variant="danger" />
-    </div>
+    <section className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+      <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+      <div className="grid grid-cols-2 gap-4">
+        {actions.map((action, index) => (
+          <button
+            key={index}
+            onClick={action.onClick}
+            className="w-full text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md py-2 px-3 transition"
+          >
+            {action.label}
+          </button>
+        ))}
+      </div>
+    </section>
   );
-};
-
-export default QuickActions;
+}
