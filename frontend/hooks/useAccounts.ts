@@ -1,9 +1,14 @@
-'use client';
-
 import { useEffect, useState } from 'react';
 
+type Account = {
+  name: string;
+  balance: number;
+  currency: string;
+  accountNumber: string;
+};
+
 export function useAccounts() {
-  const [accounts, setAccounts] = useState([]);
+  const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
