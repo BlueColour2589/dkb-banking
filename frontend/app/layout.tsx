@@ -1,4 +1,4 @@
-// app/layout.tsx
+// app/layout.tsx - FIXED VERSION
 import './globals.css';
 import type { Metadata } from 'next';
 import { AuthProvider } from '../contexts/AuthContext';
@@ -11,9 +11,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="flex h-screen bg-gray-100">
+      <body>
         <AuthProvider>
-          <main className="flex-1 p-6 overflow-y-auto">{children}</main>
+          {children}
         </AuthProvider>
       </body>
     </html>
