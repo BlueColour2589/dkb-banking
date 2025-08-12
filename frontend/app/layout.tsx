@@ -2,7 +2,6 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { AuthProvider } from '../contexts/AuthContext';
-import Sidebar from '@/components/Sidebar/Sidebar'; // ✅ Correct path
 
 export const metadata: Metadata = {
   title: 'DKB - Banking Made Simple',
@@ -14,7 +13,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className="flex h-screen bg-gray-100">
         <AuthProvider>
-          <Sidebar />
           <main className="flex-1 p-6 overflow-y-auto">{children}</main>
         </AuthProvider>
       </body>
