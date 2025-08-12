@@ -1,7 +1,7 @@
-// Use relative paths for same-domain API calls
+// lib/apiClient.ts
+
 const API_BASE_URL = '/api';
 
-// Type definitions (keeping your existing types)
 export interface User {
   id: string;
   email: string;
@@ -67,245 +67,80 @@ export interface AuthResponse {
   error?: string;
 }
 
+// 🔹 Generic request handler
+async function request<T>(
+  path: string,
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
+  body?: any,
+  token?: string
+): Promise<T> {
+  const headers: HeadersInit = {
+    'Content-Type': 'application/json',
+  };
+
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
+  const res = await fetch(`${API_BASE_URL}${path}`, {
+    method,
+    headers,
+    ...(body && { body: JSON.stringify(body) }),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
+  }
+
+  return res.json();
+}
+
+// 🔹 API client
 export const apiClient = {
-  // Auth endpoints
-  login: async (credentials: LoginRequest): Promise<AuthResponse> => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(credentials),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Login error:', error);
-      throw error;
-    }
-  },
+  // Auth
+  login: (credentials: LoginRequest): Promise<AuthResponse> =>
+    request('/auth/login', 'POST', credentials),
 
-  register: async (userData: RegisterRequest): Promise<AuthResponse> => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(userData),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Register error:', error);
-      throw error;
-    }
-  },
+  register: (userData: RegisterRequest): Promise<AuthResponse> =>
+    request('/auth/register', 'POST', userData),
 
-  logout: async (token: string): Promise<ApiResponse> => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/auth/logout`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Logout error:', error);
-      throw error;
-    }
-  },
+  logout: (token: string): Promise<ApiResponse> =>
+    request('/auth/logout', 'POST', undefined, token),
 
-  // Account endpoints
-  getAccounts: async (): Promise<ApiResponse<Account[]>> => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/accounts`);
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Get accounts error:', error);
-      throw error;
-    }
-  },
+  // Accounts
+  getAccounts: (): Promise<ApiResponse<Account[]>> =>
+    request('/accounts'),
 
-  getAccountsWithAuth: async (token: string): Promise<ApiResponse<Account[]>> => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/accounts`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Get accounts with auth error:', error);
-      throw error;
-    }
-  },
+  getAccountsWithAuth: (token: string): Promise<ApiResponse<Account[]>> =>
+    request('/accounts', 'GET', undefined, token),
 
-  getAccountById: async (id: string, token: string): Promise<ApiResponse<Account>> => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/accounts/${id}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Get account by ID error:', error);
-      throw error;
-    }
-  },
+  getAccountById: (id: string, token: string): Promise<ApiResponse<Account>> =>
+    request(`/accounts/${id}`, 'GET', undefined, token),
 
-  getTransactions: async (accountId: string, token: string): Promise<ApiResponse<Transaction[]>> => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/accounts/${accountId}/transactions`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Get transactions error:', error);
-      throw error;
-    }
-  },
+  // Transactions
+  getTransactions: (accountId: string, token: string): Promise<ApiResponse<Transaction[]>> =>
+    request(`/accounts/${accountId}/transactions`, 'GET', undefined, token),
 
-  createTransaction: async (
-    accountId: string, 
-    transactionData: CreateTransactionRequest, 
+  createTransaction: (
+    accountId: string,
+    transactionData: CreateTransactionRequest,
     token: string
-  ): Promise<ApiResponse<Transaction>> => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/accounts/${accountId}/transactions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(transactionData),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Create transaction error:', error);
-      throw error;
-    }
+  ): Promise<ApiResponse<Transaction>> =>
+    request(`/accounts/${accountId}/transactions`, 'POST', transactionData, token),
+
+  // User
+  getCurrentUser: (token?: string): Promise<ApiResponse<User>> => {
+    const authToken = token || (typeof window !== 'undefined' ? localStorage.getItem('authToken') : null);
+    if (!authToken) throw new Error('No auth token available');
+    return request('/user/profile', 'GET', undefined, authToken);
   },
 
-  // User profile endpoints
-  getCurrentUser: async (token?: string): Promise<ApiResponse<User>> => {
-    try {
-      const authToken = token || (typeof window !== 'undefined' ? localStorage.getItem('authToken') : null);
-      if (!authToken) {
-        throw new Error('No auth token available');
-      }
+  getUserProfile: (token: string): Promise<ApiResponse<User>> =>
+    request('/user/profile', 'GET', undefined, token),
 
-      const response = await fetch(`${API_BASE_URL}/user/profile`, {
-        headers: {
-          'Authorization': `Bearer ${authToken}`,
-        },
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Get current user error:', error);
-      throw error;
-    }
-  },
-
-  getUserProfile: async (token: string): Promise<ApiResponse<User>> => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/user/profile`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Get user profile error:', error);
-      throw error;
-    }
-  },
-
-  updateUserProfile: async (userData: Partial<User>, token: string): Promise<ApiResponse<User>> => {
-    try {
-      const response = await fetch(`${API_BASE_URL}/user/profile`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify(userData),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
-      }
-      
-      return await response.json();
-    } catch (error) {
-      console.error('Update user profile error:', error);
-      throw error;
-    }
-  },
+  updateUserProfile: (userData: Partial<User>, token: string): Promise<ApiResponse<User>> =>
+    request('/user/profile', 'PUT', userData, token),
 };
 
 export default apiClient;
