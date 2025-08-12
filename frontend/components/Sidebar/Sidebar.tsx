@@ -1,7 +1,7 @@
 // frontend/components/Sidebar/Sidebar.tsx
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useNavigation } from 'next/navigation';
 
 const navItems = [
   { label: 'Dashboard', href: '/dashboard' },
