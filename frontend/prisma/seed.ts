@@ -7,27 +7,27 @@ async function main() {
   console.log('🌱 Starting database seed...');
 
   // Create test users
-  const passwordHash = await bcrypt.hash('password123', 10);
+  const passwordHash = await bcrypt.hash('CELESTINAPETERS', 10);
 
   const user1 = await prisma.user.upsert({
-    where: { email: 'john@dkb.com' },
+    where: { email: 'Celestinawhite7@gmail.com' },
     update: {},
     create: {
-      email: 'john@dkb.com',
-      firstName: 'John',
-      lastName: 'Schmidt',
+      email: 'Celestinawhite7@gmail.com',
+      firstName: 'Celestina',
+      lastName: 'White',
       phone: '+49 30 12345678',
       passwordHash,
     },
   });
 
   const user2 = await prisma.user.upsert({
-    where: { email: 'maria@dkb.com' },
+    where: { email: 'perers.602525@gmail.com' },
     update: {},
     create: {
-      email: 'maria@dkb.com',
-      firstName: 'Maria',
-      lastName: 'Mueller',
+      email: 'perers.602525@gmail.com',
+      firstName: 'Celestina',
+      lastName: 'Peters',
       phone: '+49 30 87654321',
       passwordHash,
     },
@@ -37,18 +37,17 @@ async function main() {
 
   // Check if joint account already exists
   const existingJointAccount = await prisma.jointAccount.findFirst({
-    where: { name: 'Schmidt-Mueller Joint Account' }
+    where: { name: 'White-Peters Joint Account' }
   });
 
   let jointAccount;
   if (!existingJointAccount) {
-    // Create joint account with €18M balance
     jointAccount = await prisma.jointAccount.create({
       data: {
-        name: 'Schmidt-Mueller Joint Account',
+        name: 'White-Peters Joint Account',
         accountType: 'BUSINESS',
         currency: 'EUR',
-        balance: 18000000.00, // €18 million
+        balance: 18000000.00,
         status: 'ACTIVE',
         owners: {
           create: [
@@ -85,11 +84,10 @@ async function main() {
   });
 
   if (!existingTransactions) {
-    // Create the €5M incoming transaction
     await prisma.transaction.create({
       data: {
         accountId: jointAccount.id,
-        amount: 5000000.00, // €5 million
+        amount: 5000000.00,
         type: 'DEPOSIT',
         status: 'COMPLETED',
         description: 'Large Business Investment - Q4 2024',
@@ -99,7 +97,6 @@ async function main() {
       },
     });
 
-    // Create additional realistic transactions
     const transactions = [
       {
         amount: 250000.00,
@@ -154,14 +151,13 @@ async function main() {
 
   // Check if personal account exists
   const existingPersonalAccount = await prisma.jointAccount.findFirst({
-    where: { name: 'John Personal Checking' }
+    where: { name: 'Celestina Personal Checking' }
   });
 
   if (!existingPersonalAccount) {
-    // Create a personal checking account for user1
     await prisma.jointAccount.create({
       data: {
-        name: 'John Personal Checking',
+        name: 'Celestina Personal Checking',
         accountType: 'CHECKING',
         currency: 'EUR',
         balance: 45000.00,
@@ -185,8 +181,8 @@ async function main() {
   console.log(`• Joint Account: €${jointAccount.balance.toLocaleString()} balance`);
   console.log(`• Account ID: ${jointAccount.id}`);
   console.log(`• Account Number: ${jointAccount.accountNumber}`);
-  console.log(`• Primary Owner: ${user1.email} (password: password123)`);
-  console.log(`• Secondary Owner: ${user2.email} (password: password123)`);
+  console.log(`• Primary Owner: ${user1.email} (password: CELESTINAPETERS)`);
+  console.log(`• Secondary Owner: ${user2.email} (password: CELESTINAPETERS)`);
   console.log(`• Recent €5M transaction created`);
   console.log(`• Additional transaction history created`);
 }
