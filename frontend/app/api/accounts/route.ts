@@ -6,23 +6,23 @@ export const dynamic = 'force-dynamic';
 
 const prisma = new PrismaClient();
 
-function corsHeaders() {
-  return {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-  };
-}
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*', // Replace with frontend domain for tighter security
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+};
 
+// Handle preflight CORS
 export async function OPTIONS() {
-  return new NextResponse(null, { status: 200, headers: corsHeaders() });
+  return new NextResponse(null, { status: 204, headers: corsHeaders });
 }
 
+// Token verification helper
 function verifyToken(request: NextRequest) {
   const authHeader = request.headers.get('authorization');
   if (!authHeader?.startsWith('Bearer ')) return null;
 
-  const token = authHeader.substring(7);
+  const token = authHeader.slice(7);
   const secret = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET;
   if (!secret) return null;
 
@@ -33,16 +33,17 @@ function verifyToken(request: NextRequest) {
   }
 }
 
+// Main GET handler
 export async function GET(request: NextRequest) {
-  try {
-    const tokenData = verifyToken(request);
-    if (!tokenData) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401, headers: corsHeaders() }
-      );
-    }
+  const tokenData = verifyToken(request);
+  if (!tokenData) {
+    return NextResponse.json(
+      { success: false, error: 'Unauthorized' },
+      { status: 401, headers: corsHeaders }
+    );
+  }
 
+  try {
     const user = await prisma.user.findUnique({
       where: { id: tokenData.userId },
       include: {
@@ -64,7 +65,7 @@ export async function GET(request: NextRequest) {
     if (!user) {
       return NextResponse.json(
         { success: false, error: 'User not found' },
-        { status: 404, headers: corsHeaders() }
+        { status: 404, headers: corsHeaders }
       );
     }
 
@@ -83,14 +84,14 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(
       { success: true, data: { accounts } },
-      { status: 200, headers: corsHeaders() }
+      { status: 200, headers: corsHeaders }
     );
 
   } catch (error) {
     console.error('Accounts fetch error:', error);
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
-      { status: 500, headers: corsHeaders() }
+      { status: 500, headers: corsHeaders }
     );
   } finally {
     await prisma.$disconnect();
