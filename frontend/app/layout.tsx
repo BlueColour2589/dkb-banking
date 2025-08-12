@@ -2,8 +2,7 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { AuthProvider } from '../contexts/AuthContext';
-import Sidebar from '../components/Sidebar';
-import { GeistSans } from 'geist/font/sans';
+import Sidebar from '@/components/Sidebar/Sidebar'; // ✅ Correct path
 
 export const metadata: Metadata = {
   title: 'DKB - Banking Made Simple',
@@ -12,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={GeistSans.className}>
+    <html lang="en">
       <body className="flex h-screen bg-gray-100">
         <AuthProvider>
           <Sidebar />
