@@ -1,4 +1,4 @@
-// Dashboard component type definitions
+import { LucideIcon } from 'lucide-react';
 
 export interface NavItem {
   label: string;
@@ -9,10 +9,8 @@ export interface NavItem {
 export interface SidebarProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  navItems?: NavItem[];
 }
 
-// Additional dashboard-related types
 export interface QuickAction {
   id: string;
   label: string;
