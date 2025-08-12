@@ -11,7 +11,6 @@ export async function POST(request: NextRequest) {
   try {
     const { email, token, isBackupCode } = await request.json();
 
-    // Validate input
     if (!email || !token) {
       return NextResponse.json(
         { message: 'Email and token are required' },
@@ -19,7 +18,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find user
     const user = await prisma.user.findUnique({
       where: { email },
       select: {
@@ -43,7 +41,6 @@ export async function POST(request: NextRequest) {
     let isValid = false;
 
     if (isBackupCode) {
-      // Verify backup code
       if (!user.backupCodes || user.backupCodes.length === 0) {
         return NextResponse.json(
           { message: 'No backup codes available' },
@@ -54,23 +51,24 @@ export async function POST(request: NextRequest) {
       for (const hashedCode of user.backupCodes) {
         if (await bcrypt.compare(token.toUpperCase(), hashedCode)) {
           isValid = true;
-          
-          // Remove used backup code (one-time use)
-          const updatedBackupCodes = user.backupCodes.filter(code => code !== hashedCode);
+
+          const updatedBackupCodes = user.backupCodes.filter(
+            code => code !== hashedCode
+          );
+
           await prisma.user.update({
             where: { id: user.id },
             data: { backupCodes: updatedBackupCodes },
           });
+
           break;
         }
       }
     } else {
-      // Verify TOTP token (6-digit code from authenticator app)
-      isValid = authenticator.verify({
-        token,
-        secret: user.twoFactorSecret,
-        window: 2, // Allow 2 windows (60 seconds) for clock drift
-      });
+      // ✅ Set window globally before verification
+      authenticator.options = { window: 2 };
+
+      isValid = authenticator.verify(token, user.twoFactorSecret);
     }
 
     if (!isValid) {
@@ -80,13 +78,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create JWT token for successful authentication
     const authToken = jwt.sign(
-      { 
-        userId: user.id, 
+      {
+        userId: user.id,
         email: user.email,
         firstName: user.firstName,
-        lastName: user.lastName
+        lastName: user.lastName,
       },
       process.env.JWT_SECRET!,
       { expiresIn: '7d' }
@@ -94,20 +91,19 @@ export async function POST(request: NextRequest) {
 
     const response = NextResponse.json({
       message: 'Login successful',
-      user: { 
-        id: user.id, 
+      user: {
+        id: user.id,
         email: user.email,
         firstName: user.firstName,
-        lastName: user.lastName
+        lastName: user.lastName,
       },
     });
 
-    // Set HTTP-only cookie
     response.cookies.set('auth-token', authToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60, // 7 days
+      maxAge: 7 * 24 * 60 * 60,
     });
 
     return response;
