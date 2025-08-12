@@ -16,7 +16,20 @@ export default function DashboardPage() {
         <Notifications />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2 space-y-6">
-            <AccountSummary balance={18034200} currency="EUR" incomeChange={10} />
+            <AccountSummary accounts={[
+              {
+                name: "Joint Account",
+                balance: 18034200,
+                currency: "EUR",
+                accountNumber: "e954d43c-ee0f-48aa-a7d3-6fc2667904c1"
+              },
+              {
+                name: "Personal Account", 
+                balance: 5000,
+                currency: "EUR",
+                accountNumber: "1234567890123456"
+              }
+            ]} />
             <TransactionList />
           </div>
           <div className="space-y-6">
