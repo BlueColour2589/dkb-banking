@@ -7,6 +7,27 @@ import TransactionList from '@/components/Dashboard/TransactionList';
 import QuickActions from '@/components/Dashboard/QuickActions';
 
 export default function DashboardPage() {
+  const quickActions = [
+    {
+      id: 'transfer',
+      label: 'Transfer Money',
+      onClick: () => console.log('Transfer clicked'),
+      primary: true
+    },
+    {
+      id: 'bills',
+      label: 'Pay Bills',
+      onClick: () => console.log('Bills clicked'),
+      primary: false
+    },
+    {
+      id: 'statements',
+      label: 'View Statements',
+      onClick: () => console.log('Statements clicked'),
+      primary: false
+    }
+  ];
+
   return (
     <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900">
       <Sidebar />
@@ -33,7 +54,7 @@ export default function DashboardPage() {
             <TransactionList />
           </div>
           <div className="space-y-6">
-            <QuickActions />
+            <QuickActions actions={quickActions} />
           </div>
         </div>
         <footer className="text-sm text-gray-500 dark:text-gray-400 mt-8">
