@@ -1,5 +1,4 @@
 'use client';
-
 import Sidebar from '@/components/Sidebar/Sidebar';
 import TopBar from '@/components/Header/TopBar';
 import Greeting from '@/components/Header/Greeting';
@@ -32,19 +31,19 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="flex min-h-screen bg-gray-50">
       {/* Sidebar */}
       <Sidebar />
-
+      
       {/* Main Content */}
-      <main className="flex-1 p-6 space-y-8">
+      <main className="flex-1 p-8 space-y-8">
         {/* Header Block */}
         <div className="space-y-2">
           <TopBar />
           <Greeting />
           <Notifications />
         </div>
-
+        
         {/* Main Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Left Column */}
@@ -60,12 +59,12 @@ export default function DashboardPage() {
               ]}
             />
             <TransactionList />
-            <IPInfo />
           </div>
-
+          
           {/* Right Column */}
           <div className="space-y-6">
             <QuickActions actions={quickActions} />
+            <IPInfo />
           </div>
         </div>
       </main>
