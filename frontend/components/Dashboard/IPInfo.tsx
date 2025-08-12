@@ -15,11 +15,10 @@ export default function IPInfo() {
         console.error("Failed to fetch IP info:", error);
       }
     }
-
     fetchIP();
   }, []);
 
-  // ✅ Step 2: Log session to backend
+  // Log session to backend
   useEffect(() => {
     if (ip && location) {
       fetch("/api/log-session", {
@@ -35,19 +34,21 @@ export default function IPInfo() {
   }, [ip, location]);
 
   return (
-    <div className="mt-6 rounded-lg border border-gray-200 bg-white p-4 text-sm text-gray-700 shadow-sm">
-      <h3 className="mb-2 font-semibold text-gray-900">Session Info</h3>
-      <div>
-        <span className="font-medium">IP Address:</span>{" "}
-        {ip || "Loading..."}
-      </div>
-      <div>
-        <span className="font-medium">Location:</span>{" "}
-        {location || "Loading..."}
-      </div>
-      <div>
-        <span className="font-medium">Last Login:</span>{" "}
-        {new Date().toLocaleString()}
+    <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
+      <h3 className="text-xl font-bold text-blue-600 mb-4">Session Info</h3>
+      <div className="text-blue-700 space-y-1 text-sm">
+        <p>(Prodicare</p>
+        <p>{ip || "199.9.0.1"}</p>
+        <p>Staral) Lansets Indard</p>
+        <p>24/84/8520.16-4978</p>
+        <div className="mt-3 pt-3 border-t border-blue-200">
+          <p className="text-blue-600">
+            <span className="font-medium">Location:</span> {location || "Loading..."}
+          </p>
+          <p className="text-blue-600">
+            <span className="font-medium">Last Login:</span> {new Date().toLocaleString()}
+          </p>
+        </div>
       </div>
     </div>
   );
