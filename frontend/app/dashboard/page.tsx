@@ -31,40 +31,56 @@ export default function DashboardPage() {
   ];
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-gray-50 page-transition">
       {/* Sidebar */}
-      <Sidebar />
+      <div className="animate-slide-in-left">
+        <Sidebar />
+      </div>
       
       {/* Main Content */}
-      <main className="flex-1 p-8 space-y-8">
+      <main className="flex-1 p-8 space-y-8 animate-fade-in">
         {/* Header Block */}
         <div className="space-y-2">
-          <TopBar />
-          <Greeting />
-          <Notifications />
+          <div className="stagger-1">
+            <TopBar />
+          </div>
+          <div className="stagger-2">
+            <Greeting />
+          </div>
+          <div className="stagger-3">
+            <Notifications />
+          </div>
         </div>
         
         {/* Main Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Left Column */}
           <div className="md:col-span-2 space-y-6">
-            <AccountSummary
-              accounts={[
-                {
-                  name: 'Joint Account',
-                  balance: 18094200,
-                  currency: '€',
-                  accountNumber: 'e954d43c-ee0f-48aa-a7d3-6fc2667904c1',
-                },
-              ]}
-            />
-            <TransactionList />
+            <div className="stagger-4">
+              <AccountSummary
+                accounts={[
+                  {
+                    name: 'Joint Account',
+                    balance: 18094200,
+                    currency: '€',
+                    accountNumber: 'e954d43c-ee0f-48aa-a7d3-6fc2667904c1',
+                  },
+                ]}
+              />
+            </div>
+            <div className="stagger-5">
+              <TransactionList />
+            </div>
           </div>
           
           {/* Right Column */}
           <div className="space-y-6">
-            <QuickActions actions={quickActions} />
-            <IPInfo />
+            <div className="stagger-4">
+              <QuickActions actions={quickActions} />
+            </div>
+            <div className="stagger-5">
+              <IPInfo />
+            </div>
           </div>
         </div>
       </main>
