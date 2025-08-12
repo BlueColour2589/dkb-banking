@@ -1,4 +1,3 @@
-// app/api/auth/2fa/verify/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticator } from 'otplib';
 import bcrypt from 'bcryptjs';
@@ -65,10 +64,12 @@ export async function POST(request: NextRequest) {
         }
       }
     } else {
-      // ✅ Set window globally before verification
-      authenticator.options = { window: 2 };
-
-      isValid = authenticator.verify(token, user.twoFactorSecret);
+      // ✅ Correct usage of authenticator.verify with window
+      isValid = authenticator.verify({
+        token,
+        secret: user.twoFactorSecret,
+        window: 2, // Allow ±2 time steps (60 seconds drift)
+      });
     }
 
     if (!isValid) {
@@ -103,7 +104,7 @@ export async function POST(request: NextRequest) {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60,
+      maxAge: 7 * 24 * 60 * 60, // 7 days
     });
 
     return response;
