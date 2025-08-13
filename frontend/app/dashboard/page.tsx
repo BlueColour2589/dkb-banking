@@ -13,10 +13,11 @@ import IPInfo from '@/components/Dashboard/IPInfo';
 import { QuickAction } from '@/types/dashboard';
 import TransferForm from '@/components/TransferForm';
 import apiClient from '@/lib/apiClient';
+import type { Account } from '@/hooks/useAccounts'; // ✅ Import the Account type
 
 export default function DashboardPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [accounts, setAccounts] = useState(null);
+  const [accounts, setAccounts] = useState<Account[] | null>(null); // ✅ Typed correctly
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -70,7 +71,7 @@ export default function DashboardPage() {
     },
   ];
 
-  const accountId = accounts?.[0]?.accountNumber || '';
+  const accountId = accounts?.[0]?.accountNumber || ''; // ✅ Safe access
 
   if (loading) {
     return (
