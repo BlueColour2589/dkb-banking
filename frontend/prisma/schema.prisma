@@ -15,10 +15,14 @@ model User {
   phone           String?
   passwordHash    String
   
-  // 2FA Fields - ADDED
+  // 2FA Fields - TOTP (Authenticator Apps)
   twoFactorEnabled    Boolean  @default(false)
   twoFactorSecret     String?  // TOTP secret for authenticator apps
   backupCodes         String[] // Array of hashed backup recovery codes
+  
+  // OTP Fields - Email-based OTP (ADDED)
+  otpCode         String?   @db.VarChar(6)   // Store the 6-digit OTP
+  otpExpiresAt    DateTime?                  // When the OTP expires
   
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
