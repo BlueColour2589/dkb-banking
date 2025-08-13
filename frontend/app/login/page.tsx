@@ -61,7 +61,7 @@ export default function LoginPage() {
       // Use the context login function which handles apiClient internally
       await login({ email, password });
       router.push('/dashboard');
-    } catch (err) {
+    } catch (err: any) {
       console.error('Login failed:', err);
       throw err;
     }
@@ -92,15 +92,25 @@ export default function LoginPage() {
         await handleLogin(formData.email, formData.password);
         return; // Success - early return
       } catch (apiError: any) {
-        // If apiClient login fails, check if it's a 2FA requirement
+        console.log('API Error caught:', apiError);
+        console.log('Error has requires2FA:', !!apiError.requires2FA);
+        
+        // FIXED: Check if it's a 2FA requirement
         if (apiError.requires2FA) {
+          console.log('✅ 2FA required - showing 2FA screen');
           setStep('2fa');
+          setError(''); // Clear any error message
+          setIsLoading(false);
           return;
         } else if (apiError.needs2FASetup) {
+          console.log('✅ 2FA setup required');
           setStep('2fa-setup');
+          setError('');
+          setIsLoading(false);
           return;
         }
         // Otherwise, fall back to original fetch method
+        console.log('Not a 2FA error, falling back to fetch method');
       }
       
       // Fallback to original fetch method for 2FA handling
@@ -114,9 +124,12 @@ export default function LoginPage() {
 
       if (response.ok) {
         if (data.requires2FA) {
+          console.log('✅ 2FA required from fallback - showing 2FA screen');
           setStep('2fa');
+          setError('');
         } else if (data.needs2FASetup) {
           setStep('2fa-setup');
+          setError('');
         } else {
           await login(formData); // This is correct - only email and password
           router.push("/dashboard");
@@ -138,12 +151,12 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const response = await fetch('/api/auth/2fa/verify-otp', { // CHANGED: Updated URL
+      const response = await fetch('/api/auth/2fa/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: formData.email,
-          otp: twoFactorCode, // CHANGED: from 'token' to 'otp'
+          otp: twoFactorCode,
         }),
       });
 
