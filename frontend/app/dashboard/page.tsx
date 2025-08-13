@@ -13,11 +13,11 @@ import IPInfo from '@/components/Dashboard/IPInfo';
 import { QuickAction } from '@/types/dashboard';
 import TransferForm from '@/components/TransferForm';
 import apiClient from '@/lib/apiClient';
-import type { Account } from '@/hooks/useAccounts'; // ✅ Import the Account type
+import type { Account } from '@/hooks/useAccounts';
 
 export default function DashboardPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [accounts, setAccounts] = useState<Account[] | null>(null); // ✅ Typed correctly
+  const [accounts, setAccounts] = useState<Account[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -71,7 +71,7 @@ export default function DashboardPage() {
     },
   ];
 
-  const accountId = accounts?.[0]?.accountNumber || ''; // ✅ Safe access
+  const accountId = accounts?.[0]?.accountNumber || '';
 
   if (loading) {
     return (
@@ -141,7 +141,7 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
               <div className="xl:col-span-2 space-y-4 lg:space-y-6">
                 <div className="animate-scale-in opacity-0 [animation-delay:0.4s] [animation-fill-mode:forwards]">
-                  <AccountSummary accounts={accounts} />
+                  <AccountSummary accounts={accounts ?? []} /> {/* ✅ Safe fallback */}
                 </div>
 
                 <div className="animate-scale-in opacity-0 [animation-delay:0.45s] [animation-fill-mode:forwards]">
