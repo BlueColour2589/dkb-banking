@@ -93,8 +93,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log('Attempting login with API URL:', process.env.NEXT_PUBLIC_API_URL);
       console.log('Login credentials:', { email: credentials.email, password: '***' });
       
-      // FIXED: Pass email and password as separate parameters
-      const response = await apiClient.login(credentials.email, credentials.password);
+      // FIXED: Pass credentials object instead of separate parameters
+      const response = await apiClient.login(credentials);
       console.log('Login response:', response);
       
       // Handle login response structure (AuthResponse)
