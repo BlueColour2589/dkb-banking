@@ -21,13 +21,12 @@ export interface RegisterRequest {
   confirmPassword?: string;
 }
 
-// UPDATED: Account interface to match what your backend returns and dashboard expects
 export interface Account {
   id: string;
   userId: string;
-  accountNumber: string;  // Changed from 'name' to 'accountNumber'
-  accountType: string;    // Changed from 'type' to 'accountType'
-  accountName?: string;   // Added optional accountName
+  accountNumber: string;
+  accountType: string;
+  accountName?: string;
   balance: number;
   currency: string;
   createdAt: string;
@@ -60,12 +59,16 @@ export interface ApiResponse<T = any> {
   error?: string;
 }
 
+// UPDATED: AuthResponse with 2FA properties
 export interface AuthResponse {
   success: boolean;
   token?: string;
   user?: User;
   message?: string;
   error?: string;
+  requires2FA?: boolean;      // ADDED: For OTP requirement
+  needs2FASetup?: boolean;    // ADDED: For 2FA setup requirement
+  userId?: string;            // ADDED: User ID for 2FA flow
 }
 
 // 🔹 Generic request handler
