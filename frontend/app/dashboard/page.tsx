@@ -13,19 +13,8 @@ import QuickActions from '@/components/Dashboard/QuickActions';
 import IPInfo from '@/components/Dashboard/IPInfo';
 import { QuickAction } from '@/types/dashboard';
 import TransferForm from '@/components/TransferForm';
-import apiClient from '@/lib/api';
+import apiClient, { Account } from '@/lib/api'; // UPDATED: Import Account type from api
 import { useAuth } from '@/contexts/AuthContext';
-
-// Define Account type directly or import from a shared types file
-interface Account {
-  id: string;
-  accountNumber: string;
-  accountType: string;
-  balance: number;
-  currency: string;
-  accountName?: string;
-  // Add other account properties as needed
-}
 
 export default function DashboardPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
