@@ -178,6 +178,9 @@ export default function LoginPage() {
     }
 
     try {
+      console.log('Attempting 2FA verification for:', formData.email);
+      console.log('OTP code length:', twoFactorCode.length);
+      
       const response = await fetch('/api/auth/2fa/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -187,18 +190,51 @@ export default function LoginPage() {
         }),
       });
 
+      console.log('2FA Response status:', response.status);
+      console.log('2FA Response ok:', response.ok);
+
+      const data = await response.json();
+      console.log('2FA Response data:', data);
+
       if (response.ok) {
-        const data = await response.json();
+        console.log('✅ 2FA verification successful');
         // If 2FA verification succeeds, use the login context
-        await login(formData);
-        router.push("/dashboard");
+        try {
+          await login(formData);
+          router.push("/dashboard");
+        } catch (loginError: any) {
+          console.error('Login after 2FA failed:', loginError);
+          setError('Login failed after verification. Please try logging in again.');
+        }
       } else {
-        const data = await response.json();
-        setError(getErrorMessage(data.message) || 'Invalid code. Please try again.');
+        console.log('❌ 2FA verification failed:', data);
+        // Handle specific 2FA error cases
+        if (response.status === 400) {
+          setError('Invalid or expired code. Please try again.');
+        } else if (response.status === 429) {
+          setError('Too many attempts. Please wait before trying again.');
+        } else if (response.status === 404) {
+          setError('Verification session not found. Please start over.');
+        } else {
+          setError(getErrorMessage(data.message || data.error) || 'Invalid code. Please try again.');
+        }
       }
     } catch (error: any) {
       console.error("2FA verification error:", error);
-      setError('Verification failed. Please try again.');
+      console.error("Error details:", {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
+      
+      // More specific error handling
+      if (error.name === 'TypeError' && error.message.includes('fetch')) {
+        setError('Network error. Please check your connection and try again.');
+      } else if (error.name === 'SyntaxError') {
+        setError('Server response error. Please try again.');
+      } else {
+        setError(`Verification failed: ${error.message || 'Please try again.'}`);
+      }
     } finally {
       setIsLoading(false);
     }
