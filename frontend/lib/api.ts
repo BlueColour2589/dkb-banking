@@ -1,5 +1,4 @@
-// lib/apiClient.ts
-
+// lib/api.ts
 const API_BASE_URL = '/api';
 
 export interface User {
@@ -77,22 +76,22 @@ async function request<T>(
   const headers: HeadersInit = {
     'Content-Type': 'application/json',
   };
-
+  
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
-
+  
   const res = await fetch(`${API_BASE_URL}${path}`, {
     method,
     headers,
     ...(body && { body: JSON.stringify(body) }),
   });
-
+  
   if (!res.ok) {
     const errorData = await res.json().catch(() => ({}));
     throw new Error(errorData.error || `HTTP error! status: ${res.status}`);
   }
-
+  
   return res.json();
 }
 
@@ -101,27 +100,30 @@ export const apiClient = {
   // Auth
   login: (credentials: LoginRequest): Promise<AuthResponse> =>
     request('/auth/login', 'POST', credentials),
-
+    
   register: (userData: RegisterRequest): Promise<AuthResponse> =>
     request('/auth/register', 'POST', userData),
-
+    
   logout: (token: string): Promise<ApiResponse> =>
     request('/auth/logout', 'POST', undefined, token),
 
   // Accounts
-  getAccounts: (): Promise<ApiResponse<Account[]>> =>
-    request('/accounts'),
-
+  getAccounts: (token?: string): Promise<ApiResponse<Account[]>> => {
+    const authToken = token || (typeof window !== 'undefined' ? localStorage.getItem('authToken') : null);
+    if (!authToken) throw new Error('No auth token available');
+    return request('/accounts', 'GET', undefined, authToken);
+  },
+  
   getAccountsWithAuth: (token: string): Promise<ApiResponse<Account[]>> =>
     request('/accounts', 'GET', undefined, token),
-
+    
   getAccountById: (id: string, token: string): Promise<ApiResponse<Account>> =>
     request(`/accounts/${id}`, 'GET', undefined, token),
 
   // Transactions
   getTransactions: (accountId: string, token: string): Promise<ApiResponse<Transaction[]>> =>
     request(`/accounts/${accountId}/transactions`, 'GET', undefined, token),
-
+    
   createTransaction: (
     accountId: string,
     transactionData: CreateTransactionRequest,
@@ -135,12 +137,13 @@ export const apiClient = {
     if (!authToken) throw new Error('No auth token available');
     return request('/user/profile', 'GET', undefined, authToken);
   },
-
+  
   getUserProfile: (token: string): Promise<ApiResponse<User>> =>
     request('/user/profile', 'GET', undefined, token),
-
+    
   updateUserProfile: (userData: Partial<User>, token: string): Promise<ApiResponse<User>> =>
     request('/user/profile', 'PUT', userData, token),
 };
 
+// 🔹 ADD THIS LINE - Default export for compatibility
 export default apiClient;
