@@ -1,20 +1,48 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { X, Home, CreditCard, ArrowUpDown, Settings, LogOut } from 'lucide-react';
+import { 
+  X, Home, CreditCard, ArrowUpDown, Settings, LogOut, 
+  History, Repeat, Zap, TrendingUp, PiggyBank, BarChart3,
+  FileText, Mail, HelpCircle, Phone, Shield
+} from 'lucide-react';
 import { SidebarProps, NavItem } from '@/types/dashboard';
 import { useAuth } from '@/contexts/AuthContext';
 
-const navItems: NavItem[] = [
+// Core Banking Functions
+const coreNavItems: NavItem[] = [
   { label: 'Overview', href: '/dashboard', icon: Home },
   { label: 'Accounts', href: '/accounts', icon: CreditCard },
-  { label: 'Transfer', href: '/transactions', icon: ArrowUpDown },
+  { label: 'Transfer', href: '/transfer', icon: ArrowUpDown },
+  { label: 'Transactions', href: '/transactions', icon: History },
+  { label: 'Standing Orders', href: '/standing-orders', icon: Repeat },
+  { label: 'Direct Debits', href: '/direct-debits', icon: Zap },
+];
+
+// Investment & Savings
+const investmentNavItems: NavItem[] = [
+  { label: 'Portfolio', href: '/portfolio', icon: TrendingUp },
+  { label: 'Savings Plans', href: '/savings', icon: PiggyBank },
+  { label: 'Market', href: '/market', icon: BarChart3 },
+];
+
+// Services
+const serviceNavItems: NavItem[] = [
+  { label: 'Cards', href: '/cards', icon: CreditCard },
+  { label: 'Documents', href: '/documents', icon: FileText },
+  { label: 'Messages', href: '/messages', icon: Mail },
   { label: 'Settings', href: '/settings', icon: Settings },
+];
+
+// Support
+const supportNavItems: NavItem[] = [
+  { label: 'Help Center', href: '/help', icon: HelpCircle },
+  { label: 'Contact', href: '/contact', icon: Phone },
 ];
 
 export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
   const pathname = usePathname();
-  const { logout, user } = useAuth();
+  const { logout } = useAuth();
   
   const handleLinkClick = (): void => {
     setIsOpen(false);
@@ -28,6 +56,54 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
       console.error('Logout failed:', error);
     }
   };
+
+  const renderNavSection = (items: NavItem[], title?: string) => (
+    <div className="space-y-1">
+      {title && (
+        <div className="px-3 py-2">
+          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            {title}
+          </h3>
+        </div>
+      )}
+      {items.map((item: NavItem) => {
+        const isActive = pathname === item.href;
+        const IconComponent = item.icon;
+        
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            onClick={handleLinkClick}
+            className={`
+              flex items-center space-x-3 px-3 py-2 mx-2 rounded-lg text-sm font-medium
+              transition-all duration-200 group
+              ${isActive 
+                ? 'bg-blue-50 text-blue-700 border-l-3 border-blue-600 shadow-sm' 
+                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+              }
+            `}
+          >
+            {IconComponent && (
+              <IconComponent 
+                size={18} 
+                className={`
+                  transition-colors duration-200
+                  ${isActive ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-600'} 
+                `}
+              />
+            )}
+            <span>{item.label}</span>
+            
+            {/* Active indicator */}
+            {isActive && (
+              <div className="ml-auto w-1.5 h-1.5 bg-blue-600 rounded-full"></div>
+            )}
+          </Link>
+        );
+      })}
+    </div>
+  );
   
   return (
     <>
@@ -65,74 +141,54 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                     DKB
                   </text>
                 </svg>
+                <div className="h-6 w-px bg-gray-200"></div>
+                <span className="text-sm font-medium text-gray-600">Banking</span>
               </div>
               
               {/* Mobile Close Button */}
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="lg:hidden p-1 text-gray-400 hover:text-gray-600"
+                className="lg:hidden p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded"
               >
                 <X size={20} />
               </button>
             </div>
           </div>
           
-          {/* User Info - Minimal */}
-          {user && (
-            <div className="px-6 py-4 border-b border-gray-50">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                  {user.name?.charAt(0) || user.email?.charAt(0) || 'U'}
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    {user.name || user.email}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-          
-          {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-1">
-            {navItems.map((item: NavItem) => {
-              const isActive = pathname === item.href;
-              const IconComponent = item.icon;
-              
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={handleLinkClick}
-                  className={`
-                    flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium
-                    transition-colors duration-200
-                    ${isActive 
-                      ? 'bg-blue-50 text-blue-700 border-l-3 border-blue-600' 
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                    }
-                  `}
-                >
-                  {IconComponent && (
-                    <IconComponent 
-                      size={18} 
-                      className={isActive ? 'text-blue-600' : 'text-gray-400'} 
-                    />
-                  )}
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
+          {/* Navigation - Scrollable */}
+          <nav className="flex-1 overflow-y-auto py-4 space-y-6">
+            {/* Core Banking */}
+            {renderNavSection(coreNavItems, 'Banking')}
+            
+            {/* Investment & Savings */}
+            {renderNavSection(investmentNavItems, 'Investments')}
+            
+            {/* Services */}
+            {renderNavSection(serviceNavItems, 'Services')}
+            
+            {/* Support */}
+            {renderNavSection(supportNavItems, 'Support')}
           </nav>
           
-          {/* Bottom Section */}
+          {/* Security Status */}
+          <div className="p-4 border-t border-gray-100">
+            <div className="flex items-center space-x-3 p-3 bg-green-50 rounded-lg border border-green-200">
+              <Shield size={16} className="text-green-600" />
+              <div>
+                <p className="text-xs font-medium text-green-800">Secure Connection</p>
+                <p className="text-xs text-green-600">256-bit SSL encryption</p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Logout */}
           <div className="p-4 border-t border-gray-100">
             <button 
               onClick={handleLogout}
-              className="w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-colors duration-200 rounded-lg"
+              className="w-full flex items-center space-x-3 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-red-50 hover:text-red-600 transition-all duration-200 rounded-lg group"
             >
-              <LogOut size={18} className="text-gray-400" />
+              <LogOut size={18} className="text-gray-400 group-hover:text-red-500 transition-colors duration-200" />
               <span>Logout</span>
             </button>
           </div>
