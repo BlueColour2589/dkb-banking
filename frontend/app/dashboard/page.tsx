@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import MobileHeader from '@/components/Header/MobileHeader';
 import TopBar from '@/components/Header/TopBar';
@@ -13,26 +14,52 @@ import IPInfo from '@/components/Dashboard/IPInfo';
 import { QuickAction } from '@/types/dashboard';
 import TransferForm from '@/components/TransferForm';
 import apiClient from '@/lib/apiClient';
-import type { Account } from '@/hooks/useAccounts';
+import { useAuth } from '@/contexts/AuthContext';
+
+// Define Account type directly or import from a shared types file
+interface Account {
+  id: string;
+  accountNumber: string;
+  accountType: string;
+  balance: number;
+  currency: string;
+  accountName?: string;
+  // Add other account properties as needed
+}
 
 export default function DashboardPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [accounts, setAccounts] = useState<Account[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
+  const router = useRouter();
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      console.log('User not authenticated, redirecting to login');
+      router.push('/login');
+      return;
+    }
+  }, [isAuthenticated, authLoading, router]);
 
   useEffect(() => {
     const fetchAccounts = async () => {
+      // Don't fetch if still loading auth or not authenticated
+      if (authLoading || !isAuthenticated) {
+        return;
+      }
+
       try {
         setLoading(true);
         setError(null);
 
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-          throw new Error('No authentication token found');
-        }
-
-        const res = await apiClient.getAccounts(token);
+        // Use apiClient without manually passing token
+        // The apiClient will get the token from localStorage automatically
+        const res = await apiClient.getAccounts();
+        
         if (res.success && res.data) {
           setAccounts(res.data);
         } else {
@@ -42,13 +69,19 @@ export default function DashboardPage() {
         console.error('Failed to fetch accounts:', err);
         const errorMessage = err instanceof Error ? err.message : 'Failed to fetch accounts';
         setError(errorMessage);
+
+        // If it's an auth error, redirect to login
+        if (err instanceof Error && (err as any).response?.status === 401) {
+          console.log('Authentication failed, redirecting to login');
+          router.push('/login');
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchAccounts();
-  }, []);
+  }, [isAuthenticated, authLoading, router]);
 
   const quickActions: QuickAction[] = [
     {
@@ -73,6 +106,24 @@ export default function DashboardPage() {
 
   const accountId = accounts?.[0]?.accountNumber || '';
 
+  // Show loading while authenticating
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Authenticating...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Don't render anything if not authenticated (will redirect)
+  if (!isAuthenticated) {
+    return null;
+  }
+
+  // Show loading while fetching accounts
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -141,7 +192,7 @@ export default function DashboardPage() {
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
               <div className="xl:col-span-2 space-y-4 lg:space-y-6">
                 <div className="animate-scale-in opacity-0 [animation-delay:0.4s] [animation-fill-mode:forwards]">
-                  <AccountSummary accounts={accounts ?? []} /> {/* ✅ Safe fallback */}
+                  <AccountSummary accounts={accounts ?? []} />
                 </div>
 
                 <div className="animate-scale-in opacity-0 [animation-delay:0.45s] [animation-fill-mode:forwards]">
