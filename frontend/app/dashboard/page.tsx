@@ -51,54 +51,66 @@ export default function DashboardPage() {
         if (res.success && res.data) {
           setAccounts(res.data);
         } else {
-          // If API fails, use realistic mock data temporarily
-          const mockAccounts = [
+          // If API fails, use realistic mock data with correct Account type
+          const mockAccounts: Account[] = [
             {
               id: '1',
+              userId: user?.id || 'demo-user',
               accountNumber: 'DE89 3704 0044 0532 0130 00',
               accountType: 'checking',
+              accountName: 'Main Checking Account',
               balance: 18000000.00,
               currency: 'EUR',
-              name: 'Main Checking Account',
-              status: 'active'
+              status: 'active',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
             },
             {
-              id: '2', 
+              id: '2',
+              userId: user?.id || 'demo-user',
               accountNumber: 'DE89 3704 0044 0532 0130 01',
               accountType: 'savings',
+              accountName: 'Savings Account',
               balance: 0.00,
               currency: 'EUR',
-              name: 'Savings Account',
-              status: 'active'
+              status: 'active',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
             }
           ];
-          setAccounts(mockAccounts as Account[]);
+          setAccounts(mockAccounts);
         }
       } catch (err) {
         console.error('Failed to fetch accounts:', err);
         
-        // Use realistic mock data as fallback
-        const mockAccounts = [
+        // Use realistic mock data as fallback with correct Account type
+        const mockAccounts: Account[] = [
           {
             id: '1',
+            userId: user?.id || 'demo-user',
             accountNumber: 'DE89 3704 0044 0532 0130 00',
             accountType: 'checking',
+            accountName: 'Main Checking Account',
             balance: 18000000.00,
             currency: 'EUR',
-            name: 'Main Checking Account',
-            status: 'active'
+            status: 'active',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
           },
           {
             id: '2',
-            accountNumber: 'DE89 3704 0044 0532 0130 01', 
+            userId: user?.id || 'demo-user',
+            accountNumber: 'DE89 3704 0044 0532 0130 01',
             accountType: 'savings',
+            accountName: 'Savings Account',
             balance: 0.00,
             currency: 'EUR',
-            name: 'Savings Account',
-            status: 'active'
+            status: 'active',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
           }
         ];
-        setAccounts(mockAccounts as Account[]);
+        setAccounts(mockAccounts);
 
         // If it's an auth error, redirect to login
         if (err instanceof Error && (err as any).response?.status === 401) {
@@ -111,7 +123,7 @@ export default function DashboardPage() {
     };
 
     fetchAccounts();
-  }, [isAuthenticated, authLoading, router]);
+  }, [isAuthenticated, authLoading, router, user?.id]);
 
   // Updated quick actions with proper navigation
   const quickActions: QuickAction[] = [
