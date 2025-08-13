@@ -1,14 +1,20 @@
-// Enhanced Interactive Notifications Component
+// Enhanced Real-Time Banking Notifications Component
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { Bell, X, Eye, Trash2, CheckCircle, AlertTriangle, Info, AlertCircle, TrendingUp, TrendingDown } from 'lucide-react';
 
 interface Notification {
   id: string;
+  title: string;
   message: string;
-  timestamp: string;
-  type: 'info' | 'success' | 'warning' | 'error';
+  timestamp: Date;
+  type: 'transaction' | 'security' | 'account' | 'investment' | 'card' | 'system';
+  priority: 'high' | 'medium' | 'low';
   read: boolean;
   details?: string;
+  actionRequired?: boolean;
+  amount?: number;
+  relatedAccount?: string;
 }
 
 interface NotificationsProps {
@@ -16,35 +22,49 @@ interface NotificationsProps {
 }
 
 export default function Notifications({ items }: NotificationsProps) {
-  const [notifications, setNotifications] = useState<Notification[]>(items || [
-    {
-      id: '1',
-      message: 'Your salary was deposited successfully.',
-      timestamp: 'Aug 5, 08:42',
-      type: 'success',
-      read: false,
-      details: 'Salary payment of €7,200.00 from DKB AG has been credited to your Joint Account ending in ...7904c1'
-    },
-    {
-      id: '2',
-      message: 'Electric bill payment scheduled for Aug 10.',
-      timestamp: 'Aug 4, 17:20',
-      type: 'warning',
-      read: false,
-      details: 'Automatic payment of €89.50 to Stadtwerke Berlin is scheduled for August 10th, 2025.'
-    },
-    {
-      id: '3',
-      message: 'New security feature: Enhanced 2FA is now available.',
-      timestamp: 'Aug 3, 14:15',
-      type: 'info',
-      read: true,
-      details: 'Protect your account with biometric authentication and hardware keys.'
-    }
-  ]);
-
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
+
+  // Generate notifications based on your 2 real transactions only
+  useEffect(() => {
+    const generateRealisticNotifications = (): Notification[] => {
+      const now = new Date();
+      return [
+        {
+          id: '1',
+          title: 'Large Payment Received',
+          message: 'Payment of €23,000,000.00 received from Juwelier Barok im Linden Center',
+          timestamp: new Date('2025-08-13T14:30:00'), // Realistic timestamp
+          type: 'transaction',
+          priority: 'high',
+          read: false,
+          details: 'A large incoming payment has been credited to your Main Checking Account (DE89...130 00). Business payment from Juwelier Barok im Linden Center has been processed successfully and is available immediately. Reference: JUW-2025-001',
+          amount: 23000000.00,
+          relatedAccount: 'Main Checking Account',
+          actionRequired: false
+        },
+        {
+          id: '2',
+          title: 'Tax Payment Completed',
+          message: 'Payment of €5,000,000.00 sent to Finanzamt Agency',
+          timestamp: new Date('2025-08-13T10:15:00'), // Realistic timestamp
+          type: 'transaction',
+          priority: 'medium',
+          read: false,
+          details: 'Your tax payment has been successfully processed and sent to Finanzamt Agency. The payment has been debited from your Main Checking Account. Transaction reference: TAX-2025-AUG',
+          amount: -5000000.00,
+          relatedAccount: 'Main Checking Account',
+          actionRequired: false
+        }
+      ];
+    };
+
+    setNotifications(items || generateRealisticNotifications());
+  }, [items]);
+
   const unreadCount = notifications.filter(n => !n.read).length;
+  const highPriorityCount = notifications.filter(n => !n.read && n.priority === 'high').length;
 
   const markAsRead = (id: string) => {
     setNotifications(prev =>
@@ -73,114 +93,176 @@ export default function Notifications({ items }: NotificationsProps) {
     }
   };
 
-  const getTypeStyles = (type: string) => {
+  const getTypeStyles = (type: string, priority: string) => {
+    const base = 'border-l-4 rounded-r-lg';
     switch (type) {
-      case 'success':
-        return 'border-l-green-500 bg-green-50';
-      case 'warning':
-        return 'border-l-yellow-500 bg-yellow-50';
-      case 'error':
-        return 'border-l-red-500 bg-red-50';
+      case 'transaction':
+        return priority === 'high' 
+          ? `${base} border-l-green-500 bg-green-50 hover:bg-green-100`
+          : `${base} border-l-blue-500 bg-blue-50 hover:bg-blue-100`;
+      case 'security':
+        return `${base} border-l-red-500 bg-red-50 hover:bg-red-100`;
       default:
-        return 'border-l-blue-500 bg-blue-50';
+        return `${base} border-l-gray-500 bg-gray-50 hover:bg-gray-100`;
     }
   };
 
-  const getTypeIcon = (type: string) => {
+  const getTypeIcon = (type: string, amount?: number) => {
     switch (type) {
-      case 'success':
-        return (
-          <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
-          </svg>
-        );
-      case 'warning':
-        return (
-          <svg className="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"/>
-          </svg>
-        );
-      case 'error':
-        return (
-          <svg className="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd"/>
-          </svg>
-        );
+      case 'transaction':
+        if (amount && amount > 0) {
+          return <TrendingUp className="w-5 h-5 text-green-600" />;
+        } else {
+          return <TrendingDown className="w-5 h-5 text-red-600" />;
+        }
+      case 'security':
+        return <AlertTriangle className="w-5 h-5 text-red-600" />;
       default:
-        return (
-          <svg className="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd"/>
-          </svg>
-        );
+        return <Info className="w-5 h-5 text-blue-600" />;
     }
   };
+
+  const formatAmount = (amount: number) => {
+    return `€${Math.abs(amount).toLocaleString('de-DE', { minimumFractionDigits: 2 })}`;
+  };
+
+  const getTimeAgo = (date: Date) => {
+    const now = new Date();
+    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes} minutes ago`;
+    } else if (diffInMinutes < 1440) {
+      const hours = Math.floor(diffInMinutes / 60);
+      return `${hours} hour${hours > 1 ? 's' : ''} ago`;
+    } else {
+      const days = Math.floor(diffInMinutes / 1440);
+      return `${days} day${days > 1 ? 's' : ''} ago`;
+    }
+  };
+
+  if (notifications.length === 0) {
+    return (
+      <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 mb-6">
+        <div className="text-center">
+          <Bell className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+          <p className="text-gray-500 font-medium">No notifications</p>
+          <p className="text-gray-400 text-sm">You're all caught up!</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3">
-          <div className="bg-blue-500 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold">
-            {unreadCount}
+          <div className="relative">
+            <Bell className="w-6 h-6 text-blue-600" />
+            {unreadCount > 0 && (
+              <div className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold">
+                {unreadCount}
+              </div>
+            )}
           </div>
-          <span className="text-blue-700 font-medium">
-            You have {unreadCount} new notifications
-          </span>
+          <div>
+            <span className="text-blue-700 font-semibold">Banking Notifications</span>
+            {unreadCount > 0 && (
+              <p className="text-blue-600 text-sm">
+                {unreadCount} new notification{unreadCount > 1 ? 's' : ''}
+                {highPriorityCount > 0 && ` (${highPriorityCount} urgent)`}
+              </p>
+            )}
+          </div>
         </div>
-        <div className="flex space-x-2">
+        
+        <div className="flex items-center space-x-2">
           {unreadCount > 0 && (
             <button
               onClick={markAllAsRead}
-              className="text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors"
+              className="flex items-center space-x-1 px-3 py-1 text-xs bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
-              Mark all read
+              <CheckCircle size={14} />
+              <span>Mark all read</span>
             </button>
           )}
-          <span className="text-blue-500 text-xl cursor-pointer hover:text-blue-700 transition-colors">›</span>
         </div>
       </div>
 
       {/* Notification List */}
-      <div className="space-y-2">
-        {notifications.slice(0, 3).map((notification) => (
+      <div className="space-y-3">
+        {(showAll ? notifications : notifications.slice(0, 2)).map((notification) => (
           <div
             key={notification.id}
-            className={`border-l-4 rounded-r-lg p-3 transition-all duration-200 cursor-pointer hover:shadow-md ${
-              getTypeStyles(notification.type)
-            } ${!notification.read ? 'shadow-sm' : 'opacity-75'}`}
+            className={`${getTypeStyles(notification.type, notification.priority)} p-4 transition-all duration-200 cursor-pointer shadow-sm ${
+              !notification.read ? 'ring-2 ring-blue-200' : 'opacity-90'
+            }`}
             onClick={() => toggleExpand(notification.id)}
           >
             <div className="flex items-start justify-between">
               <div className="flex items-start space-x-3 flex-1">
-                {getTypeIcon(notification.type)}
+                {getTypeIcon(notification.type, notification.amount)}
                 <div className="flex-1">
-                  <p className={`text-sm ${!notification.read ? 'font-medium' : 'font-normal'} text-gray-800`}>
-                    {notification.message}
-                  </p>
-                  <p className="text-xs text-gray-500 mt-1">{notification.timestamp}</p>
+                  <div className="flex items-center space-x-2 mb-1">
+                    <h4 className={`text-sm ${!notification.read ? 'font-semibold' : 'font-medium'} text-gray-800`}>
+                      {notification.title}
+                    </h4>
+                    {notification.priority === 'high' && !notification.read && (
+                      <span className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded-full font-medium">
+                        Urgent
+                      </span>
+                    )}
+                  </div>
+                  
+                  <p className="text-sm text-gray-700 mb-2">{notification.message}</p>
+                  
+                  <div className="flex items-center space-x-4 text-xs text-gray-500">
+                    <span>{getTimeAgo(notification.timestamp)}</span>
+                    {notification.amount && (
+                      <>
+                        <span>•</span>
+                        <span className={notification.amount > 0 ? 'text-green-600 font-medium' : 'text-red-600 font-medium'}>
+                          {notification.amount > 0 ? '+' : '-'}{formatAmount(notification.amount)}
+                        </span>
+                      </>
+                    )}
+                    {notification.relatedAccount && (
+                      <>
+                        <span>•</span>
+                        <span>{notification.relatedAccount}</span>
+                      </>
+                    )}
+                  </div>
                   
                   {/* Expanded Details */}
                   {expandedId === notification.id && notification.details && (
-                    <div className="mt-3 p-3 bg-white bg-opacity-50 rounded-lg animate-fade-in">
+                    <div className="mt-3 p-3 bg-white bg-opacity-70 rounded-lg border border-gray-200">
                       <p className="text-sm text-gray-700">{notification.details}</p>
+                      {notification.actionRequired && (
+                        <div className="mt-2 flex space-x-2">
+                          <button className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
+                            Take Action
+                          </button>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
               </div>
               
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 ml-3">
                 {!notification.read && (
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                 )}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     removeNotification(notification.id);
                   }}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                  title="Dismiss notification"
                 >
-                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/>
-                  </svg>
+                  <X size={14} />
                 </button>
               </div>
             </div>
@@ -188,9 +270,13 @@ export default function Notifications({ items }: NotificationsProps) {
         ))}
       </div>
 
-      {notifications.length > 3 && (
-        <button className="w-full mt-3 text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors">
-          View all {notifications.length} notifications
+      {/* Show All Button */}
+      {notifications.length > 2 && (
+        <button 
+          onClick={() => setShowAll(!showAll)}
+          className="w-full mt-3 py-2 text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors border-t border-blue-200 pt-3"
+        >
+          {showAll ? 'Show less' : `View all ${notifications.length} notifications`}
         </button>
       )}
     </div>
