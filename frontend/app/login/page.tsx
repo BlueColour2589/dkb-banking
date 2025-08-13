@@ -6,6 +6,7 @@ import Footer from "../../components/Footer";
 import { useAuth } from "../../contexts/AuthContext";
 import apiClient from '@/lib/api';
 
+
 type LoginStep = 'credentials' | '2fa' | '2fa-setup';
 
 export default function LoginPage() {
@@ -19,7 +20,7 @@ export default function LoginPage() {
   const { login } = useAuth();
   const router = useRouter();
 
-  // Backend ping function
+  // Updated backend ping function
   const wakeUpBackend = async () => {
     try {
       setIsWakingUp(true);
@@ -54,21 +55,10 @@ export default function LoginPage() {
     if (error) setError("");
   };
 
-  // Enhanced error handling
-  const getErrorMessage = (error: string) => {
-    const errorMessages: { [key: string]: string } = {
-      'INVALID_CREDENTIALS': 'Invalid email or password. Please try again.',
-      'ACCOUNT_LOCKED': 'Your account has been temporarily locked. Please try again later.',
-      'EMAIL_NOT_VERIFIED': 'Please verify your email address before logging in.',
-      'TOO_MANY_ATTEMPTS': 'Too many login attempts. Please wait before trying again.',
-    };
-    
-    return errorMessages[error] || error;
-  };
-
-  // Handle login using context login (which uses apiClient internally)
+  // Updated handleLogin using context login (which uses apiClient internally)
   const handleLogin = async (email: string, password: string) => {
     try {
+      // Use the context login function which handles apiClient internally
       await login({ email, password });
       router.push('/dashboard');
     } catch (err: any) {
@@ -77,7 +67,6 @@ export default function LoginPage() {
     }
   };
 
-  // Credentials submission with apiClient integration
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -98,7 +87,7 @@ export default function LoginPage() {
     try {
       await wakeUpBackend();
       
-      // Try direct login with apiClient first (via context)
+      // Try direct login with apiClient first
       try {
         await handleLogin(formData.email, formData.password);
         return; // Success - early return
@@ -106,11 +95,11 @@ export default function LoginPage() {
         console.log('API Error caught:', apiError);
         console.log('Error has requires2FA:', !!apiError.requires2FA);
         
-        // Check if it's a 2FA requirement
+        // FIXED: Check if it's a 2FA requirement
         if (apiError.requires2FA) {
           console.log('✅ 2FA required - showing 2FA screen');
           setStep('2fa');
-          setError('');
+          setError(''); // Clear any error message
           setIsLoading(false);
           return;
         } else if (apiError.needs2FASetup) {
@@ -120,11 +109,11 @@ export default function LoginPage() {
           setIsLoading(false);
           return;
         }
-        // Otherwise, fall back to direct fetch method
+        // Otherwise, fall back to original fetch method
         console.log('Not a 2FA error, falling back to fetch method');
       }
       
-      // Fallback to direct fetch method for 2FA handling
+      // Fallback to original fetch method for 2FA handling
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -142,25 +131,15 @@ export default function LoginPage() {
           setStep('2fa-setup');
           setError('');
         } else {
-          await login(formData);
+          await login(formData); // This is correct - only email and password
           router.push("/dashboard");
         }
       } else {
-        // Handle specific error cases
-        if (data.requires2FA) {
-          console.log('✅ 2FA required from error - showing 2FA screen');
-          setStep('2fa');
-          setError('');
-        } else if (data.needs2FASetup) {
-          setStep('2fa-setup');
-          setError('');
-        } else {
-          setError(getErrorMessage(data.message) || 'Login failed');
-        }
+        setError(data.message || 'Login failed');
       }
     } catch (error: any) {
       console.error("Login error:", error);
-      setError(getErrorMessage(error.message) || "Login failed. Please check your credentials and try again.");
+      setError(error.message || "Login failed. Please check your credentials.");
     } finally {
       setIsLoading(false);
     }
@@ -171,16 +150,7 @@ export default function LoginPage() {
     setIsLoading(true);
     setError("");
 
-    if (twoFactorCode.length !== 6) {
-      setError("Please enter a valid 6-digit code");
-      setIsLoading(false);
-      return;
-    }
-
     try {
-      console.log('Attempting 2FA verification for:', formData.email);
-      console.log('OTP code length:', twoFactorCode.length);
-      
       const response = await fetch('/api/auth/2fa/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -190,79 +160,24 @@ export default function LoginPage() {
         }),
       });
 
-      console.log('2FA Response status:', response.status);
-      console.log('2FA Response ok:', response.ok);
+      const data = await response.json(); // Only read response once
 
-      const data = await response.json();
-      console.log('2FA Response data:', data);
-
-      if (response.ok) {
-        console.log('✅ 2FA verification successful');
-        const data = await response.json();
-        console.log('2FA response contains:', Object.keys(data));
+      if (response.ok && data.success) {
+        console.log('✅ 2FA verification successful, token received');
         
-        // For now, just redirect assuming the backend handled authentication
-        router.push("/dashboard");
-        
-        /* TODO: Properly handle authentication after 2FA
-         * The backend should either:
-         * 1. Return auth tokens/user data in the 2FA response, or
-         * 2. Set session cookies that authenticate the user
-         * 3. Provide a separate endpoint to complete authentication
-         */
-      } else {
-        console.log('❌ 2FA verification failed:', data);
-        // Handle specific 2FA error cases
-        if (response.status === 400) {
-          setError('Invalid or expired code. Please try again.');
-        } else if (response.status === 429) {
-          setError('Too many attempts. Please wait before trying again.');
-        } else if (response.status === 404) {
-          setError('Verification session not found. Please start over.');
-        } else {
-          setError(getErrorMessage(data.message || data.error) || 'Invalid code. Please try again.');
+        // Store the token directly (the API returns it)
+        if (data.token) {
+          localStorage.setItem('authToken', data.token);
         }
+        
+        // Redirect to dashboard
+        router.push("/dashboard");
+      } else {
+        setError(data.error || data.message || 'Invalid code. Please try again.');
       }
     } catch (error: any) {
-      console.error("2FA verification error:", error);
-      console.error("Error details:", {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      });
-      
-      // More specific error handling
-      if (error.name === 'TypeError' && error.message.includes('fetch')) {
-        setError('Network error. Please check your connection and try again.');
-      } else if (error.name === 'SyntaxError') {
-        setError('Server response error. Please try again.');
-      } else {
-        setError(`Verification failed: ${error.message || 'Please try again.'}`);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const resendCode = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch('/api/auth/2fa/send-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email }),
-      });
-      
-      if (response.ok) {
-        setError('');
-        // Could add a success message here
-        console.log('Code resent successfully');
-      } else {
-        const data = await response.json();
-        setError(getErrorMessage(data.error) || 'Failed to resend code');
-      }
-    } catch (error) {
-      setError('Failed to resend code. Please try again.');
+      console.error('2FA verification error:', error);
+      setError('Verification failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -271,113 +186,12 @@ export default function LoginPage() {
   const getLoadingMessage = () => {
     if (isWakingUp) return "Connecting to server... (first login may take 30 seconds)";
     if (isLoading) {
-      switch (step) {
-        case '2fa':
-          return "Verifying...";
-        case '2fa-setup':
-          return "Setting up...";
-        default:
-          return "Logging in...";
-      }
+      if (step === '2fa') return "Verifying...";
+      return "Logging in...";
     }
-    switch (step) {
-      case '2fa':
-        return "Verify & Sign In";
-      case '2fa-setup':
-        return "Setup Two-Factor Authentication";
-      default:
-        return "Login to DKB-Banking";
-    }
+    if (step === '2fa') return "Verify & Sign In";
+    return "Login to DKB-Banking";
   };
-
-  // 2FA Setup Step
-  if (step === '2fa-setup') {
-    return (
-      <>
-        <Navbar />
-        <main className="min-h-screen bg-gray-50 py-16 px-6">
-          <div className="max-w-md mx-auto">
-            <div className="bg-white rounded-lg shadow-lg p-8">
-              <div className="text-center mb-8">
-                <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
-                  </svg>
-                </div>
-                <h2 className="text-2xl font-bold text-gray-900">Setup Two-Factor Authentication</h2>
-                <p className="text-gray-600 mt-2">Secure your account with email-based 2FA</p>
-              </div>
-
-              <div className="bg-blue-50 p-4 rounded-lg mb-6">
-                <p className="text-blue-700 text-sm">
-                  A verification code will be sent to <strong>{formData.email}</strong> each time you log in.
-                </p>
-              </div>
-
-              {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-600 text-sm">{error}</p>
-                </div>
-              )}
-
-              <div className="space-y-4">
-                <button
-                  onClick={async () => {
-                    setIsLoading(true);
-                    setError('');
-                    try {
-                      const response = await fetch('/api/auth/2fa/setup', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ email: formData.email }),
-                      });
-
-                      if (response.ok) {
-                        setStep('2fa');
-                      } else {
-                        const data = await response.json();
-                        setError(getErrorMessage(data.message) || 'Setup failed');
-                      }
-                    } catch (error) {
-                      setError('Setup failed. Please try again.');
-                    } finally {
-                      setIsLoading(false);
-                    }
-                  }}
-                  disabled={isLoading}
-                  className="w-full bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white py-3 rounded-lg font-semibold transition-colors"
-                >
-                  {getLoadingMessage()}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => {
-                    setStep('credentials');
-                    setError('');
-                  }}
-                  disabled={isLoading}
-                  className="w-full text-gray-600 hover:text-gray-800 py-2 transition-colors disabled:opacity-50"
-                >
-                  Skip for now
-                </button>
-              </div>
-
-              <div className="mt-8 p-4 bg-green-50 rounded-lg">
-                <h4 className="text-sm font-semibold text-green-800 mb-2">Why enable 2FA?</h4>
-                <ul className="text-xs text-green-700 space-y-1">
-                  <li>• Protects against unauthorized access</li>
-                  <li>• Adds an extra layer of security</li>
-                  <li>• Required for sensitive operations</li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </main>
-        <Footer />
-      </>
-    );
-  }
 
   // 2FA Verification Step
   if (step === '2fa') {
@@ -416,13 +230,12 @@ export default function LoginPage() {
                     onChange={(e) => {
                       const value = e.target.value.replace(/\D/g, '');
                       setTwoFactorCode(value);
-                      if (error) setError('');
+                      setError('');
                     }}
                     className="w-full text-center text-2xl font-mono py-3 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     placeholder="000000"
                     autoComplete="one-time-code"
                     disabled={isLoading}
-                    aria-label="Enter 6-digit verification code"
                   />
                   <p className="text-xs text-gray-500 mt-2 text-center">
                     Enter the 6-digit code sent to your email address
@@ -440,20 +253,36 @@ export default function LoginPage() {
                 <div className="flex justify-between text-sm">
                   <button
                     type="button"
-                    onClick={() => {
-                      setStep('credentials');
-                      setError('');
-                      setTwoFactorCode('');
-                    }}
-                    disabled={isLoading}
-                    className="text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-50"
+                    onClick={() => setStep('credentials')}
+                    className="text-gray-500 hover:text-gray-700 transition-colors"
                   >
                     ← Back to login
                   </button>
                   <button
                     type="button"
-                    onClick={resendCode}
-                    className="text-blue-600 hover:text-blue-700 transition-colors disabled:opacity-50"
+                    onClick={async () => {
+                      try {
+                        setIsLoading(true);
+                        const response = await fetch('/api/auth/2fa/send-otp', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ email: formData.email }),
+                        });
+                        
+                        if (response.ok) {
+                          setError('');
+                          // You could show a success message here
+                        } else {
+                          const data = await response.json();
+                          setError(data.error || 'Failed to resend code');
+                        }
+                      } catch (error) {
+                        setError('Failed to resend code');
+                      } finally {
+                        setIsLoading(false);
+                      }
+                    }}
+                    className="text-blue-600 hover:text-blue-700 transition-colors"
                     disabled={isLoading}
                   >
                     Resend code
@@ -475,7 +304,7 @@ export default function LoginPage() {
     );
   }
 
-  // Regular login form (credentials step)
+  // Regular login form
   return (
     <>
       <Navbar />
@@ -519,7 +348,6 @@ export default function LoginPage() {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Enter your email address"
                   disabled={isLoading || isWakingUp}
-                  aria-label="Email address"
                 />
               </div>
 
@@ -536,7 +364,6 @@ export default function LoginPage() {
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Enter your password"
                   disabled={isLoading || isWakingUp}
-                  aria-label="Password"
                 />
               </div>
 
