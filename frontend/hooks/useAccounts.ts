@@ -1,25 +1,5 @@
 import { useEffect, useState } from 'react';
-import apiClient from '@/lib/api';
-
-export type Transaction = {
-  id: string;
-  amount: number;
-  createdAt: string;
-  description: string;
-};
-
-export type Account = {
-  id: string;
-  name: string;
-  balance: number;
-  currency: string;
-  accountNumber: string;
-  type: string;
-  status: string;
-  role: string;
-  permissions: string[];
-  transactions: Transaction[];
-};
+import apiClient, { Account, Transaction } from '@/lib/api';
 
 export function useAccounts() {
   const [accounts, setAccounts] = useState<Account[]>([]);
