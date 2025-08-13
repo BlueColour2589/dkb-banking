@@ -1,4 +1,3 @@
-// Enhanced AccountSummary with Balance Trend
 'use client';
 import { useState, useEffect } from 'react';
 
@@ -16,18 +15,21 @@ interface AccountSummaryProps {
 export default function AccountSummary({ accounts }: AccountSummaryProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [displayBalance, setDisplayBalance] = useState(0);
-  
+
   // Mock balance history for trend chart (last 7 days)
   const balanceHistory = [
     17800000, 17850000, 17900000, 17950000, 18000000, 18050000, 18094200
   ];
 
-  // Use the first account as primary
-  const primaryAccount = accounts[0] || {
-    name: 'Joint Account',
-    balance: 18094200,
-    currency: 'EUR'
-  };
+  // Use the first account as primary, or fallback if empty
+  const primaryAccount = accounts.length > 0
+    ? accounts[0]
+    : {
+        name: 'Joint Account',
+        balance: 18094200,
+        currency: 'EUR',
+        accountNumber: 'http://worldied2o%kAIR/numiantdua/a19hfUp3/'
+      };
 
   const maxBalance = Math.max(...balanceHistory);
   const minBalance = Math.min(...balanceHistory);
@@ -36,14 +38,13 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
   useEffect(() => {
     const loadingTimer = setTimeout(() => {
       setIsLoading(false);
-      
-      // Animate balance counting
+
       const targetBalance = primaryAccount.balance;
       const duration = 2000;
       const steps = 60;
       const increment = targetBalance / steps;
       let currentBalance = 0;
-      
+
       const countingTimer = setInterval(() => {
         currentBalance += increment;
         if (currentBalance >= targetBalance) {
@@ -86,14 +87,18 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
   return (
     <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6 transition-all duration-300 hover:shadow-lg">
       <h3 className="text-xl font-bold text-blue-600 mb-4">Account Summary</h3>
-      
+
+      {accounts.length === 0 && (
+        <p className="text-blue-500 text-sm italic mb-4">No accounts available. Showing demo data.</p>
+      )}
+
       <div className="flex justify-between items-start mb-6">
         <div>
           <h4 className="text-lg font-semibold text-blue-800 transition-colors duration-200">
             {primaryAccount.name}
           </h4>
           <p className="text-blue-400 text-sm">
-            {primaryAccount.accountNumber || 'http://worldied2o%kAIR/numiantdua/a19hfUp3/'}
+            {primaryAccount.accountNumber}
           </p>
         </div>
         <div className="text-right">
@@ -112,17 +117,14 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
           {balanceHistory.map((balance, index) => {
             const height = ((balance - minBalance) / (maxBalance - minBalance)) * 100;
             const isLast = index === balanceHistory.length - 1;
-            
+
             return (
-              <div
-                key={index}
-                className="relative flex-1 flex justify-center items-end"
-              >
+              <div key={index} className="relative flex-1 flex justify-center items-end">
                 <div
                   className={`w-2 rounded-t transition-all duration-1000 ${
                     isLast ? 'bg-blue-600' : 'bg-blue-400'
                   }`}
-                  style={{ 
+                  style={{
                     height: `${height}%`,
                     animationDelay: `${index * 100}ms`
                   }}
