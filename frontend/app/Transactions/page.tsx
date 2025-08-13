@@ -24,97 +24,35 @@ export default function TransactionsPage() {
   const [dateRange, setDateRange] = useState({ from: '', to: '' });
   const [showFilters, setShowFilters] = useState(false);
 
-  // Mock data - replace with actual API call
+  // Real transaction data - only the 2 actual transactions
   useEffect(() => {
-    const mockTransactions: Transaction[] = [
+    const realTransactions: Transaction[] = [
       {
         id: '1',
         date: new Date('2025-08-13'),
-        description: 'Online Purchase',
-        recipient: 'Amazon Europe',
-        amount: -45.99,
-        type: 'debit',
-        category: 'Shopping',
+        description: 'Jewelry Business Payment',
+        recipient: 'Juwelier Barok im Linden Center',
+        amount: 23000000.00,
+        type: 'credit',
+        category: 'Business Income',
         status: 'completed',
-        reference: 'AMZ-2025-001'
+        reference: 'JUW-2025-001'
       },
       {
         id: '2',
         date: new Date('2025-08-13'),
-        description: 'Salary',
-        recipient: 'Tech Company GmbH',
-        amount: 3500.00,
-        type: 'credit',
-        category: 'Income',
+        description: 'Tax Payment',
+        recipient: 'Finanzamt Agency',
+        amount: -5000000.00,
+        type: 'debit',
+        category: 'Tax & Government',
         status: 'completed',
-        reference: 'SAL-AUG-2025'
-      },
-      {
-        id: '3',
-        date: new Date('2025-08-12'),
-        description: 'Grocery Shopping',
-        recipient: 'REWE Supermarket',
-        amount: -78.45,
-        type: 'debit',
-        category: 'Groceries',
-        status: 'completed'
-      },
-      {
-        id: '4',
-        date: new Date('2025-08-12'),
-        description: 'Transfer to Savings',
-        recipient: 'Savings Account',
-        amount: -500.00,
-        type: 'transfer',
-        category: 'Transfer',
-        status: 'completed',
-        reference: 'SAVE-001'
-      },
-      {
-        id: '5',
-        date: new Date('2025-08-11'),
-        description: 'Electricity Bill',
-        recipient: 'Stadtwerke Berlin',
-        amount: -89.50,
-        type: 'debit',
-        category: 'Utilities',
-        status: 'completed',
-        reference: 'ELEC-JUL-2025'
-      },
-      {
-        id: '6',
-        date: new Date('2025-08-10'),
-        description: 'ATM Withdrawal',
-        recipient: 'Deutsche Bank ATM',
-        amount: -100.00,
-        type: 'debit',
-        category: 'Cash',
-        status: 'completed'
-      },
-      {
-        id: '7',
-        date: new Date('2025-08-09'),
-        description: 'Restaurant',
-        recipient: 'Cafe Central',
-        amount: -24.80,
-        type: 'debit',
-        category: 'Dining',
-        status: 'completed'
-      },
-      {
-        id: '8',
-        date: new Date('2025-08-09'),
-        description: 'Freelance Payment',
-        recipient: 'Client XYZ',
-        amount: 750.00,
-        type: 'credit',
-        category: 'Income',
-        status: 'pending'
+        reference: 'TAX-2025-AUG'
       }
     ];
 
     setTimeout(() => {
-      setTransactions(mockTransactions);
+      setTransactions(realTransactions);
       setLoading(false);
     }, 1000);
   }, []);
@@ -122,8 +60,7 @@ export default function TransactionsPage() {
   const accounts = [
     { id: 'all', name: 'All Accounts' },
     { id: '1', name: 'Main Checking Account' },
-    { id: '2', name: 'Savings Account' },
-    { id: '3', name: 'Credit Card' }
+    { id: '2', name: 'Savings Account' }
   ];
 
   const getTransactionIcon = (type: string) => {
@@ -167,7 +104,9 @@ export default function TransactionsPage() {
     return matchesSearch && matchesType && matchesDate;
   });
 
-  const totalBalance = filteredTransactions.reduce((sum, transaction) => sum + transaction.amount, 0);
+  const totalIncome = filteredTransactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0);
+  const totalExpenses = filteredTransactions.filter(t => t.amount < 0).reduce((sum, t) => sum + t.amount, 0);
+  const netChange = totalIncome + totalExpenses;
 
   if (loading) {
     return (
@@ -177,7 +116,7 @@ export default function TransactionsPage() {
             <div className="h-8 bg-gray-200 rounded w-1/4"></div>
             <div className="h-16 bg-gray-200 rounded"></div>
             <div className="space-y-4">
-              {[1, 2, 3, 4, 5].map((i) => (
+              {[1, 2].map((i) => (
                 <div key={i} className="h-20 bg-gray-200 rounded"></div>
               ))}
             </div>
@@ -215,7 +154,7 @@ export default function TransactionsPage() {
               <div>
                 <p className="text-sm text-gray-500">Total Income</p>
                 <p className="text-xl font-bold text-green-600">
-                  +{filteredTransactions.filter(t => t.amount > 0).reduce((sum, t) => sum + t.amount, 0).toLocaleString('de-DE', { minimumFractionDigits: 2 })} €
+                  +{totalIncome.toLocaleString('de-DE', { minimumFractionDigits: 2 })} €
                 </p>
               </div>
             </div>
@@ -229,7 +168,7 @@ export default function TransactionsPage() {
               <div>
                 <p className="text-sm text-gray-500">Total Expenses</p>
                 <p className="text-xl font-bold text-red-600">
-                  {filteredTransactions.filter(t => t.amount < 0).reduce((sum, t) => sum + t.amount, 0).toLocaleString('de-DE', { minimumFractionDigits: 2 })} €
+                  {totalExpenses.toLocaleString('de-DE', { minimumFractionDigits: 2 })} €
                 </p>
               </div>
             </div>
@@ -242,9 +181,41 @@ export default function TransactionsPage() {
               </div>
               <div>
                 <p className="text-sm text-gray-500">Net Change</p>
-                <p className={`text-xl font-bold ${totalBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {totalBalance >= 0 ? '+' : ''}{totalBalance.toLocaleString('de-DE', { minimumFractionDigits: 2 })} €
+                <p className={`text-xl font-bold ${netChange >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {netChange >= 0 ? '+' : ''}{netChange.toLocaleString('de-DE', { minimumFractionDigits: 2 })} €
                 </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Account Overview */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h3 className="font-semibold text-gray-900 mb-4">Account Summary</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-blue-900">Account Status</p>
+                  <p className="text-xs text-blue-700">Recently opened • High-value transactions</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-bold text-blue-900">Active</p>
+                  <p className="text-xs text-blue-700">2 transactions</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-green-900">Current Balance</p>
+                  <p className="text-xs text-green-700">After all transactions</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-lg font-bold text-green-900">{netChange.toLocaleString('de-DE', { minimumFractionDigits: 2 })} €</p>
+                  <p className="text-xs text-green-700">Available now</p>
+                </div>
               </div>
             </div>
           </div>
@@ -331,7 +302,7 @@ export default function TransactionsPage() {
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <div className="p-4 border-b border-gray-200">
             <h3 className="font-semibold text-gray-900">
-              Recent Transactions ({filteredTransactions.length})
+              All Transactions ({filteredTransactions.length})
             </h3>
           </div>
 
@@ -344,26 +315,26 @@ export default function TransactionsPage() {
               </div>
             ) : (
               filteredTransactions.map((transaction) => (
-                <div key={transaction.id} className="p-4 hover:bg-gray-50 transition-colors">
+                <div key={transaction.id} className="p-6 hover:bg-gray-50 transition-colors">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
-                      <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
                         {getTransactionIcon(transaction.type)}
                       </div>
                       
                       <div className="flex-1">
                         <div className="flex items-center space-x-2">
-                          <h4 className="font-medium text-gray-900">{transaction.description}</h4>
+                          <h4 className="font-medium text-gray-900 text-lg">{transaction.description}</h4>
                           {getStatusBadge(transaction.status)}
                         </div>
-                        <div className="flex items-center space-x-4 mt-1">
-                          <p className="text-sm text-gray-500">{transaction.recipient}</p>
+                        <div className="flex items-center space-x-4 mt-2">
+                          <p className="text-sm text-gray-500 font-medium">{transaction.recipient}</p>
                           <span className="text-gray-300">•</span>
                           <p className="text-sm text-gray-500">{transaction.category}</p>
                           {transaction.reference && (
                             <>
                               <span className="text-gray-300">•</span>
-                              <p className="text-sm text-gray-500">{transaction.reference}</p>
+                              <p className="text-sm text-gray-500 font-mono">{transaction.reference}</p>
                             </>
                           )}
                         </div>
@@ -371,13 +342,18 @@ export default function TransactionsPage() {
                     </div>
 
                     <div className="text-right">
-                      <p className={`font-bold ${
+                      <p className={`text-2xl font-bold ${
                         transaction.amount >= 0 ? 'text-green-600' : 'text-red-600'
                       }`}>
                         {transaction.amount >= 0 ? '+' : ''}{transaction.amount.toLocaleString('de-DE', { minimumFractionDigits: 2 })} €
                       </p>
-                      <p className="text-sm text-gray-500">
-                        {transaction.date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      <p className="text-sm text-gray-500 mt-1">
+                        {transaction.date.toLocaleDateString('en-US', { 
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long', 
+                          day: 'numeric' 
+                        })}
                       </p>
                     </div>
                   </div>
@@ -387,12 +363,20 @@ export default function TransactionsPage() {
           </div>
         </div>
 
-        {/* Load More */}
+        {/* Account Info */}
         {filteredTransactions.length > 0 && (
-          <div className="text-center">
-            <button className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
-              Load More Transactions
-            </button>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-6">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <Calendar className="w-4 h-4 text-blue-600" />
+              </div>
+              <div>
+                <h4 className="font-medium text-blue-900">Account Activity Summary</h4>
+                <p className="text-sm text-blue-700">
+                  This account was recently opened and has processed {filteredTransactions.length} high-value transactions totaling {Math.abs(totalIncome + totalExpenses).toLocaleString('de-DE', { minimumFractionDigits: 2 })} € in volume.
+                </p>
+              </div>
+            </div>
           </div>
         )}
       </div>
