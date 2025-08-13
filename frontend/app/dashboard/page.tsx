@@ -61,7 +61,6 @@ export default function DashboardPage() {
               accountName: 'Main Checking Account',
               balance: 18000000.00,
               currency: 'EUR',
-              status: 'active',
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString()
             },
@@ -73,7 +72,6 @@ export default function DashboardPage() {
               accountName: 'Savings Account',
               balance: 0.00,
               currency: 'EUR',
-              status: 'active',
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString()
             }
@@ -93,7 +91,6 @@ export default function DashboardPage() {
             accountName: 'Main Checking Account',
             balance: 18000000.00,
             currency: 'EUR',
-            status: 'active',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
           },
@@ -105,7 +102,6 @@ export default function DashboardPage() {
             accountName: 'Savings Account',
             balance: 0.00,
             currency: 'EUR',
-            status: 'active',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
           }
