@@ -4,6 +4,8 @@ import { useRouter } from "next/navigation";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import { useAuth } from "../../contexts/AuthContext";
+import apiClient from '@/lib/apiClient';
+
 
 type LoginStep = 'credentials' | '2fa' | '2fa-setup';
 
@@ -54,6 +56,22 @@ export default function LoginPage() {
     if (error) setError("");
   };
 
+  // Updated handleLogin using apiClient
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      const res = await apiClient.login(email, password);
+      // Store token in memory instead of localStorage for Claude.ai compatibility
+      // Note: In a real application, you would use localStorage.setItem('authToken', res.token);
+      // For now, we'll pass the token to the login context
+      await login({ email, password, token: res.token });
+      router.push('/dashboard');
+      return res;
+    } catch (err) {
+      console.error('Login failed:', err);
+      throw err;
+    }
+  };
+
   const handleCredentialsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -74,7 +92,23 @@ export default function LoginPage() {
     try {
       await wakeUpBackend();
       
-      // Check if user needs 2FA
+      // Try direct login with apiClient first
+      try {
+        await handleLogin(formData.email, formData.password);
+        return; // Success - early return
+      } catch (apiError: any) {
+        // If apiClient login fails, check if it's a 2FA requirement
+        if (apiError.requires2FA) {
+          setStep('2fa');
+          return;
+        } else if (apiError.needs2FASetup) {
+          setStep('2fa-setup');
+          return;
+        }
+        // Otherwise, fall back to original fetch method
+      }
+      
+      // Fallback to original fetch method for 2FA handling
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -120,7 +154,14 @@ export default function LoginPage() {
       });
 
       if (response.ok) {
-        await login(formData);
+        const data = await response.json();
+        // If 2FA verification succeeds and returns a token, use it
+        if (data.token) {
+          // Store token and complete login
+          await login({ ...formData, token: data.token });
+        } else {
+          await login(formData);
+        }
         router.push("/dashboard");
       } else {
         const data = await response.json();
