@@ -1,11 +1,11 @@
 import nodemailer from 'nodemailer';
 
 export async function sendOtpEmail(to: string, otp: string) {
-  const transporter = nodemailer.createTransporter({
+  const transporter = nodemailer.createTransport({ // FIXED: createTransport (not createTransporter)
     service: 'gmail',
     auth: {
       user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_APP_PASSWORD, // App password instead of OAuth2
+      pass: process.env.GMAIL_APP_PASSWORD,
     },
   });
 
@@ -24,10 +24,18 @@ export async function sendOtpEmail(to: string, otp: string) {
             <h1 style="font-size: 36px; color: #1e40af; margin: 10px 0; letter-spacing: 8px; font-family: monospace;">${otp}</h1>
             <p style="color: #64748b;">This code expires in 10 minutes</p>
           </div>
+          <p style="text-align: center; color: #64748b;">If you didn't request this, please ignore this email.</p>
         </div>
       </div>
     `,
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    const result = await transporter.sendMail(mailOptions);
+    console.log('✅ Email sent successfully:', result.messageId);
+    return result;
+  } catch (error) {
+    console.error('❌ Failed to send email:', error);
+    throw error;
+  }
 }
