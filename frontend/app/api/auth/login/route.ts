@@ -1,15 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcryptjs';
-import * as jwt from 'jsonwebtoken';
+import { sendOtpEmail } from '@/lib/email/sendOtpEmail';
 
 export const dynamic = 'force-dynamic';
 
 const prisma = new PrismaClient();
 
+// Helper function to generate random OTP
+function generateOTP(): string {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+}
+
 function corsHeaders(origin: string | null) {
   const headers = new Headers();
-  // Temporarily allow all origins for debugging
   headers.set('Access-Control-Allow-Origin', '*');
   headers.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
   headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
@@ -29,28 +33,6 @@ export async function POST(request: NextRequest) {
   try {
     console.log('Login API called from origin:', origin);
     
-    // DEBUG: Check what DATABASE_URL is being used
-    const dbUrl = process.env.DATABASE_URL;
-    if (dbUrl) {
-      console.log('DATABASE_URL first 50 chars:', dbUrl.substring(0, 50) + '...');
-      console.log('DATABASE_URL contains oregon-postgres:', dbUrl.includes('oregon-postgres'));
-      console.log('DATABASE_URL contains external hostname:', dbUrl.includes('.render.com'));
-    } else {
-      console.error('DATABASE_URL is undefined!');
-    }
-    
-    // Check for both JWT_SECRET and NEXTAUTH_SECRET
-    const secret = process.env.JWT_SECRET || process.env.NEXTAUTH_SECRET;
-    if (!secret) {
-      console.error('JWT_SECRET/NEXTAUTH_SECRET is missing');
-      const res = NextResponse.json(
-        { success: false, error: 'Server misconfiguration: JWT secret is missing' },
-        { status: 500 }
-      );
-      corsHeaders(origin).forEach((v, k) => res.headers.set(k, v));
-      return res;
-    }
-
     const body = await request.json();
     console.log('Request body received:', { email: body.email, hasPassword: !!body.password });
     
@@ -66,9 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('Looking for user with email:', email);
-    console.log('About to call prisma.user.findUnique...');
     
-    // Updated to include 2FA fields
     const user = await prisma.user.findUnique({ 
       where: { email },
       select: {
@@ -77,8 +57,8 @@ export async function POST(request: NextRequest) {
         passwordHash: true,
         firstName: true,
         lastName: true,
-        twoFactorEnabled: true,
-        twoFactorSecret: true,
+        otpCode: true,
+        otpExpiresAt: true,
       }
     });
     
@@ -105,77 +85,56 @@ export async function POST(request: NextRequest) {
       return res;
     }
 
-    console.log('Password valid, checking 2FA status');
+    console.log('Password valid, sending OTP via email');
 
-    // Check if 2FA is enabled
-    if (user.twoFactorEnabled && user.twoFactorSecret) {
-      console.log('User has 2FA enabled, requiring verification');
-      // User has 2FA enabled, require 2FA verification
+    try {
+      // Generate OTP
+      const otp = generateOTP();
+      const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+
+      console.log(`Generated OTP: ${otp} for user: ${email}`);
+
+      // Store OTP in database
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          otpCode: otp,
+          otpExpiresAt: expiresAt,
+        }
+      });
+
+      console.log('OTP stored in database');
+
+      // Send OTP via your existing email service
+      await sendOtpEmail(email, otp);
+
+      console.log(`OTP sent to ${email}: ${otp} (expires at ${expiresAt})`);
+
+      // Return requires2FA response
       const res = NextResponse.json({
-        success: false, // Keep false until 2FA is verified
-        message: '2FA required',
+        success: false, // Keep false until OTP is verified
+        message: 'OTP sent to your email address',
         requires2FA: true,
         userId: user.id,
       });
       corsHeaders(origin).forEach((v, k) => res.headers.set(k, v));
       return res;
-    } else {
-      // Check if user should set up 2FA (first login or recommended)
-      const shouldSetup2FA = !user.twoFactorEnabled;
+
+    } catch (emailError) {
+      console.error('Failed to send OTP email:', emailError);
       
-      if (shouldSetup2FA) {
-        console.log('Recommending 2FA setup for user');
-        // Generate token but suggest 2FA setup
-        const token = jwt.sign(
-          { userId: user.id, email: user.email },
-          secret,
-          { expiresIn: '24h' }
-        );
-
-        const payload = {
-          success: true,
-          token,
-          message: '2FA setup recommended',
-          needs2FASetup: true,
-          user: {
-            id: user.id,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            name: `${user.firstName} ${user.lastName}`,
-          },
-        };
-
-        const res = NextResponse.json(payload, { status: 200 });
-        corsHeaders(origin).forEach((v, k) => res.headers.set(k, v));
-        return res;
-      }
+      // Return the specific error so we can debug
+      const res = NextResponse.json(
+        { 
+          success: false, 
+          error: 'Failed to send OTP email', 
+          details: emailError instanceof Error ? emailError.message : 'Unknown email error'
+        },
+        { status: 500 }
+      );
+      corsHeaders(origin).forEach((v, k) => res.headers.set(k, v));
+      return res;
     }
-
-    console.log('Regular login without 2FA, generating token');
-    const token = jwt.sign(
-      { userId: user.id, email: user.email },
-      secret,
-      { expiresIn: '24h' }
-    );
-
-    // Match your frontend's expected AuthResponse shape
-    const payload = {
-      success: true,
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        name: `${user.firstName} ${user.lastName}`,
-      },
-    };
-
-    console.log('Login successful');
-    const res = NextResponse.json(payload, { status: 200 });
-    corsHeaders(origin).forEach((v, k) => res.headers.set(k, v));
-    return res;
 
   } catch (error) {
     console.error('Login error details:', error);
