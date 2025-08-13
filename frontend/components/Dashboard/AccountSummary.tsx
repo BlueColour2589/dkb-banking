@@ -1,12 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-
-interface Account {
-  name: string;
-  balance: number;
-  currency?: string;
-  accountNumber?: string;
-}
+import { Account } from '@/lib/api'; // Import Account type from API
 
 interface AccountSummaryProps {
   accounts: Account[];
@@ -25,10 +19,15 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
   const primaryAccount = accounts.length > 0
     ? accounts[0]
     : {
-        name: 'Joint Account',
+        id: 'demo-id',
+        userId: 'demo-user',
+        accountNumber: '41d4f756-890d-4686-9641-41e41ae5a75c',
+        accountType: 'Joint Account',
+        accountName: 'Joint Account',
         balance: 18094200,
         currency: 'EUR',
-        accountNumber: 'http://worldied2o%kAIR/numiantdua/a19hfUp3/'
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
       };
 
   const maxBalance = Math.max(...balanceHistory);
@@ -95,7 +94,7 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
       <div className="flex justify-between items-start mb-6">
         <div>
           <h4 className="text-lg font-semibold text-blue-800 transition-colors duration-200">
-            {primaryAccount.name}
+            {primaryAccount.accountName || primaryAccount.accountType || 'Account'}
           </h4>
           <p className="text-blue-400 text-sm">
             {primaryAccount.accountNumber}
