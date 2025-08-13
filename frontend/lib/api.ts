@@ -21,11 +21,13 @@ export interface RegisterRequest {
   confirmPassword?: string;
 }
 
+// UPDATED: Account interface to match what your backend returns and dashboard expects
 export interface Account {
   id: string;
   userId: string;
-  name: string;
-  type: string;
+  accountNumber: string;  // Changed from 'name' to 'accountNumber'
+  accountType: string;    // Changed from 'type' to 'accountType'
+  accountName?: string;   // Added optional accountName
   balance: number;
   currency: string;
   createdAt: string;
@@ -145,5 +147,5 @@ export const apiClient = {
     request('/user/profile', 'PUT', userData, token),
 };
 
-// 🔹 ADD THIS LINE - Default export for compatibility
+// 🔹 Default export for compatibility
 export default apiClient;
