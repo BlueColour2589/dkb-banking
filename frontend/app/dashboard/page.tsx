@@ -12,36 +12,35 @@ import QuickActions from '@/components/Dashboard/QuickActions';
 import IPInfo from '@/components/Dashboard/IPInfo';
 import { QuickAction } from '@/types/dashboard';
 import TransferForm from '@/components/TransferForm';
-import { useAccounts } from '@/hooks/useAccounts';
 import apiClient from '@/lib/apiClient';
 
 export default function DashboardPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [accounts, setAccounts] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
-  // Fetch accounts using token and apiClient
   useEffect(() => {
     const fetchAccounts = async () => {
       try {
         setLoading(true);
         setError(null);
-        
-        // Get token from localStorage
+
         const token = localStorage.getItem('authToken');
-        
         if (!token) {
           throw new Error('No authentication token found');
         }
-        
-        // Fetch accounts using apiClient
-        const accountsData = await apiClient.getAccounts(token);
-        setAccounts(accountsData);
-        
+
+        const res = await apiClient.getAccounts(token);
+        if (res.success && res.data) {
+          setAccounts(res.data);
+        } else {
+          throw new Error(res.error || res.message || 'Failed to fetch accounts');
+        }
       } catch (err) {
         console.error('Failed to fetch accounts:', err);
-        setError(err.message || 'Failed to fetch accounts');
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch accounts';
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -73,7 +72,6 @@ export default function DashboardPage() {
 
   const accountId = accounts?.[0]?.accountNumber || '';
 
-  // Show loading state
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -85,20 +83,19 @@ export default function DashboardPage() {
     );
   }
 
-  // Show error state
   if (error) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">Failed to load dashboard</h3>
           <p className="text-gray-600 mb-4">{error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
+          <button
+            onClick={() => window.location.reload()}
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
           >
             Retry
@@ -142,12 +139,10 @@ export default function DashboardPage() {
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
               <div className="xl:col-span-2 space-y-4 lg:space-y-6">
-                {/* Account Summary with fetched data */}
                 <div className="animate-scale-in opacity-0 [animation-delay:0.4s] [animation-fill-mode:forwards]">
                   <AccountSummary accounts={accounts} />
                 </div>
 
-                {/* Transfer Form with account ID */}
                 <div className="animate-scale-in opacity-0 [animation-delay:0.45s] [animation-fill-mode:forwards]">
                   <TransferForm accountId={accountId} />
                 </div>
