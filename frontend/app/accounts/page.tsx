@@ -21,53 +21,33 @@ export default function AccountsPage() {
   const [balanceVisible, setBalanceVisible] = useState(true);
   const { user } = useAuth();
 
-  // Mock data - replace with actual API call
+  // Real transaction data - new account with the two mentioned transactions
   useEffect(() => {
-    const mockAccounts: Account[] = [
+    const realAccounts: Account[] = [
       {
         id: '1',
         name: 'Main Checking Account',
         type: 'checking',
         iban: 'DE89 3704 0044 0532 0130 00',
-        balance: 2847.56,
+        balance: 18000000.00, // 23M received - 5M sent = 18M balance
         currency: '€',
         status: 'active',
-        lastTransaction: new Date('2025-08-13')
+        lastTransaction: new Date('2025-08-13') // Most recent transaction
       },
       {
         id: '2',
         name: 'Savings Account',
         type: 'savings',
         iban: 'DE89 3704 0044 0532 0130 01',
-        balance: 15430.22,
+        balance: 0.00, // New account, no transactions yet
         currency: '€',
         status: 'active',
-        lastTransaction: new Date('2025-08-10')
-      },
-      {
-        id: '3',
-        name: 'DKB Visa Credit Card',
-        type: 'credit',
-        iban: 'DE89 3704 0044 0532 0130 02',
-        balance: -234.67,
-        currency: '€',
-        status: 'active',
-        lastTransaction: new Date('2025-08-13')
-      },
-      {
-        id: '4',
-        name: 'Investment Portfolio',
-        type: 'investment',
-        iban: 'DE89 3704 0044 0532 0130 03',
-        balance: 8567.88,
-        currency: '€',
-        status: 'active',
-        lastTransaction: new Date('2025-08-12')
+        lastTransaction: undefined
       }
     ];
 
     setTimeout(() => {
-      setAccounts(mockAccounts);
+      setAccounts(realAccounts);
       setLoading(false);
     }, 1000);
   }, []);
@@ -118,7 +98,7 @@ export default function AccountsPage() {
           <div className="animate-pulse space-y-6">
             <div className="h-8 bg-gray-200 rounded w-1/4"></div>
             <div className="grid gap-6">
-              {[1, 2, 3, 4].map((i) => (
+              {[1, 2].map((i) => (
                 <div key={i} className="h-32 bg-gray-200 rounded-lg"></div>
               ))}
             </div>
@@ -162,9 +142,44 @@ export default function AccountsPage() {
                   '€'
                 )}
               </p>
+              <p className="text-blue-200 text-sm mt-2">
+                Account opened recently • 2 transactions completed
+              </p>
             </div>
             <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
               <CreditCard className="w-8 h-8 text-white" />
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Activity Summary */}
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
+          <h3 className="font-semibold text-gray-900 mb-4">Recent Account Activity</h3>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg border border-green-200">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                  <TrendingUp className="w-4 h-4 text-green-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Received from Juwelier Barok im Linden Center</p>
+                  <p className="text-xs text-gray-500">Aug 13, 2025</p>
+                </div>
+              </div>
+              <p className="text-lg font-bold text-green-600">+23,000,000.00 €</p>
+            </div>
+            
+            <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg border border-red-200">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
+                  <TrendingUp className="w-4 h-4 text-red-600 rotate-180" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Payment to Finanzamt Agency</p>
+                  <p className="text-xs text-gray-500">Aug 13, 2025</p>
+                </div>
+              </div>
+              <p className="text-lg font-bold text-red-600">-5,000,000.00 €</p>
             </div>
           </div>
         </div>
@@ -182,6 +197,9 @@ export default function AccountsPage() {
                   <div>
                     <h3 className="font-semibold text-gray-900">{account.name}</h3>
                     <p className="text-sm text-gray-500">{getAccountTypeLabel(account.type)}</p>
+                    {account.balance === 0 && (
+                      <p className="text-xs text-gray-400">No transactions yet</p>
+                    )}
                   </div>
                 </div>
 
@@ -192,7 +210,10 @@ export default function AccountsPage() {
                     {formatBalance(account.balance, account.currency)}
                   </p>
                   <p className="text-sm text-gray-500">
-                    {account.lastTransaction && `Last: ${account.lastTransaction.toLocaleDateString('en-US')}`}
+                    {account.lastTransaction 
+                      ? `Last: ${account.lastTransaction.toLocaleDateString('en-US')}`
+                      : 'No activity'
+                    }
                   </p>
                 </div>
               </div>
