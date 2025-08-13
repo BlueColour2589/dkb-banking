@@ -121,7 +121,7 @@ export default function DashboardPage() {
     fetchAccounts();
   }, [isAuthenticated, authLoading, router, user?.id]);
 
-  // Updated quick actions with proper navigation
+  // Enhanced quick actions with all new features
   const quickActions: QuickAction[] = [
     {
       id: 'transfer',
@@ -130,15 +130,21 @@ export default function DashboardPage() {
       primary: true,
     },
     {
-      id: 'accounts',
-      label: 'View Accounts',
-      onClick: () => router.push('/accounts'),
+      id: 'standing-orders',
+      label: 'Standing Orders',
+      onClick: () => router.push('/standing-orders'),
       primary: false,
     },
     {
-      id: 'transactions',
-      label: 'All Transactions',
-      onClick: () => router.push('/transactions'),
+      id: 'portfolio',
+      label: 'View Portfolio',
+      onClick: () => router.push('/portfolio'),
+      primary: false,
+    },
+    {
+      id: 'cards',
+      label: 'Manage Cards',
+      onClick: () => router.push('/cards'),
       primary: false,
     },
   ];
@@ -250,7 +256,7 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Right Column - Quick Actions & Info */}
+              {/* Right Column - Enhanced Quick Actions & Info */}
               <div className="space-y-4 lg:space-y-6">
                 <div className="animate-scale-in opacity-0 [animation-delay:0.4s] [animation-fill-mode:forwards]">
                   <QuickActions actions={quickActions} />
