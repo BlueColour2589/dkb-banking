@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Navbar from "../../components/Navbar";
 import Footer from "../../components/Footer";
 import { useAuth } from "../../contexts/AuthContext";
-import apiClient from '@/lib/apiClient';
+import apiClient from '@/lib/api';
 
 
 type LoginStep = 'credentials' | '2fa' | '2fa-setup';

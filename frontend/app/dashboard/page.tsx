@@ -13,7 +13,7 @@ import QuickActions from '@/components/Dashboard/QuickActions';
 import IPInfo from '@/components/Dashboard/IPInfo';
 import { QuickAction } from '@/types/dashboard';
 import TransferForm from '@/components/TransferForm';
-import apiClient from '@/lib/apiClient';
+import apiClient from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 
 // Define Account type directly or import from a shared types file
