@@ -56,16 +56,12 @@ export default function LoginPage() {
     if (error) setError("");
   };
 
-  // Updated handleLogin using apiClient
+  // Updated handleLogin using context login (which uses apiClient internally)
   const handleLogin = async (email: string, password: string) => {
     try {
-      const res = await apiClient.login(email, password);
-      // Store token in memory instead of localStorage for Claude.ai compatibility
-      // Note: In a real application, you would use localStorage.setItem('authToken', res.token);
-      // For now, we'll pass the token to the login context
-      await login({ email, password, token: res.token });
+      // Use the context login function which handles apiClient internally
+      await login({ email, password });
       router.push('/dashboard');
-      return res;
     } catch (err) {
       console.error('Login failed:', err);
       throw err;
@@ -123,7 +119,7 @@ export default function LoginPage() {
         } else if (data.needs2FASetup) {
           setStep('2fa-setup');
         } else {
-          await login(formData);
+          await login(formData); // This is correct - only email and password
           router.push("/dashboard");
         }
       } else {
@@ -155,13 +151,9 @@ export default function LoginPage() {
 
       if (response.ok) {
         const data = await response.json();
-        // If 2FA verification succeeds and returns a token, use it
-        if (data.token) {
-          // Store token and complete login
-          await login({ ...formData, token: data.token });
-        } else {
-          await login(formData);
-        }
+        // If 2FA verification succeeds, just use the original formData
+        // Token handling is done internally by the login function
+        await login(formData); // FIXED: Removed token parameter
         router.push("/dashboard");
       } else {
         const data = await response.json();
