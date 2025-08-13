@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowRight, Send, Clock, Users, CreditCard, AlertCircle, Check } from 'lucide-react';
+import { ArrowRight, Send, Clock, Users, CreditCard, AlertCircle, Check, Info } from 'lucide-react';
 
 interface TransferForm {
   fromAccount: string;
@@ -25,16 +25,43 @@ export default function TransferPage() {
   });
   const [step, setStep] = useState(1); // 1: Form, 2: Confirm, 3: Success
 
-  // Mock data
+  // Real account data - reflecting the actual balance
   const accounts = [
-    { id: '1', name: 'Main Checking Account', iban: 'DE89 3704 0044 0532 0130 00', balance: 2847.56 },
-    { id: '2', name: 'Savings Account', iban: 'DE89 3704 0044 0532 0130 01', balance: 15430.22 }
+    { 
+      id: '1', 
+      name: 'Main Checking Account', 
+      iban: 'DE89 3704 0044 0532 0130 00', 
+      balance: 18000000.00 // 23M - 5M = 18M current balance
+    },
+    { 
+      id: '2', 
+      name: 'Savings Account', 
+      iban: 'DE89 3704 0044 0532 0130 01', 
+      balance: 0.00 // No activity yet
+    }
   ];
 
+  // Real recipients based on actual transaction history
   const recentRecipients = [
-    { name: 'John Doe', iban: 'DE75 5121 0800 1245 126199', lastUsed: '2025-08-10' },
-    { name: 'Maria Schmidt', iban: 'DE89 3704 0044 0532 013000', lastUsed: '2025-08-08' },
-    { name: 'Amazon Europe', iban: 'DE62 7021 0800 0000 012345', lastUsed: '2025-08-05' }
+    { 
+      name: 'Finanzamt Agency', 
+      iban: 'DE75 5121 0800 1245 126199', 
+      lastUsed: '2025-08-13',
+      note: 'Previous tax payment'
+    }
+  ];
+
+  // Actual transfer history (the 2 real transactions)
+  const transferHistory = [
+    {
+      id: '1',
+      date: '2025-08-13',
+      recipient: 'Finanzamt Agency',
+      amount: -5000000.00,
+      status: 'completed',
+      type: 'Tax Payment',
+      reference: 'TAX-2025-AUG'
+    }
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -61,6 +88,19 @@ export default function TransferPage() {
 
   const renderTransferForm = () => (
     <div className="space-y-6">
+      {/* Account Status Notice */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="flex items-center space-x-2">
+          <Info className="w-5 h-5 text-blue-600" />
+          <div>
+            <span className="font-medium text-blue-800">Account Information</span>
+            <p className="text-sm text-blue-700 mt-1">
+              Your account is active with a current balance of 18,000,000.00 € available for transfers.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* From Account */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">From Account</label>
@@ -116,11 +156,15 @@ export default function TransferPage() {
             placeholder="0.00"
             step="0.01"
             min="0.01"
+            max="18000000.00"
             className="w-full p-3 pr-12 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
             required
           />
           <span className="absolute right-3 top-3 text-gray-500 font-medium">€</span>
         </div>
+        <p className="text-xs text-gray-500 mt-1">
+          Available balance: 18,000,000.00 €
+        </p>
       </div>
 
       {/* Reference */}
@@ -257,6 +301,10 @@ export default function TransferPage() {
             <span className="text-gray-600">Type:</span>
             <span className="font-medium capitalize">{formData.transferType}</span>
           </div>
+          <div className="flex justify-between pt-2 border-t border-gray-200">
+            <span className="text-gray-600">Remaining Balance:</span>
+            <span className="font-medium">{(selectedAccount?.balance! - parseFloat(formData.amount || '0')).toLocaleString('de-DE', { minimumFractionDigits: 2 })} €</span>
+          </div>
         </div>
       </div>
     );
@@ -368,6 +416,7 @@ export default function TransferPage() {
                     <div>
                       <div className="font-medium">{recipient.name}</div>
                       <div className="text-sm text-gray-500">{recipient.iban}</div>
+                      <div className="text-xs text-gray-400">{recipient.note}</div>
                     </div>
                   </div>
                   <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
@@ -379,10 +428,24 @@ export default function TransferPage() {
           )}
 
           {activeTab === 'history' && (
-            <div className="text-center py-8">
-              <CreditCard className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="font-semibold text-gray-900 mb-2">No transfers yet</h3>
-              <p className="text-gray-500">Your transfer history will appear here</p>
+            <div className="space-y-4">
+              <h3 className="font-semibold text-gray-900">Transfer History</h3>
+              {transferHistory.map((transfer, index) => (
+                <div key={index} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                  <div className="flex items-center space-x-3">
+                    <CreditCard className="w-5 h-5 text-gray-400" />
+                    <div>
+                      <div className="font-medium">{transfer.type}</div>
+                      <div className="text-sm text-gray-500">{transfer.recipient}</div>
+                      <div className="text-xs text-gray-400">{transfer.date}</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-bold text-red-600">{transfer.amount.toLocaleString('de-DE', { minimumFractionDigits: 2 })} €</div>
+                    <div className="text-xs text-green-600 capitalize">{transfer.status}</div>
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </div>
