@@ -26,9 +26,13 @@ export async function POST(request: NextRequest) {
   const origin = request.headers.get('origin');
   
   try {
+    console.log('=== OTP VERIFICATION START ===');
+    
     const { email, otp } = await request.json();
+    console.log('Verification request:', { email, otp: otp ? '******' : 'missing' });
 
     if (!email || !otp) {
+      console.log('❌ Missing email or OTP');
       const res = NextResponse.json(
         { success: false, error: 'Email and OTP are required' },
         { status: 400 }
@@ -38,6 +42,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Find user with matching email and OTP
+    console.log(`Looking for user: ${email}`);
     const user = await prisma.user.findUnique({
       where: { email },
       select: {
@@ -51,6 +56,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
+      console.log('❌ User not found');
       const res = NextResponse.json(
         { success: false, error: 'User not found' },
         { status: 404 }
@@ -59,8 +65,13 @@ export async function POST(request: NextRequest) {
       return res;
     }
 
+    console.log('✅ User found:', user.email);
+    console.log('Stored OTP:', user.otpCode ? '******' : 'none');
+    console.log('OTP expires:', user.otpExpiresAt);
+
     // Check if OTP exists and hasn't expired
     if (!user.otpCode || !user.otpExpiresAt) {
+      console.log('❌ No OTP found in database');
       const res = NextResponse.json(
         { success: false, error: 'No valid OTP found. Please request a new one.' },
         { status: 400 }
@@ -70,7 +81,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if OTP has expired
-    if (new Date() > user.otpExpiresAt) {
+    const now = new Date();
+    if (now > user.otpExpiresAt) {
+      console.log('❌ OTP expired');
       // Clear expired OTP
       await prisma.user.update({
         where: { id: user.id },
@@ -89,7 +102,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify OTP
+    console.log(`Comparing OTP: "${otp}" vs "${user.otpCode}"`);
     if (user.otpCode !== otp) {
+      console.log('❌ Invalid OTP code');
       const res = NextResponse.json(
         { success: false, error: 'Invalid OTP code' },
         { status: 400 }
@@ -97,6 +112,8 @@ export async function POST(request: NextRequest) {
       corsHeaders(origin).forEach((v, k) => res.headers.set(k, v));
       return res;
     }
+
+    console.log('✅ OTP verified successfully!');
 
     // OTP is valid - clear it and generate JWT token
     await prisma.user.update({
@@ -119,7 +136,7 @@ export async function POST(request: NextRequest) {
       { expiresIn: '24h' }
     );
 
-    console.log(`OTP verified successfully for user: ${email}`);
+    console.log(`✅ JWT token generated for user: ${email}`);
 
     const res = NextResponse.json({
       success: true,
@@ -137,7 +154,7 @@ export async function POST(request: NextRequest) {
     return res;
 
   } catch (error) {
-    console.error('Verify OTP error:', error);
+    console.error('❌ Verify OTP error:', error);
     const errorMessage = error instanceof Error ? error.message : 'Failed to verify OTP';
     
     const res = NextResponse.json(
