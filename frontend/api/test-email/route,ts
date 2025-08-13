@@ -1,0 +1,38 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { sendOtpEmail } from '@/lib/email/sendOtpEmail';
+
+export async function GET() {
+  try {
+    console.log('=== EMAIL SERVICE TEST ===');
+    console.log('Gmail user:', process.env.GMAIL_USER);
+    console.log('Gmail client ID:', process.env.GMAIL_CLIENT_ID ? 'Set ✓' : 'Missing ✗');
+    console.log('Gmail client secret:', process.env.GMAIL_CLIENT_SECRET ? 'Set ✓' : 'Missing ✗');
+    console.log('Gmail refresh token:', process.env.GMAIL_REFRESH_TOKEN ? 'Set ✓' : 'Missing ✗');
+    
+    console.log('Attempting to send test email...');
+    
+    // Send test email to your Gmail address
+    await sendOtpEmail('bluecolour112@gmail.com', '123456');
+    
+    console.log('Email sent successfully!');
+    
+    return NextResponse.json({ 
+      success: true, 
+      message: 'Email sent successfully!',
+      sentTo: 'bluecolour112@gmail.com',
+      testOtp: '123456'
+    });
+  } catch (error) {
+    console.error('=== EMAIL ERROR ===');
+    console.error('Error name:', error instanceof Error ? error.name : 'Unknown');
+    console.error('Error message:', error instanceof Error ? error.message : 'Unknown error');
+    console.error('Full error:', error);
+    
+    return NextResponse.json({ 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Unknown error',
+      errorName: error instanceof Error ? error.name : 'Unknown',
+      details: error instanceof Error ? error.stack : undefined
+    }, { status: 500 });
+  }
+}
