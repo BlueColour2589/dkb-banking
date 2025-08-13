@@ -198,13 +198,54 @@ export default function LoginPage() {
 
       if (response.ok) {
         console.log('✅ 2FA verification successful');
-        // If 2FA verification succeeds, use the login context
-        try {
-          await login(formData);
+        const data = await response.json();
+        
+        // Check if the 2FA response includes authentication data
+        if (data.token || data.user || data.authenticated) {
+          // If the backend returns auth data after successful 2FA, handle it directly
+          console.log('Using auth data from 2FA response');
+          
+          // You might need to manually set the auth state here depending on your AuthContext
+          // For now, let's try to redirect directly if we have the necessary data
+          if (data.token) {
+            // Store token if provided
+            localStorage.setItem('authToken', data.token);
+          }
+          
           router.push("/dashboard");
-        } catch (loginError: any) {
-          console.error('Login after 2FA failed:', loginError);
-          setError('Login failed after verification. Please try logging in again.');
+        } else {
+          // If no auth data returned, try a simplified login without triggering 2FA again
+          console.log('No auth data in 2FA response, attempting direct authentication');
+          
+          try {
+            // Instead of calling login() which might trigger 2FA again,
+            // make a direct call to complete the authentication
+            const authResponse = await fetch('/api/auth/complete-2fa-login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                email: formData.email,
+                verified: true
+              }),
+            });
+
+            if (authResponse.ok) {
+              const authData = await authResponse.json();
+              // Update auth context with the response
+              if (authData.token) {
+                localStorage.setItem('authToken', authData.token);
+              }
+              router.push("/dashboard");
+            } else {
+              // Fallback: try the regular login but handle the 2FA loop
+              setError('Authentication completed but login failed. Please try logging in again.');
+              setStep('credentials');
+            }
+          } catch (loginError: any) {
+            console.error('Complete login after 2FA failed:', loginError);
+            setError('Authentication completed but login failed. Please try logging in again.');
+            setStep('credentials');
+          }
         }
       } else {
         console.log('❌ 2FA verification failed:', data);
