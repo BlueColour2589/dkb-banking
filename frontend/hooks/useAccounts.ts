@@ -1,4 +1,6 @@
+// hooks/useAccounts.ts
 import { useEffect, useState } from 'react';
+import apiClient from '@/lib/apiClient';
 
 type Transaction = {
   id: string;
@@ -23,31 +25,32 @@ type Account = {
 export function useAccounts() {
   const [accounts, setAccounts] = useState<Account[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
     if (!token) {
       console.warn('No auth token found');
+      setError('Missing authentication token');
       setLoading(false);
       return;
     }
 
-    fetch('https://your-api-domain.com/api/accounts', {
-      headers: { Authorization: `Bearer ${token}` },
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          setAccounts(data.data.accounts);
+    apiClient
+      .getAccounts(token)
+      .then(res => {
+        if (res.success && res.data) {
+          setAccounts(res.data);
         } else {
-          console.error('Accounts fetch failed:', data.error);
+          setError(res.error || res.message || 'Failed to fetch accounts');
         }
       })
       .catch(err => {
         console.error('Fetch error:', err);
+        setError(err.message || 'Unexpected error');
       })
       .finally(() => setLoading(false));
   }, []);
 
-  return { accounts, loading };
+  return { accounts, loading, error };
 }
