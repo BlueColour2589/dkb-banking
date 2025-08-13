@@ -16,7 +16,6 @@ export default function LoginPage() {
   const [isWakingUp, setIsWakingUp] = useState(false);
   const [error, setError] = useState("");
   const [twoFactorCode, setTwoFactorCode] = useState("");
-  const [useBackupCode, setUseBackupCode] = useState(false);
 
   const { login } = useAuth();
   const router = useRouter();
@@ -139,13 +138,12 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const response = await fetch('/api/auth/2fa/verify', {
+      const response = await fetch('/api/auth/2fa/verify-otp', { // CHANGED: Updated URL
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email: formData.email,
-          token: twoFactorCode,
-          isBackupCode: useBackupCode,
+          otp: twoFactorCode, // CHANGED: from 'token' to 'otp'
         }),
       });
 
@@ -153,7 +151,7 @@ export default function LoginPage() {
         const data = await response.json();
         // If 2FA verification succeeds, just use the original formData
         // Token handling is done internally by the login function
-        await login(formData); // FIXED: Removed token parameter
+        await login(formData);
         router.push("/dashboard");
       } else {
         const data = await response.json();
@@ -187,11 +185,11 @@ export default function LoginPage() {
               <div className="text-center mb-8">
                 <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path fillRule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-0.257-0.257A6 6 0 1118 8zM2 8a6 6 0 1012 0A6 6 0 002 8zm6-2a2 2 0 100 4 2 2 0 000-4z" clipRule="evenodd"/>
+                    <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" clipRule="evenodd"/>
                   </svg>
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">Two-Factor Authentication</h2>
-                <p className="text-gray-600 mt-2">Enter the verification code from your authenticator app</p>
+                <h2 className="text-2xl font-bold text-gray-900">Email Verification</h2>
+                <p className="text-gray-600 mt-2">Enter the verification code sent to your email</p>
                 <p className="text-sm text-gray-500 mt-1">{formData.email}</p>
               </div>
 
@@ -204,59 +202,34 @@ export default function LoginPage() {
               <form onSubmit={handle2FASubmit} className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {useBackupCode ? 'Backup Code' : 'Authentication Code'}
+                    Verification Code
                   </label>
                   <input
                     type="text"
-                    maxLength={useBackupCode ? 8 : 6}
+                    maxLength={6}
                     value={twoFactorCode}
                     onChange={(e) => {
-                      const value = useBackupCode 
-                        ? e.target.value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase()
-                        : e.target.value.replace(/\D/g, '');
+                      const value = e.target.value.replace(/\D/g, '');
                       setTwoFactorCode(value);
                       setError('');
                     }}
                     className="w-full text-center text-2xl font-mono py-3 px-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    placeholder={useBackupCode ? "XXXXXXXX" : "000000"}
+                    placeholder="000000"
                     autoComplete="one-time-code"
                     disabled={isLoading}
                   />
                   <p className="text-xs text-gray-500 mt-2 text-center">
-                    {useBackupCode 
-                      ? 'Enter one of your 8-character backup codes'
-                      : 'Enter the 6-digit code from your authenticator app'
-                    }
+                    Enter the 6-digit code sent to your email address
                   </p>
                 </div>
 
                 <button
                   type="submit"
-                  disabled={
-                    (!useBackupCode && twoFactorCode.length !== 6) ||
-                    (useBackupCode && twoFactorCode.length !== 8) ||
-                    isLoading
-                  }
+                  disabled={twoFactorCode.length !== 6 || isLoading}
                   className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white py-3 rounded-lg font-semibold transition-colors"
                 >
                   {getLoadingMessage()}
                 </button>
-
-                <div className="text-center">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setUseBackupCode(!useBackupCode);
-                      setTwoFactorCode('');
-                      setError('');
-                    }}
-                    className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
-                  >
-                    {useBackupCode 
-                      ? 'Use authenticator app instead' 
-                      : 'Use backup code instead'}
-                  </button>
-                </div>
 
                 <div className="flex justify-between text-sm">
                   <button
@@ -266,13 +239,42 @@ export default function LoginPage() {
                   >
                     ← Back to login
                   </button>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        setIsLoading(true);
+                        const response = await fetch('/api/auth/2fa/send-otp', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ email: formData.email }),
+                        });
+                        
+                        if (response.ok) {
+                          setError('');
+                          // You could show a success message here
+                        } else {
+                          const data = await response.json();
+                          setError(data.error || 'Failed to resend code');
+                        }
+                      } catch (error) {
+                        setError('Failed to resend code');
+                      } finally {
+                        setIsLoading(false);
+                      }
+                    }}
+                    className="text-blue-600 hover:text-blue-700 transition-colors"
+                    disabled={isLoading}
+                  >
+                    Resend code
+                  </button>
                 </div>
               </form>
 
               <div className="mt-8 p-4 bg-blue-50 rounded-lg">
                 <h4 className="text-sm font-semibold text-blue-800 mb-2">Security Tip</h4>
                 <p className="text-xs text-blue-700">
-                  Never share your 2FA codes with anyone. DKB will never ask for these codes via phone or email.
+                  Never share your verification codes with anyone. DKB will never ask for these codes via phone or other emails.
                 </p>
               </div>
             </div>
@@ -372,7 +374,7 @@ export default function LoginPage() {
                 <div>
                   <h3 className="font-semibold text-blue-800 mb-1">Enhanced Security</h3>
                   <p className="text-sm text-blue-700">
-                    Your account is protected with two-factor authentication for maximum security.
+                    Your account is protected with email verification for maximum security.
                   </p>
                 </div>
               </div>
