@@ -15,11 +15,20 @@ export default function MobileHeader({ toggleSidebar }: MobileHeaderProps) {
         <Menu size={24} />
       </button>
       
-      <div className="flex items-center space-x-3">
-        <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center">
-          <span className="text-white font-bold text-sm">B</span>
-        </div>
-        <h1 className="text-lg font-bold text-gray-900">Bank</h1>
+      <div className="flex items-center">
+        <svg className="h-7" viewBox="0 0 100 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <text 
+            x="2" 
+            y="28" 
+            fontSize="24" 
+            fontWeight="700" 
+            fontFamily="system-ui, -apple-system, sans-serif"
+            fill="#0066CC"
+            letterSpacing="-0.5px"
+          >
+            DKB
+          </text>
+        </svg>
       </div>
       
       <div className="w-10"></div> {/* Spacer for centering */}
