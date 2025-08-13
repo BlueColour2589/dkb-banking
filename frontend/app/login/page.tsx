@@ -151,6 +151,8 @@ export default function LoginPage() {
     setError("");
 
     try {
+      console.log('Submitting OTP:', twoFactorCode);
+      
       const response = await fetch('/api/auth/2fa/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -161,18 +163,33 @@ export default function LoginPage() {
       });
 
       const data = await response.json(); // Only read response once
+      console.log('OTP verification response:', data);
 
       if (response.ok && data.success) {
         console.log('✅ 2FA verification successful, token received');
+        console.log('Token:', data.token ? 'received' : 'missing');
+        console.log('User data:', data.user);
         
         // Store the token directly (the API returns it)
         if (data.token) {
           localStorage.setItem('authToken', data.token);
+          console.log('Token stored in localStorage');
+        } else {
+          console.error('❌ No token in response');
         }
         
-        // Redirect to dashboard
-        router.push("/dashboard");
+        // Update auth context with user data
+        if (data.user) {
+          console.log('Setting user in auth context...');
+          // We need to update the auth context manually
+          // For now, let's force a page refresh to trigger auth initialization
+          window.location.href = '/dashboard';
+        } else {
+          console.log('Redirecting to dashboard...');
+          router.push("/dashboard");
+        }
       } else {
+        console.error('❌ OTP verification failed:', data);
         setError(data.error || data.message || 'Invalid code. Please try again.');
       }
     } catch (error: any) {
