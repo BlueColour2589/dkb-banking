@@ -97,7 +97,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const response = await apiClient.login(credentials);
       console.log('Login response:', response);
       
-      // Handle login response structure (AuthResponse)
+      // FIXED: Handle 2FA requirement properly
+      if (response.requires2FA) {
+        console.log('2FA required, throwing requires2FA error');
+        const error = new Error(response.message || 'OTP sent to your email address') as any;
+        error.requires2FA = true;
+        error.userId = response.userId;
+        throw error;
+      }
+
+      if (response.needs2FASetup) {
+        console.log('2FA setup required');
+        const error = new Error(response.message || '2FA setup required') as any;
+        error.needs2FASetup = true;
+        throw error;
+      }
+      
+      // Handle successful login response (AuthResponse)
       if (!response.success) {
         throw new Error(response.error || response.message || 'Login failed');
       }
@@ -121,8 +137,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
     } catch (error: any) {
       console.error('Login failed:', error);
-      removeStoredToken();
-      setUser(null);
+      
+      // FIXED: Don't clear user/token for 2FA requirements
+      if (!error.requires2FA && !error.needs2FASetup) {
+        removeStoredToken();
+        setUser(null);
+      }
       
       // Provide more specific error messages
       if (error.response?.status === 401) {
