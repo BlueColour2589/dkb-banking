@@ -273,7 +273,7 @@ export default function DashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       {/* Mobile Header - Fixed positioning with proper z-index */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white shadow-sm">
+      <div className="lg:hidden mobile-header-container">
         <MobileHeader toggleSidebar={() => setSidebarOpen(true)} />
       </div>
 
@@ -284,7 +284,7 @@ export default function DashboardPage() {
         {/* Main Content with proper mobile padding */}
         <main className="flex-1 min-h-screen transition-all duration-300 ease-in-out lg:ml-64">
           {/* Mobile: Add top padding to account for fixed header */}
-          <div className="p-4 lg:p-8 space-y-6 lg:space-y-8 pt-20 lg:pt-8">
+          <div className="p-4 lg:p-8 space-y-6 lg:space-y-8 mobile-main-content lg:pt-8">
             {/* Desktop Header Components */}
             <div className="hidden lg:block space-y-4">
               <div className={`transition-all duration-500 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
@@ -362,8 +362,8 @@ export default function DashboardPage() {
 
             {/* Bank Connection Modal with improved mobile handling */}
             {showBankConnection && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+              <div className="mobile-modal bg-black bg-opacity-50 flex items-center justify-center">
+                <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto gpu-accelerated">
                   <div className="p-4 sm:p-6">
                     <div className="flex items-center justify-between mb-6">
                       <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Deutsche Bank verbinden</h2>
