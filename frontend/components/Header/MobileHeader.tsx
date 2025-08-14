@@ -1,5 +1,5 @@
 'use client';
-import { Menu, ArrowUpDown, CreditCard, TrendingUp, Bell } from 'lucide-react';
+import { Menu, ArrowUpDown, TrendingUp } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
 
 interface MobileHeaderProps {
@@ -9,10 +9,9 @@ interface MobileHeaderProps {
 export default function MobileHeader({ toggleSidebar }: MobileHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
-
+  
   const quickActions = [
     { icon: ArrowUpDown, href: '/transfer', label: 'Transfer' },
-    { icon: CreditCard, href: '/cards', label: 'Cards' },
     { icon: TrendingUp, href: '/portfolio', label: 'Portfolio' },
   ];
 
@@ -47,12 +46,8 @@ export default function MobileHeader({ toggleSidebar }: MobileHeaderProps) {
             <span className="text-sm font-medium text-gray-600">Banking</span>
           </div>
           
-          <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors relative">
-            <Bell size={20} />
-            <span className="absolute -top-1 -right-1 bg-blue-600 text-xs text-white rounded-full w-4 h-4 flex items-center justify-center">
-              2
-            </span>
-          </button>
+          {/* Empty div to maintain spacing balance */}
+          <div className="w-10"></div>
         </div>
 
         {/* Quick Actions Row */}
