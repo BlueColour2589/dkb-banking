@@ -16,20 +16,29 @@ export default function MobileHeader({ toggleSidebar }: MobileHeaderProps) {
   ];
 
   return (
-    <>
-      {/* Main Header */}
-      <header className="lg:hidden bg-white shadow-sm border-b border-gray-200">
-        {/* Top Row */}
-        <div className="px-4 py-3 flex items-center justify-between">
+    <header className="lg:hidden bg-white shadow-sm border-b border-gray-200 w-full">
+      {/* Fixed height container to prevent layout shifts */}
+      <div className="h-16 sm:h-20 flex flex-col">
+        {/* Top Row - Main Header */}
+        <div className="flex-1 px-3 sm:px-4 flex items-center justify-between min-h-[48px]">
+          {/* Menu Button */}
           <button
             onClick={toggleSidebar}
-            className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+            className="flex items-center justify-center w-10 h-10 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors touch-manipulation"
+            aria-label="Open menu"
           >
-            <Menu size={24} />
+            <Menu size={20} className="sm:w-6 sm:h-6" />
           </button>
           
-          <div className="flex items-center space-x-3">
-            <svg className="h-7" viewBox="0 0 100 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          {/* Logo Section */}
+          <div className="flex items-center space-x-2 sm:space-x-3">
+            <svg 
+              className="h-6 sm:h-7 w-auto" 
+              viewBox="0 0 100 40" 
+              fill="none" 
+              xmlns="http://www.w3.org/2000/svg"
+              aria-hidden="true"
+            >
               <text 
                 x="2" 
                 y="28" 
@@ -42,17 +51,17 @@ export default function MobileHeader({ toggleSidebar }: MobileHeaderProps) {
                 DKB
               </text>
             </svg>
-            <div className="h-4 w-px bg-gray-200"></div>
-            <span className="text-sm font-medium text-gray-600">Banking</span>
+            <div className="h-3 sm:h-4 w-px bg-gray-200"></div>
+            <span className="text-xs sm:text-sm font-medium text-gray-600">Banking</span>
           </div>
           
-          {/* Empty div to maintain spacing balance */}
+          {/* Balance spacer */}
           <div className="w-10"></div>
         </div>
 
-        {/* Quick Actions Row */}
-        <div className="px-4 pb-3">
-          <div className="flex items-center space-x-2">
+        {/* Quick Actions Row - Only show if there's enough space */}
+        <div className="px-3 sm:px-4 pb-2 sm:pb-3">
+          <div className="flex items-center gap-2">
             {quickActions.map((action) => {
               const IconComponent = action.icon;
               const isActive = pathname === action.href;
@@ -61,14 +70,21 @@ export default function MobileHeader({ toggleSidebar }: MobileHeaderProps) {
                 <button
                   key={action.href}
                   onClick={() => router.push(action.href)}
-                  className={`flex-1 flex flex-col items-center space-y-1 p-3 rounded-lg transition-all duration-200 ${
-                    isActive 
-                      ? 'bg-blue-600 text-white shadow-lg' 
-                      : 'bg-gray-50 text-gray-600 hover:bg-blue-50 hover:text-blue-600'
-                  }`}
+                  className={`
+                    flex-1 flex flex-col items-center justify-center
+                    min-h-[44px] px-2 py-2 rounded-lg 
+                    transition-all duration-200 touch-manipulation
+                    ${isActive 
+                      ? 'bg-blue-600 text-white shadow-md' 
+                      : 'bg-gray-50 text-gray-600 hover:bg-blue-50 hover:text-blue-600 active:bg-blue-100'
+                    }
+                  `}
+                  aria-label={action.label}
                 >
-                  <IconComponent size={18} />
-                  <span className="text-xs font-medium">{action.label}</span>
+                  <IconComponent size={16} className="mb-1" />
+                  <span className="text-[10px] sm:text-xs font-medium leading-tight">
+                    {action.label}
+                  </span>
                 </button>
               );
             })}
@@ -76,14 +92,20 @@ export default function MobileHeader({ toggleSidebar }: MobileHeaderProps) {
             {/* More Actions Button */}
             <button
               onClick={toggleSidebar}
-              className="flex-1 flex flex-col items-center space-y-1 p-3 rounded-lg bg-gray-50 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200"
+              className="
+                flex-1 flex flex-col items-center justify-center
+                min-h-[44px] px-2 py-2 rounded-lg 
+                bg-gray-50 text-gray-600 hover:bg-blue-50 hover:text-blue-600 active:bg-blue-100
+                transition-all duration-200 touch-manipulation
+              "
+              aria-label="Open more options"
             >
-              <Menu size={18} />
-              <span className="text-xs font-medium">More</span>
+              <Menu size={16} className="mb-1" />
+              <span className="text-[10px] sm:text-xs font-medium leading-tight">More</span>
             </button>
           </div>
         </div>
-      </header>
-    </>
+      </div>
+    </header>
   );
 }
