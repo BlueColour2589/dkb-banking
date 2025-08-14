@@ -27,7 +27,8 @@
     "react-dom": "^18.3.1",
     "react-hot-toast": "^2.5.2",
     "speakeasy": "^2.0.0",
-    "uuid": "^10.0.0"
+    "uuid": "^10.0.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
