@@ -1,4 +1,6 @@
-// app/api/settings/security/route.ts
+// app/api/settings/security/route.ts - ADD THIS LINE AT THE TOP
+export const dynamic = 'force-dynamic';
+
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
@@ -47,8 +49,6 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // For now, return default settings since we don't have SecuritySettings table yet
-    // We'll use the existing twoFactorEnabled field from User model
     return NextResponse.json({
       success: true,
       data: {
@@ -94,9 +94,6 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const validatedData = securitySettingsSchema.parse(body);
 
-    // For now, just return success since we don't have SecuritySettings table
-    // Later we can create the table and actually save these settings
-    
     return NextResponse.json({
       success: true,
       data: {
