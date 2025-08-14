@@ -24,7 +24,7 @@ const TransactionList: FC = () => {
       description: 'Tax Payment',
       amount: -5000000.00,
       currency: 'EUR',
-      recipient: 'Finanzamt Agency',
+      recipient: 'Finanzant Agency',
       category: 'Tax & Government',
       reference: 'TAX-2025-AUG'
     }
