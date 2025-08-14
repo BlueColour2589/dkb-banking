@@ -354,4 +354,9 @@ export const dkbApiClient = new GermanBankingClient(dkbConfig);
 
 // Export for use in your existing code
 export { GermanBankingClient };
-export type { GermanBankAccount, GermanTransaction, SepaTransferRequest, StandingOrder };
+export type { 
+  GermanTransaction, 
+  SepaTransferRequest, 
+  StandingOrder,
+  GermanBankingConfig
+};
