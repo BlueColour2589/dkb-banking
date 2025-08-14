@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const preferences = await prisma.appSettings.findUnique({
+    const preferences = await prisma.preferences.findUnique({
       where: { userId },
     });
 
@@ -21,10 +21,10 @@ export async function GET(request: NextRequest) {
         language: 'en',
         currency: 'EUR',
         timezone: 'Europe/Berlin',
-        theme: 'light' as const,
+        theme: 'LIGHT' as const,
         dateFormat: 'DD/MM/YYYY',
         numberFormat: 'European',
-        dashboardLayout: 'standard' as const,
+        dashboardLayout: 'STANDARD' as const,
       };
       return NextResponse.json(defaultPreferences);
     }
@@ -34,10 +34,10 @@ export async function GET(request: NextRequest) {
       language: preferences.language,
       currency: preferences.currency,
       timezone: preferences.timezone,
-      theme: preferences.theme as 'light' | 'dark' | 'auto',
+      theme: preferences.theme.toLowerCase(),
       dateFormat: preferences.dateFormat,
       numberFormat: preferences.numberFormat,
-      dashboardLayout: preferences.dashboardLayout as 'compact' | 'standard' | 'detailed',
+      dashboardLayout: preferences.dashboardLayout.toLowerCase(),
     };
 
     return NextResponse.json(transformedPreferences);
@@ -67,16 +67,16 @@ export async function PUT(request: NextRequest) {
     } = body;
 
     // Upsert app preferences
-    await prisma.appSettings.upsert({
+    await prisma.preferences.upsert({
       where: { userId },
       update: {
         language: language ?? 'en',
         currency: currency ?? 'EUR',
         timezone: timezone ?? 'Europe/Berlin',
-        theme: theme ?? 'light',
+        theme: theme?.toUpperCase() ?? 'LIGHT',
         dateFormat: dateFormat ?? 'DD/MM/YYYY',
         numberFormat: numberFormat ?? 'European',
-        dashboardLayout: dashboardLayout ?? 'standard',
+        dashboardLayout: dashboardLayout?.toUpperCase() ?? 'STANDARD',
         updatedAt: new Date(),
       },
       create: {
@@ -84,10 +84,10 @@ export async function PUT(request: NextRequest) {
         language: language ?? 'en',
         currency: currency ?? 'EUR',
         timezone: timezone ?? 'Europe/Berlin',
-        theme: theme ?? 'light',
+        theme: theme?.toUpperCase() ?? 'LIGHT',
         dateFormat: dateFormat ?? 'DD/MM/YYYY',
         numberFormat: numberFormat ?? 'European',
-        dashboardLayout: dashboardLayout ?? 'standard',
+        dashboardLayout: dashboardLayout?.toUpperCase() ?? 'STANDARD',
       },
     });
 
