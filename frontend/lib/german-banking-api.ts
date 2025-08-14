@@ -351,12 +351,3 @@ export const dkbConfig: GermanBankingConfig = {
 
 // Create DKB API client instance
 export const dkbApiClient = new GermanBankingClient(dkbConfig);
-
-// Export for use in your existing code
-export { GermanBankingClient };
-export type { 
-  GermanTransaction, 
-  SepaTransferRequest, 
-  StandingOrder,
-  GermanBankingConfig
-};
