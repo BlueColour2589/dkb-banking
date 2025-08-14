@@ -76,6 +76,7 @@ export async function PUT(request: NextRequest) {
       });
 
       // Update security settings to record password change
+      // Note: twoFactorEnabled is on User model, not SecuritySettings
       await tx.securitySettings.upsert({
         where: { userId },
         update: {
@@ -85,7 +86,6 @@ export async function PUT(request: NextRequest) {
         create: {
           userId,
           passwordLastChanged: new Date(),
-          twoFactorEnabled: false,
           biometricEnabled: false,
           emailNotifications: true,
           smsNotifications: false,
