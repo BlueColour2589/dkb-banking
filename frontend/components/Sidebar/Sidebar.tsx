@@ -4,8 +4,8 @@ import { usePathname } from 'next/navigation';
 import { 
   X, Home, ArrowUpDown, Settings, LogOut, 
   History, TrendingUp, PiggyBank, BarChart3,
-  FileText, Mail, HelpCircle, Shield, ChevronRight,
-  Search, ChevronLeft
+  HelpCircle, Shield, ChevronRight,
+  Search, ChevronLeft, Users
 } from 'lucide-react';
 import { SidebarProps, NavItem } from '@/types/dashboard';
 import { useAuth } from '@/contexts/AuthContext';
@@ -25,14 +25,12 @@ const investmentItems: NavItem[] = [
 ];
 
 const serviceItems: NavItem[] = [
-  { label: 'Documents', href: '/documents', icon: FileText },
-  { label: 'Messages', href: '/messages', icon: Mail },
   { label: 'Settings', href: '/settings', icon: Settings },
   { label: 'Help Center', href: '/help', icon: HelpCircle },
 ];
 
-// Demo users data
-const demoUsers = [
+// Joint account holders data
+const accountHolders = [
   {
     id: 'celestina',
     name: 'Celestina White',
@@ -51,7 +49,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
   const pathname = usePathname();
   const { logout, user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentUser, setCurrentUser] = useState(demoUsers[0]); // Default to Celestina
+  const [currentUser, setCurrentUser] = useState(accountHolders[0]); // Default to Celestina
   const [expandedSections, setExpandedSections] = useState({
     investment: true,
     services: false
@@ -83,7 +81,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
   };
 
   const switchUser = () => {
-    const nextUser = currentUser.id === 'celestina' ? demoUsers[1] : demoUsers[0];
+    const nextUser = currentUser.id === 'celestina' ? accountHolders[1] : accountHolders[0];
     setCurrentUser(nextUser);
   };
 
@@ -240,13 +238,20 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
             </div>
           </div>
           
-          {/* User Info with Switch */}
+          {/* Joint Account Info */}
           <div className="p-4 border-b border-gray-100">
+            {/* Joint Account Header */}
+            <div className="flex items-center space-x-2 mb-3">
+              <Users size={16} className="text-blue-600" />
+              <span className="text-xs font-semibold text-blue-600 uppercase tracking-wider">Joint Account</span>
+            </div>
+            
+            {/* Current Active User */}
             <div className="flex items-center space-x-3">
               <button
                 onClick={switchUser}
                 className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium text-sm hover:bg-blue-700 transition-colors"
-                title="Switch user"
+                title="Switch account holder"
               >
                 {currentUser.initial}
               </button>
@@ -254,7 +259,7 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                 <p className="text-sm font-medium text-gray-900 truncate">
                   {currentUser.name}
                 </p>
-                <p className="text-xs text-gray-500">Premium Banking</p>
+                <p className="text-xs text-gray-500">Active Account Holder</p>
               </div>
               <button
                 onClick={switchUser}
@@ -262,6 +267,27 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
               >
                 Switch
               </button>
+            </div>
+            
+            {/* Both Account Holders */}
+            <div className="mt-3 pt-3 border-t border-gray-100">
+              <div className="flex items-center space-x-2">
+                <div className="flex -space-x-2">
+                  {accountHolders.map((holder) => (
+                    <div
+                      key={holder.id}
+                      className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-medium border-2 border-white ${
+                        holder.id === currentUser.id ? 'bg-blue-600' : 'bg-gray-400'
+                      }`}
+                    >
+                      {holder.initial}
+                    </div>
+                  ))}
+                </div>
+                <span className="text-xs text-gray-500">
+                  Celestina White & Mark Peters
+                </span>
+              </div>
             </div>
           </div>
           
