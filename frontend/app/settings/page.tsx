@@ -8,42 +8,39 @@ import { useAuth } from '@/contexts/AuthContext';
 import { 
   User, Shield, Bell, Settings as SettingsIcon, Database,
   Edit3, Save, X, CheckCircle, AlertTriangle, ChevronRight,
-  Camera, Lock, Key, Fingerprint, Mail, Phone
+  Camera, Lock, Key, Fingerprint, Mail, Phone, Users, Crown
 } from 'lucide-react';
 
-// Demo users data - same as in Sidebar
-const demoUsers = [
+// Joint account holders
+const jointAccountHolders = [
   {
     id: 'celestina',
     name: 'Celestina White',
     email: 'celestina.white@dkb.de',
-    initial: 'C'
+    initial: 'C',
+    role: 'Primary Owner',
+    phone: '+49 170 123 4567',
+    dateOfBirth: '1990-03-15'
   },
   {
     id: 'mark',
     name: 'Mark Peters',
     email: 'mark.peters@dkb.de',
-    initial: 'M'
+    initial: 'M',
+    role: 'Secondary Owner',
+    phone: '+49 171 987 6543',
+    dateOfBirth: '1988-07-22'
   }
 ];
 
-interface UserProfile {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  dateOfBirth: string;
-  address: {
-    street: string;
-    city: string;
-    postalCode: string;
-    country: string;
-  };
-  profilePicture?: string;
-  accountType: 'Premium' | 'Standard';
-  memberSince: string;
-  lastLogin: string;
+interface AccountSettings {
+  accountName: string;
+  accountNumber: string;
+  accountType: string;
+  currency: string;
+  balance: number;
+  status: string;
+  createdAt: string;
 }
 
 interface SecuritySettings {
@@ -59,35 +56,27 @@ interface SecuritySettings {
     type: string;
     lastUsed: string;
     location: string;
+    owner: string;
   }>;
 }
 
 export default function SettingsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useState('account');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [isEditing, setIsEditing] = useState(false);
-  const [currentUser, setCurrentUser] = useState(demoUsers[0]); // Demo user switching
   
-  // Data states - start with demo data
-  const [profile, setProfile] = useState<UserProfile>({
-    id: '1',
-    firstName: currentUser.name.split(' ')[0],
-    lastName: currentUser.name.split(' ')[1],
-    email: currentUser.email,
-    phone: '+49 170 123 4567',
-    dateOfBirth: '1990-03-15',
-    address: {
-      street: 'Unter den Linden 1',
-      city: 'Berlin',
-      postalCode: '10117',
-      country: 'Germany'
-    },
-    accountType: 'Premium',
-    memberSince: '2022-01-15',
-    lastLogin: new Date().toISOString()
+  // Joint account data
+  const [accountSettings, setAccountSettings] = useState<AccountSettings>({
+    accountName: 'Joint Checking Account',
+    accountNumber: '41d4f756-890d-4686-9641-41e41ae5a75c',
+    accountType: 'Joint Checking',
+    currency: 'EUR',
+    balance: 18000000.00,
+    status: 'Active',
+    createdAt: '2022-01-15'
   });
 
   const [securitySettings, setSecuritySettings] = useState<SecuritySettings>({
@@ -100,32 +89,25 @@ export default function SettingsPage() {
     trustedDevices: [
       {
         id: '1',
-        name: 'Current Device',
-        type: 'Web',
+        name: 'iPhone 14 Pro',
+        type: 'Mobile',
         lastUsed: new Date().toISOString(),
-        location: 'Berlin, Germany'
+        location: 'Berlin, Germany',
+        owner: 'Celestina White'
+      },
+      {
+        id: '2',
+        name: 'MacBook Pro',
+        type: 'Desktop',
+        lastUsed: new Date(Date.now() - 86400000).toISOString(),
+        location: 'Berlin, Germany',
+        owner: 'Mark Peters'
       }
     ]
   });
   
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
-
-  // Update profile when user switches
-  useEffect(() => {
-    setProfile(prev => ({
-      ...prev,
-      firstName: currentUser.name.split(' ')[0],
-      lastName: currentUser.name.split(' ')[1],
-      email: currentUser.email
-    }));
-  }, [currentUser]);
-
-  // Switch between demo users
-  const switchUser = () => {
-    const nextUser = currentUser.id === 'celestina' ? demoUsers[1] : demoUsers[0];
-    setCurrentUser(nextUser);
-  };
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
@@ -134,9 +116,7 @@ export default function SettingsPage() {
     }
   }, [isAuthenticated, authLoading, router]);
 
-  const handleSaveProfile = async () => {
-    if (!profile) return;
-
+  const handleSaveAccount = async () => {
     setSaveStatus('saving');
     
     try {
@@ -148,13 +128,11 @@ export default function SettingsPage() {
       setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (err) {
       setSaveStatus('error');
-      setError('Failed to save profile');
+      setError('Failed to save account settings');
     }
   };
 
   const handleSecurityToggle = async (setting: keyof SecuritySettings, value: boolean) => {
-    if (!securitySettings) return;
-
     // Update immediately for better UX
     const updatedSettings = { ...securitySettings, [setting]: value };
     setSecuritySettings(updatedSettings);
@@ -168,6 +146,13 @@ export default function SettingsPage() {
       setSecuritySettings(securitySettings);
       setError('Failed to update security settings');
     }
+  };
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('de-DE', {
+      style: 'currency',
+      currency: 'EUR'
+    }).format(amount);
   };
 
   if (authLoading) {
@@ -184,131 +169,74 @@ export default function SettingsPage() {
   if (!isAuthenticated) return null;
 
   const tabs = [
-    { id: 'profile', label: 'Profile', icon: User },
+    { id: 'account', label: 'Joint Account', icon: Users },
+    { id: 'owners', label: 'Account Holders', icon: User },
     { id: 'security', label: 'Security', icon: Shield },
     { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'preferences', label: 'Preferences', icon: SettingsIcon },
-    { id: 'data', label: 'Data & Privacy', icon: Database }
+    { id: 'preferences', label: 'Preferences', icon: SettingsIcon }
   ];
 
-  const renderProfileTab = () => (
+  const renderAccountTab = () => (
     <div className="space-y-6">
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Personal Information</h2>
-          <div className="flex items-center space-x-3">
-            <button
-              onClick={switchUser}
-              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-            >
-              Switch to {currentUser.id === 'celestina' ? 'Mark Peters' : 'Celestina White'}
-            </button>
-            <button
-              onClick={() => setIsEditing(!isEditing)}
-              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-                isEditing 
-                  ? 'bg-red-100 text-red-700 hover:bg-red-200' 
-                  : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-              }`}
-            >
-              {isEditing ? <X size={16} /> : <Edit3 size={16} />}
-              <span>{isEditing ? 'Cancel' : 'Edit'}</span>
-            </button>
-          </div>
+          <h2 className="text-xl font-semibold text-gray-900">Joint Account Information</h2>
+          <button
+            onClick={() => setIsEditing(!isEditing)}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+              isEditing 
+                ? 'bg-red-100 text-red-700 hover:bg-red-200' 
+                : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+            }`}
+          >
+            {isEditing ? <X size={16} /> : <Edit3 size={16} />}
+            <span>{isEditing ? 'Cancel' : 'Edit'}</span>
+          </button>
         </div>
 
-        {profile && (
-          <div className="flex items-start space-x-6">
-            {/* Profile Picture */}
-            <div className="relative">
-              <div className="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                {currentUser.initial}
-              </div>
-              {isEditing && (
-                <button className="absolute -bottom-2 -right-2 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors">
-                  <Camera size={16} />
-                </button>
-              )}
-            </div>
-
-            {/* Basic Info */}
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={profile.firstName}
-                    onChange={(e) => setProfile(prev => ({ ...prev, firstName: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                ) : (
-                  <p className="text-gray-900">{profile.firstName}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={profile.lastName}
-                    onChange={(e) => setProfile(prev => ({ ...prev, lastName: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                ) : (
-                  <p className="text-gray-900">{profile.lastName}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                {isEditing ? (
-                  <input
-                    type="email"
-                    value={profile.email}
-                    onChange={(e) => setProfile(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                ) : (
-                  <p className="text-gray-900">{profile.email}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                {isEditing ? (
-                  <input
-                    type="tel"
-                    value={profile.phone}
-                    onChange={(e) => setProfile(prev => ({ ...prev, phone: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  />
-                ) : (
-                  <p className="text-gray-900">{profile.phone}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Account Type</label>
-                <div className="flex items-center space-x-2">
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                    profile.accountType === 'Premium' 
-                      ? 'bg-yellow-100 text-yellow-800' 
-                      : 'bg-gray-100 text-gray-800'
-                  }`}>
-                    {profile.accountType}
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Member Since</label>
-                <p className="text-gray-900">{new Date(profile.memberSince).toLocaleDateString('de-DE')}</p>
-              </div>
-            </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Account Name</label>
+            {isEditing ? (
+              <input
+                type="text"
+                value={accountSettings.accountName}
+                onChange={(e) => setAccountSettings(prev => ({ ...prev, accountName: e.target.value }))}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              />
+            ) : (
+              <p className="text-gray-900">{accountSettings.accountName}</p>
+            )}
           </div>
-        )}
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Account Number</label>
+            <p className="text-gray-900 font-mono text-sm">{accountSettings.accountNumber}</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Account Type</label>
+            <p className="text-gray-900">{accountSettings.accountType}</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
+            <p className="text-gray-900">{accountSettings.currency}</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Current Balance</label>
+            <p className="text-2xl font-bold text-green-600">{formatCurrency(accountSettings.balance)}</p>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Account Status</label>
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+              <CheckCircle className="w-4 h-4 mr-1" />
+              {accountSettings.status}
+            </span>
+          </div>
+        </div>
 
         {isEditing && (
           <div className="mt-6 flex items-center justify-end space-x-3">
@@ -319,7 +247,7 @@ export default function SettingsPage() {
               Cancel
             </button>
             <button
-              onClick={handleSaveProfile}
+              onClick={handleSaveAccount}
               disabled={saveStatus === 'saving'}
               className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50"
             >
@@ -334,23 +262,106 @@ export default function SettingsPage() {
         )}
       </div>
 
-      {/* Address Section */}
+      {/* Account Created */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Address Information</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Street Address</label>
-            <p className="text-gray-900">{profile.address.street}</p>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Account History</h3>
+        <div className="space-y-3">
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">Account Created</span>
+            <span className="text-gray-900">{new Date(accountSettings.createdAt).toLocaleDateString('de-DE')}</span>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
-            <p className="text-gray-900">{profile.address.city}</p>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">Total Holders</span>
+            <span className="text-gray-900">{jointAccountHolders.length} owners</span>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Postal Code</label>
-            <p className="text-gray-900">{profile.address.postalCode}</p>
+          <div className="flex justify-between items-center">
+            <span className="text-gray-600">Account Age</span>
+            <span className="text-gray-900">
+              {Math.floor((new Date().getTime() - new Date(accountSettings.createdAt).getTime()) / (1000 * 60 * 60 * 24 * 365))} years
+            </span>
           </div>
         </div>
+      </div>
+    </div>
+  );
+
+  const renderOwnersTab = () => (
+    <div className="space-y-6">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h2 className="text-xl font-semibold text-gray-900 mb-6">Account Holders</h2>
+        
+        <div className="space-y-6">
+          {jointAccountHolders.map((holder, index) => (
+            <div key={holder.id} className="border border-gray-200 rounded-lg p-6">
+              <div className="flex items-start space-x-4">
+                {/* Avatar */}
+                <div className="relative">
+                  <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
+                    {holder.initial}
+                  </div>
+                  {holder.role === 'Primary Owner' && (
+                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center">
+                      <Crown className="w-3 h-3 text-white" />
+                    </div>
+                  )}
+                </div>
+
+                {/* Holder Info */}
+                <div className="flex-1">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <h3 className="text-lg font-semibold text-gray-900">{holder.name}</h3>
+                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                      holder.role === 'Primary Owner' 
+                        ? 'bg-yellow-100 text-yellow-800' 
+                        : 'bg-blue-100 text-blue-800'
+                    }`}>
+                      {holder.role}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                      <p className="text-gray-900">{holder.email}</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                      <p className="text-gray-900">{holder.phone}</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
+                      <p className="text-gray-900">{new Date(holder.dateOfBirth).toLocaleDateString('de-DE')}</p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Permissions</label>
+                      <div className="flex space-x-2">
+                        <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">View</span>
+                        <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Transfer</span>
+                        {holder.role === 'Primary Owner' && (
+                          <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Full Access</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Add New Holder */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Add Account Holder</h3>
+        <p className="text-gray-600 mb-4">
+          Add additional authorized users to this joint account. New holders will need to verify their identity.
+        </p>
+        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
+          Add New Holder
+        </button>
       </div>
     </div>
   );
@@ -359,19 +370,22 @@ export default function SettingsPage() {
     <div className="space-y-6">
       {/* Password & Authentication */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Password & Authentication</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Security</h3>
+        <p className="text-sm text-gray-600 mb-4">
+          Security settings apply to all account holders and affect the entire joint account.
+        </p>
         
         <div className="space-y-4">
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center space-x-3">
               <Lock className="w-5 h-5 text-gray-600" />
               <div>
-                <p className="font-medium text-gray-900">Password</p>
-                <p className="text-sm text-gray-600">Keep your account secure</p>
+                <p className="font-medium text-gray-900">Account Password Protection</p>
+                <p className="text-sm text-gray-600">Both holders can change their individual passwords</p>
               </div>
             </div>
             <button className="text-blue-600 hover:text-blue-700 font-medium">
-              Change
+              Manage
             </button>
           </div>
 
@@ -380,7 +394,7 @@ export default function SettingsPage() {
               <Key className="w-5 h-5 text-gray-600" />
               <div>
                 <p className="font-medium text-gray-900">Two-Factor Authentication</p>
-                <p className="text-sm text-gray-600">Add an extra layer of security</p>
+                <p className="text-sm text-gray-600">Required for all high-value transactions</p>
               </div>
             </div>
             <button
@@ -399,8 +413,8 @@ export default function SettingsPage() {
             <div className="flex items-center space-x-3">
               <Fingerprint className="w-5 h-5 text-gray-600" />
               <div>
-                <p className="font-medium text-gray-900">Biometric Login</p>
-                <p className="text-sm text-gray-600">Use fingerprint or face recognition</p>
+                <p className="font-medium text-gray-900">Biometric Authentication</p>
+                <p className="text-sm text-gray-600">Each holder can enable biometric login</p>
               </div>
             </div>
             <button
@@ -417,17 +431,46 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {/* Login Notifications */}
+      {/* Trusted Devices */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Login Notifications</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Trusted Devices</h3>
+        <p className="text-sm text-gray-600 mb-4">
+          Devices that have been authorized to access this joint account.
+        </p>
+        
+        <div className="space-y-3">
+          {securitySettings.trustedDevices.map((device) => (
+            <div key={device.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  {device.type === 'Mobile' ? <Phone className="w-5 h-5 text-blue-600" /> : <User className="w-5 h-5 text-blue-600" />}
+                </div>
+                <div>
+                  <p className="font-medium text-gray-900">{device.name}</p>
+                  <p className="text-sm text-gray-600">
+                    Owner: {device.owner} • {device.location} • {new Date(device.lastUsed).toLocaleDateString('de-DE')}
+                  </p>
+                </div>
+              </div>
+              <button className="text-red-600 hover:text-red-700 text-sm font-medium">
+                Remove
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Security Notifications */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Security Notifications</h3>
         
         <div className="space-y-4">
           <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center space-x-3">
               <Mail className="w-5 h-5 text-gray-600" />
               <div>
-                <p className="font-medium text-gray-900">Email Notifications</p>
-                <p className="text-sm text-gray-600">Get notified via email for security events</p>
+                <p className="font-medium text-gray-900">Email Security Alerts</p>
+                <p className="text-sm text-gray-600">Both account holders receive security notifications</p>
               </div>
             </div>
             <button
@@ -446,8 +489,8 @@ export default function SettingsPage() {
             <div className="flex items-center space-x-3">
               <Phone className="w-5 h-5 text-gray-600" />
               <div>
-                <p className="font-medium text-gray-900">SMS Notifications</p>
-                <p className="text-sm text-gray-600">Get notified via SMS for security events</p>
+                <p className="font-medium text-gray-900">SMS Security Alerts</p>
+                <p className="text-sm text-gray-600">Send SMS alerts for critical security events</p>
               </div>
             </div>
             <button
@@ -468,29 +511,24 @@ export default function SettingsPage() {
 
   const renderContent = () => {
     switch (activeTab) {
-      case 'profile':
-        return renderProfileTab();
+      case 'account':
+        return renderAccountTab();
+      case 'owners':
+        return renderOwnersTab();
       case 'security':
         return renderSecurityTab();
       case 'notifications':
         return (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Notification Settings</h2>
-            <p className="text-gray-600">Notification settings coming soon...</p>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Joint Account Notifications</h2>
+            <p className="text-gray-600">Notification preferences for both account holders coming soon...</p>
           </div>
         );
       case 'preferences':
         return (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">App Preferences</h2>
-            <p className="text-gray-600">App preferences coming soon...</p>
-          </div>
-        );
-      case 'data':
-        return (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Data & Privacy</h2>
-            <p className="text-gray-600">Data and privacy settings coming soon...</p>
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Account Preferences</h2>
+            <p className="text-gray-600">Shared account preferences coming soon...</p>
           </div>
         );
       default:
@@ -513,8 +551,8 @@ export default function SettingsPage() {
             
             {/* Header */}
             <div className="mb-8">
-              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Settings</h1>
-              <p className="text-gray-600">Manage your account settings and preferences</p>
+              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Joint Account Settings</h1>
+              <p className="text-gray-600">Manage settings for your shared banking account</p>
             </div>
 
             {/* Error Message */}
