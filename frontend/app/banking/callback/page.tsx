@@ -1,70 +1,80 @@
-// app/banking/callback/page.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
 
-export default function BankingCallback() {
-  const router = useRouter();
+function CallbackContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('');
-  const [accounts, setAccounts] = useState<any[]>([]);
 
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        const consent = searchParams.get('consent');
+        // Get the authorization code from URL params
+        const code = searchParams.get('code');
+        const state = searchParams.get('state');
         const error = searchParams.get('error');
 
         if (error) {
           setStatus('error');
-          setMessage('Bankverbindung wurde abgebrochen oder ist fehlgeschlagen.');
+          setMessage(`Authorization failed: ${error}`);
           return;
         }
 
-        if (!consent) {
+        if (!code) {
           setStatus('error');
-          setMessage('Keine Berechtigung von der Bank erhalten.');
+          setMessage('No authorization code received');
           return;
         }
 
-        // Store consent for future API calls
-        localStorage.setItem('banking_consent', consent);
+        // Verify state parameter for security
+        const savedState = sessionStorage.getItem('oauth_state');
+        if (state !== savedState) {
+          setStatus('error');
+          setMessage('Invalid state parameter');
+          return;
+        }
 
-        // For now, simulate successful connection
-        // Later replace with real German banking API call
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        const mockConnectedAccounts = [
-          {
-            id: 'connected-account-1',
-            accountName: 'Deutsche Kreditbank Girokonto',
-            balance: 12500.50,
-            currency: 'EUR',
-            iban: 'DE89 3704 0044 0532 0130 00',
-            bankName: 'Deutsche Kreditbank'
+        // Exchange code for access token
+        const response = await fetch('/api/banking/token', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ code, state }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Failed to exchange authorization code');
+        }
+
+        // Store the access token securely
+        if (data.access_token) {
+          // Store consent and connected accounts
+          localStorage.setItem('banking_consent', 'granted');
+          if (data.accounts) {
+            localStorage.setItem('connected_accounts', JSON.stringify(data.accounts));
           }
-        ];
-        
-        setAccounts(mockConnectedAccounts);
-
-        // Store accounts data
-        localStorage.setItem('connected_accounts', JSON.stringify(mockConnectedAccounts));
-
-        setStatus('success');
-        setMessage(`Erfolgreich verbunden! ${mockConnectedAccounts.length} Konto(s) gefunden.`);
-
-        // Redirect to dashboard after 3 seconds
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 3000);
+          
+          setStatus('success');
+          setMessage('Bank connection successful!');
+          
+          // Redirect to dashboard after a short delay
+          setTimeout(() => {
+            router.push('/dashboard');
+          }, 2000);
+        } else {
+          throw new Error('No access token received');
+        }
 
       } catch (error) {
-        console.error('Banking callback error:', error);
+        console.error('Callback error:', error);
         setStatus('error');
-        setMessage('Fehler beim Abrufen der Kontodaten.');
+        setMessage(error instanceof Error ? error.message : 'An unexpected error occurred');
       }
     };
 
@@ -72,49 +82,74 @@ export default function BankingCallback() {
   }, [searchParams, router]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md w-full text-center">
-        {status === 'loading' && (
-          <>
-            <Loader2 className="w-16 h-16 text-blue-500 mx-auto mb-4 animate-spin" />
-            <h2 className="text-xl font-bold text-gray-800 mb-2">Bankdaten werden abgerufen...</h2>
-            <p className="text-gray-600">Bitte warten Sie einen Moment.</p>
-          </>
-        )}
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+        <div className="text-center">
+          {status === 'loading' && (
+            <>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                Connecting your bank account...
+              </h2>
+              <p className="text-gray-600">
+                Please wait while we securely connect to your bank.
+              </p>
+            </>
+          )}
 
-        {status === 'success' && (
-          <>
-            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-green-600 mb-2">Erfolgreich verbunden!</h2>
-            <p className="text-gray-700 mb-4">{message}</p>
-            {accounts.length > 0 && (
-              <div className="bg-green-50 rounded-lg p-4 mb-4">
-                <h3 className="font-semibold text-green-800 mb-2">Gefundene Konten:</h3>
-                {accounts.map((account, index) => (
-                  <div key={account.id} className="text-sm text-green-700">
-                    {account.accountName} - {account.currency} {account.balance.toLocaleString('de-DE')}
-                  </div>
-                ))}
+          {status === 'success' && (
+            <>
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                </svg>
               </div>
-            )}
-            <p className="text-sm text-gray-500">Sie werden automatisch zum Dashboard weitergeleitet...</p>
-          </>
-        )}
+              <h2 className="text-xl font-semibold text-green-900 mb-2">
+                Connection Successful!
+              </h2>
+              <p className="text-green-700 mb-4">{message}</p>
+              <p className="text-sm text-gray-600">
+                Redirecting you to your dashboard...
+              </p>
+            </>
+          )}
 
-        {status === 'error' && (
-          <>
-            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-red-600 mb-2">Verbindung fehlgeschlagen</h2>
-            <p className="text-gray-700 mb-4">{message}</p>
-            <button
-              onClick={() => router.push('/dashboard')}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Zurück zum Dashboard
-            </button>
-          </>
-        )}
+          {status === 'error' && (
+            <>
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-semibold text-red-900 mb-2">
+                Connection Failed
+              </h2>
+              <p className="text-red-700 mb-4">{message}</p>
+              <button
+                onClick={() => router.push('/dashboard')}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                Return to Dashboard
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
+  );
+}
+
+export default function BankingCallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    }>
+      <CallbackContent />
+    </Suspense>
   );
 }
