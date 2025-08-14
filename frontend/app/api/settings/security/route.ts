@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
 
     // Get user with security settings and trusted devices
     const userData = await prisma.user.findUnique({
-      where: { userId },
+      where: { id: userId },
       include: {
         securitySettings: {
           include: {
