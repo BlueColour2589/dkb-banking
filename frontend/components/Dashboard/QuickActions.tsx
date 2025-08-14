@@ -5,14 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { 
   ArrowUpDown, 
-  CreditCard, 
   TrendingUp, 
-  Settings, 
   History, 
-  Repeat,
-  PiggyBank,
-  FileText,
-  Phone,
   Eye,
   ChevronRight,
   Euro
@@ -40,14 +34,14 @@ export default function QuickActions({ actions }: QuickActionsProps) {
   // If actions prop is provided (backward compatibility), use the old simple layout
   if (actions && actions.length > 0) {
     return (
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-6 mb-6">
-        <h3 className="text-xl font-bold text-blue-600 mb-4">Quick Actions</h3>
-        <div className="space-y-3">
+      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 sm:p-6 mb-4 sm:mb-6">
+        <h3 className="text-lg sm:text-xl font-bold text-blue-600 mb-3 sm:mb-4">Quick Actions</h3>
+        <div className="space-y-2 sm:space-y-3">
           {actions.map((action, index) => (
             <button
               key={index}
               onClick={action.onClick}
-              className="w-full bg-blue-100 hover:bg-blue-200 text-blue-700 py-3 px-4 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-300"
+              className="w-full bg-blue-100 hover:bg-blue-200 active:bg-blue-300 text-blue-700 py-3 px-4 rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-blue-300 min-h-[48px] touch-manipulation"
             >
               {action.label}
             </button>
@@ -57,7 +51,7 @@ export default function QuickActions({ actions }: QuickActionsProps) {
     );
   }
 
-  // Enhanced German banking quick actions (when no actions prop provided)
+  // Enhanced German banking quick actions (simplified - removed cards and standing orders)
   const germanQuickActions = [
     {
       id: 'transfer',
@@ -103,28 +97,6 @@ export default function QuickActions({ actions }: QuickActionsProps) {
         router.push('/portfolio');
       },
       variant: 'accent'
-    },
-    {
-      id: 'cards',
-      label: 'Karten verwalten',
-      description: 'Karten sperren und Limits setzen',
-      icon: <CreditCard className="w-5 h-5" />,
-      onClick: () => {
-        setIsLoading(true);
-        router.push('/cards');
-      },
-      variant: 'secondary'
-    },
-    {
-      id: 'standing-orders',
-      label: 'Daueraufträge',
-      description: 'Wiederkehrende Zahlungen',
-      icon: <Repeat className="w-5 h-5" />,
-      onClick: () => {
-        setIsLoading(true);
-        router.push('/standing-orders');
-      },
-      variant: 'secondary'
     }
   ];
 
@@ -135,39 +107,39 @@ export default function QuickActions({ actions }: QuickActionsProps) {
       case 'accent':
         return 'bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white shadow-md';
       default:
-        return 'bg-white hover:bg-blue-50 text-gray-700 border border-gray-200 hover:border-blue-300 shadow-sm';
+        return 'bg-white hover:bg-blue-50 active:bg-blue-100 text-gray-700 border border-gray-200 hover:border-blue-300 shadow-sm';
     }
   };
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-6 mb-6 shadow-sm">
+    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6 shadow-sm">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h3 className="text-2xl font-bold text-blue-600 mb-1">Schnellzugriff</h3>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 space-y-3 sm:space-y-0">
+        <div className="flex-1">
+          <h3 className="text-xl sm:text-2xl font-bold text-blue-600 mb-1">Schnellzugriff</h3>
           <p className="text-sm text-blue-500">Häufig verwendete Banking-Funktionen</p>
         </div>
-        <div className="hidden sm:flex items-center space-x-2 bg-white/80 rounded-lg px-3 py-2">
-          <Eye className="w-4 h-4 text-blue-500" />
-          <span className="text-sm font-medium text-blue-600">
-            Guthaben: {formatBalance(currentBalance)}
+        <div className="flex items-center space-x-2 bg-white/80 rounded-lg px-3 py-2 self-start sm:self-auto">
+          <Eye className="w-4 h-4 text-blue-500 flex-shrink-0" />
+          <span className="text-xs sm:text-sm font-medium text-blue-600 truncate">
+            <span className="hidden sm:inline">Guthaben: </span>{formatBalance(currentBalance)}
           </span>
         </div>
       </div>
 
-      {/* Quick Actions Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      {/* Quick Actions Grid - Mobile Optimized */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         {germanQuickActions.map((action) => (
           <button
             key={action.id}
             onClick={action.onClick}
             disabled={isLoading}
             className={`
-              relative group p-4 rounded-xl font-medium transition-all duration-200 
+              relative group p-4 sm:p-5 rounded-xl font-medium transition-all duration-200 
               focus:outline-none focus:ring-2 focus:ring-blue-300 focus:ring-offset-2
-              transform hover:scale-105 active:scale-95
+              transform hover:scale-[1.02] active:scale-95 min-h-[80px] sm:min-h-[90px]
               ${getActionClasses(action.variant)}
-              ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+              ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer touch-manipulation'}
             `}
           >
             {/* Badge */}
@@ -178,11 +150,12 @@ export default function QuickActions({ actions }: QuickActionsProps) {
             )}
 
             {/* Content */}
-            <div className="flex items-start justify-between">
-              <div className="flex-1 text-left">
+            <div className="flex items-start justify-between h-full">
+              <div className="flex-1 text-left flex flex-col h-full">
+                {/* Icon and Title */}
                 <div className="flex items-center space-x-3 mb-2">
                   <div className={`
-                    p-2 rounded-lg
+                    p-2 rounded-lg flex-shrink-0
                     ${action.variant === 'primary' || action.variant === 'accent' 
                       ? 'bg-white/20' 
                       : 'bg-blue-50 text-blue-600'
@@ -190,14 +163,14 @@ export default function QuickActions({ actions }: QuickActionsProps) {
                   `}>
                     {action.icon}
                   </div>
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-sm leading-tight">
-                      {action.label}
-                    </h4>
-                  </div>
+                  <h4 className="font-semibold text-sm leading-tight flex-1 min-w-0">
+                    {action.label}
+                  </h4>
                 </div>
+                
+                {/* Description */}
                 <p className={`
-                  text-xs leading-relaxed
+                  text-xs leading-relaxed flex-1
                   ${action.variant === 'primary' || action.variant === 'accent' 
                     ? 'text-white/80' 
                     : 'text-gray-500'
@@ -209,7 +182,7 @@ export default function QuickActions({ actions }: QuickActionsProps) {
               
               {/* Arrow */}
               <ChevronRight className={`
-                w-4 h-4 transition-transform duration-200 group-hover:translate-x-1
+                w-4 h-4 transition-transform duration-200 group-hover:translate-x-1 flex-shrink-0 mt-1
                 ${action.variant === 'primary' || action.variant === 'accent' 
                   ? 'text-white/60' 
                   : 'text-gray-400'
@@ -220,14 +193,14 @@ export default function QuickActions({ actions }: QuickActionsProps) {
         ))}
       </div>
 
-      {/* Footer */}
-      <div className="mt-6 pt-4 border-t border-blue-200">
+      {/* Footer - Mobile Optimized */}
+      <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-blue-200">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
           <div className="text-xs text-blue-500">
             Letzte Aktualisierung: {new Date().toLocaleTimeString('de-DE')}
           </div>
           <div className="text-xs text-blue-500">
-            Sicheres Banking • 256-Bit Verschlüsselung
+            <span className="hidden sm:inline">Sicheres Banking • </span>256-Bit Verschlüsselung
           </div>
         </div>
       </div>
