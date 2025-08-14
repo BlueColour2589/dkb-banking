@@ -16,7 +16,9 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         email: true,
-        name: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
         createdAt: true,
         updatedAt: true,
       },
@@ -48,12 +50,12 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { name, email } = body;
+    const { firstName, lastName, email } = body;
 
     // Basic validation
-    if (!name || !email) {
+    if (!firstName || !lastName || !email) {
       return NextResponse.json(
-        { error: 'Name and email are required' },
+        { error: 'First name, last name, and email are required' },
         { status: 400 }
       );
     }
@@ -69,14 +71,17 @@ export async function PUT(request: NextRequest) {
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: {
-        name,
+        firstName,
+        lastName,
         email,
         updatedAt: new Date(),
       },
       select: {
         id: true,
         email: true,
-        name: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
         createdAt: true,
         updatedAt: true,
       },
