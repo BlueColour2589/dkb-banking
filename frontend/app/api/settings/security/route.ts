@@ -1,119 +1,116 @@
-// app/api/settings/security/route.ts - ADD THIS LINE AT THE TOP
-export const dynamic = 'force-dynamic';
-
+// app/api/settings/security/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-import { z } from 'zod';
-import jwt from 'jsonwebtoken';
-
-const prisma = new PrismaClient();
-
-const securitySettingsSchema = z.object({
-  biometricEnabled: z.boolean(),
-  emailNotifications: z.boolean(),
-  smsNotifications: z.boolean(),
-  loginNotifications: z.boolean(),
-  sessionTimeout: z.number().min(15).max(480)
-});
-
-// Helper function to get user from token
-async function getUserFromToken(request: NextRequest) {
-  const authHeader = request.headers.get('authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return null;
-  }
-
-  const token = authHeader.substring(7);
-  
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret') as any;
-    const user = await prisma.user.findUnique({
-      where: { id: decoded.userId }
-    });
-    return user;
-  } catch (error) {
-    console.error('Token verification error:', error);
-    return null;
-  }
-}
+import { verifyAuthToken } from '@/lib/auth';
+import { prisma } from '@/lib/prisma';
 
 // GET /api/settings/security - Get security settings
 export async function GET(request: NextRequest) {
   try {
-    const user = await getUserFromToken(request);
-    
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
+    const userId = await verifyAuthToken(request);
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        twoFactorEnabled: user.twoFactorEnabled || false,
-        biometricEnabled: false,
-        emailNotifications: true,
-        smsNotifications: false,
-        loginNotifications: true,
-        sessionTimeout: 30,
-        trustedDevices: [
-          {
-            id: '1',
-            name: 'Current Device',
-            type: 'Web',
-            lastUsed: new Date().toISOString(),
-            location: 'Current Session'
-          }
-        ]
-      }
+    // Get user with security settings and trusted devices
+    const userData = await prisma.user.findUnique({
+      where: { userId },
+      include: {
+        securitySettings: {
+          include: {
+            trustedDevices: true,
+          },
+        },
+        trustedDevices: true, // Direct relation from user
+      },
     });
 
+    if (!userData) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    // Transform data to match your SecuritySettings interface
+    const transformedSettings = {
+      twoFactorEnabled: userData.twoFactorEnabled, // From User model
+      biometricEnabled: userData.securitySettings?.biometricEnabled ?? false,
+      emailNotifications: userData.securitySettings?.emailNotifications ?? true,
+      smsNotifications: userData.securitySettings?.smsNotifications ?? false,
+      loginNotifications: userData.securitySettings?.loginNotifications ?? true,
+      sessionTimeout: userData.securitySettings?.sessionTimeout ?? 30,
+      trustedDevices: userData.trustedDevices.map(device => ({
+        id: device.id,
+        name: device.deviceName,
+        type: device.deviceType,
+        lastUsed: device.lastUsed.toISOString(),
+        location: device.location || 'Unknown',
+      })),
+    };
+
+    return NextResponse.json(transformedSettings);
   } catch (error) {
     console.error('Security settings fetch error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
 // PUT /api/settings/security - Update security settings
 export async function PUT(request: NextRequest) {
   try {
-    const user = await getUserFromToken(request);
-    
-    if (!user) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      );
+    const userId = await verifyAuthToken(request);
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const body = await request.json();
-    const validatedData = securitySettingsSchema.parse(body);
+    const {
+      twoFactorEnabled,
+      biometricEnabled,
+      emailNotifications,
+      smsNotifications,
+      loginNotifications,
+      sessionTimeout,
+    } = body;
+
+    // Update both User model (for 2FA) and SecuritySettings in a transaction
+    await prisma.$transaction(async (tx) => {
+      // Update 2FA on User model
+      if (typeof twoFactorEnabled === 'boolean') {
+        await tx.user.update({
+          where: { id: userId },
+          data: {
+            twoFactorEnabled,
+            updatedAt: new Date(),
+          },
+        });
+      }
+
+      // Upsert security settings
+      await tx.securitySettings.upsert({
+        where: { userId },
+        update: {
+          biometricEnabled: biometricEnabled ?? false,
+          emailNotifications: emailNotifications ?? true,
+          smsNotifications: smsNotifications ?? false,
+          loginNotifications: loginNotifications ?? true,
+          sessionTimeout: sessionTimeout ?? 30,
+          updatedAt: new Date(),
+        },
+        create: {
+          userId,
+          biometricEnabled: biometricEnabled ?? false,
+          emailNotifications: emailNotifications ?? true,
+          smsNotifications: smsNotifications ?? false,
+          loginNotifications: loginNotifications ?? true,
+          sessionTimeout: sessionTimeout ?? 30,
+        },
+      });
+    });
 
     return NextResponse.json({
       success: true,
-      data: {
-        message: 'Security settings updated successfully',
-        settings: validatedData
-      }
+      message: 'Security settings updated successfully',
     });
-
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: 'Validation error', details: error.errors },
-        { status: 400 }
-      );
-    }
-
     console.error('Security settings update error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
