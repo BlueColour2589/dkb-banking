@@ -38,8 +38,10 @@ export default function DashboardPage() {
       if (consent && connectedAccounts) {
         try {
           const accounts = JSON.parse(connectedAccounts);
-          const bankNames = accounts.map((acc: any) => acc.bankName || 'Connected Bank') as string[];
-          setConnectedBanks(Array.from(new Set(bankNames))); // Remove duplicates
+          if (Array.isArray(accounts)) {
+            const bankNames = accounts.map((acc: any) => acc.bankName || 'Connected Bank') as string[];
+            setConnectedBanks(Array.from(new Set(bankNames))); // Remove duplicates
+          }
         } catch (error) {
           console.error('Failed to parse connected accounts:', error);
         }
@@ -204,9 +206,9 @@ export default function DashboardPage() {
     setAccounts(newAccounts);
     setShowBankConnection(false);
     
-    // Update connected banks list
-    const bankNames = newAccounts.map(acc => acc.bankName || 'Connected Bank');
-    setConnectedBanks([...new Set(bankNames)]);
+    // Update connected banks list with proper typing
+    const bankNames = newAccounts.map(acc => acc.bankName || 'Connected Bank') as string[];
+    setConnectedBanks(Array.from(new Set(bankNames)));
     
     // Show success message
     alert(`Erfolgreich mit ${newAccounts.length} Konto(s) verbunden!`);
