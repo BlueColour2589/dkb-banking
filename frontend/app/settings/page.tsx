@@ -1,614 +1,620 @@
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Sidebar from '@/components/Sidebar/Sidebar';
-import MobileHeader from '@/components/Header/MobileHeader';
-import { useAuth } from '@/contexts/AuthContext';
+import React, { useState, useEffect } from 'react';
 import { 
-  User, Shield, Bell, Settings as SettingsIcon, Database,
-  Edit3, Save, X, CheckCircle, AlertTriangle, ChevronRight,
-  Camera, Lock, Key, Fingerprint, Mail, Phone, Users, Crown
+  User, Lock, Bell, Globe, Shield, Eye, EyeOff, 
+  Smartphone, Mail, CreditCard, Download, Trash2,
+  Save, AlertCircle, CheckCircle,   Settings,
+  Moon, Sun, Users, Phone, MapPin, Calendar
 } from 'lucide-react';
 
-// Joint account holders
-const jointAccountHolders = [
-  {
-    id: 'celestina',
-    name: 'Celestina White',
-    email: 'celestina.white@dkb.de',
-    initial: 'C',
-    role: 'Primary Owner',
-    phone: '+49 170 123 4567',
-    dateOfBirth: '1990-03-15'
-  },
-  {
-    id: 'mark',
-    name: 'Mark Peters',
-    email: 'mark.peters@dkb.de',
-    initial: 'M',
-    role: 'Secondary Owner',
-    phone: '+49 171 987 6543',
-    dateOfBirth: '1988-07-22'
-  }
-];
-
-interface AccountSettings {
-  accountName: string;
-  accountNumber: string;
-  accountType: string;
-  currency: string;
-  balance: number;
-  status: string;
-  createdAt: string;
+interface UserProfile {
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address: string;
+  dateOfBirth: string;
+  language: 'en' | 'de';
+  theme: 'light' | 'dark' | 'auto';
 }
 
 interface SecuritySettings {
   twoFactorEnabled: boolean;
-  biometricEnabled: boolean;
   emailNotifications: boolean;
   smsNotifications: boolean;
-  loginNotifications: boolean;
-  sessionTimeout: number;
+  loginAlerts: boolean;
+  transactionAlerts: boolean;
+  passwordLastChanged: string;
   trustedDevices: Array<{
     id: string;
     name: string;
-    type: string;
     lastUsed: string;
-    location: string;
-    owner: string;
+    current: boolean;
   }>;
 }
 
-export default function SettingsPage() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('account');
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
-  const [isEditing, setIsEditing] = useState(false);
-  
-  // Joint account data
-  const [accountSettings, setAccountSettings] = useState<AccountSettings>({
-    accountName: 'Joint Checking Account',
-    accountNumber: '41d4f756-890d-4686-9641-41e41ae5a75c',
-    accountType: 'Joint Checking',
-    currency: 'EUR',
-    balance: 18000000.00,
-    status: 'Active',
-    createdAt: '2022-01-15'
+interface NotificationSettings {
+  email: boolean;
+  sms: boolean;
+  push: boolean;
+  transactionAlerts: boolean;
+  marketingEmails: boolean;
+  securityAlerts: boolean;
+  monthlyStatements: boolean;
+}
+
+export default function RealSettings() {
+  const [activeTab, setActiveTab] = useState('profile');
+  const [showPassword, setShowPassword] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // User Profile State
+  const [profile, setProfile] = useState<UserProfile>({
+    firstName: 'Celestina',
+    lastName: 'White',
+    email: 'celestina.white@dkb.de',
+    phone: '+49 30 120 300 0',
+    address: 'Taubenstraße 7-9, 10117 Berlin, Germany',
+    dateOfBirth: '1985-06-15',
+    language: 'en',
+    theme: 'light'
   });
 
-  const [securitySettings, setSecuritySettings] = useState<SecuritySettings>({
+  // Security Settings State
+  const [security, setSecurity] = useState<SecuritySettings>({
     twoFactorEnabled: true,
-    biometricEnabled: false,
     emailNotifications: true,
     smsNotifications: false,
-    loginNotifications: true,
-    sessionTimeout: 30,
+    loginAlerts: true,
+    transactionAlerts: true,
+    passwordLastChanged: '2024-07-15',
     trustedDevices: [
-      {
-        id: '1',
-        name: 'iPhone 14 Pro',
-        type: 'Mobile',
-        lastUsed: new Date().toISOString(),
-        location: 'Berlin, Germany',
-        owner: 'Celestina White'
-      },
-      {
-        id: '2',
-        name: 'MacBook Pro',
-        type: 'Desktop',
-        lastUsed: new Date(Date.now() - 86400000).toISOString(),
-        location: 'Berlin, Germany',
-        owner: 'Mark Peters'
-      }
+      { id: '1', name: 'iPhone 15 Pro', lastUsed: '2024-08-14', current: true },
+      { id: '2', name: 'MacBook Pro', lastUsed: '2024-08-13', current: false },
+      { id: '3', name: 'iPad Air', lastUsed: '2024-08-10', current: false }
     ]
   });
-  
-  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
-  const router = useRouter();
 
-  useEffect(() => {
-    if (!authLoading && !isAuthenticated) {
-      router.push('/login');
-      return;
-    }
-  }, [isAuthenticated, authLoading, router]);
+  // Notification Settings State
+  const [notifications, setNotifications] = useState<NotificationSettings>({
+    email: true,
+    sms: false,
+    push: true,
+    transactionAlerts: true,
+    marketingEmails: false,
+    securityAlerts: true,
+    monthlyStatements: true
+  });
 
-  const handleSaveAccount = async () => {
-    setSaveStatus('saving');
+  // Validation
+  const validateProfile = () => {
+    const newErrors: Record<string, string> = {};
     
+    if (!profile.firstName.trim()) newErrors.firstName = 'First name is required';
+    if (!profile.lastName.trim()) newErrors.lastName = 'Last name is required';
+    if (!profile.email.includes('@')) newErrors.email = 'Valid email is required';
+    if (!profile.phone.trim()) newErrors.phone = 'Phone number is required';
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const validatePassword = () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!currentPassword) newErrors.currentPassword = 'Current password is required';
+    if (newPassword.length < 8) newErrors.newPassword = 'Password must be at least 8 characters';
+    if (newPassword !== confirmPassword) newErrors.confirmPassword = 'Passwords do not match';
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Save Functions
+  const saveProfile = async () => {
+    if (!validateProfile()) return;
+    
+    setSaveStatus('saving');
     try {
       // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      setSaveStatus('success');
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    } catch (error) {
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    }
+  };
+
+  const changePassword = async () => {
+    if (!validatePassword()) return;
+    
+    setSaveStatus('saving');
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      setSecurity(prev => ({ ...prev, passwordLastChanged: new Date().toISOString().split('T')[0] }));
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+      setSaveStatus('success');
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    } catch (error) {
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    }
+  };
+
+  const toggle2FA = async () => {
+    setSaveStatus('saving');
+    try {
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setSecurity(prev => ({ ...prev, twoFactorEnabled: !prev.twoFactorEnabled }));
+      setSaveStatus('success');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    } catch (error) {
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    }
+  };
+
+  const removeTrustedDevice = async (deviceId: string) => {
+    setSaveStatus('saving');
+    try {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setSecurity(prev => ({
+        ...prev,
+        trustedDevices: prev.trustedDevices.filter(device => device.id !== deviceId)
+      }));
+      setSaveStatus('success');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    } catch (error) {
+      setSaveStatus('error');
+      setTimeout(() => setSaveStatus('idle'), 2000);
+    }
+  };
+
+  const exportData = async () => {
+    setSaveStatus('saving');
+    try {
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      setSaveStatus('saved');
-      setIsEditing(false);
+      // Create and download a JSON file with user data
+      const dataToExport = {
+        profile,
+        security: { ...security, trustedDevices: security.trustedDevices.length },
+        notifications,
+        exportDate: new Date().toISOString()
+      };
+      
+      const blob = new Blob([JSON.stringify(dataToExport, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'dkb-account-data.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      setSaveStatus('success');
       setTimeout(() => setSaveStatus('idle'), 2000);
-    } catch (err) {
+    } catch (error) {
       setSaveStatus('error');
-      setError('Failed to save account settings');
+      setTimeout(() => setSaveStatus('idle'), 2000);
     }
   };
-
-  const handleSecurityToggle = async (setting: keyof SecuritySettings, value: boolean) => {
-    // Update immediately for better UX
-    const updatedSettings = { ...securitySettings, [setting]: value };
-    setSecuritySettings(updatedSettings);
-
-    try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      console.log(`Updated ${setting} to ${value}`);
-    } catch (err) {
-      // Revert on error
-      setSecuritySettings(securitySettings);
-      setError('Failed to update security settings');
-    }
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('de-DE', {
-      style: 'currency',
-      currency: 'EUR'
-    }).format(amount);
-  };
-
-  if (authLoading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading settings...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) return null;
 
   const tabs = [
-    { id: 'account', label: 'Joint Account', icon: Users },
-    { id: 'owners', label: 'Account Holders', icon: User },
+    { id: 'profile', label: 'Profile', icon: User },
     { id: 'security', label: 'Security', icon: Shield },
     { id: 'notifications', label: 'Notifications', icon: Bell },
-    { id: 'preferences', label: 'Preferences', icon: SettingsIcon }
+    { id: 'preferences', label: 'Preferences', icon: Settings },
+    { id: 'data', label: 'Data & Privacy', icon: Download }
   ];
 
-  const renderAccountTab = () => (
-    <div className="space-y-6">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-semibold text-gray-900">Joint Account Information</h2>
-          <button
-            onClick={() => setIsEditing(!isEditing)}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-              isEditing 
-                ? 'bg-red-100 text-red-700 hover:bg-red-200' 
-                : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-            }`}
-          >
-            {isEditing ? <X size={16} /> : <Edit3 size={16} />}
-            <span>{isEditing ? 'Cancel' : 'Edit'}</span>
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Account Name</label>
-            {isEditing ? (
-              <input
-                type="text"
-                value={accountSettings.accountName}
-                onChange={(e) => setAccountSettings(prev => ({ ...prev, accountName: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
-            ) : (
-              <p className="text-gray-900">{accountSettings.accountName}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Account Number</label>
-            <p className="text-gray-900 font-mono text-sm">{accountSettings.accountNumber}</p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Account Type</label>
-            <p className="text-gray-900">{accountSettings.accountType}</p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Currency</label>
-            <p className="text-gray-900">{accountSettings.currency}</p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Current Balance</label>
-            <p className="text-2xl font-bold text-green-600">{formatCurrency(accountSettings.balance)}</p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Account Status</label>
-            <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-              <CheckCircle className="w-4 h-4 mr-1" />
-              {accountSettings.status}
-            </span>
-          </div>
-        </div>
-
-        {isEditing && (
-          <div className="mt-6 flex items-center justify-end space-x-3">
-            <button
-              onClick={() => setIsEditing(false)}
-              className="px-4 py-2 text-gray-600 hover:text-gray-800 border border-gray-300 hover:border-gray-400 rounded-lg transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handleSaveAccount}
-              disabled={saveStatus === 'saving'}
-              className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50"
-            >
-              {saveStatus === 'saving' ? (
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              ) : (
-                <Save size={16} />
-              )}
-              <span>{saveStatus === 'saving' ? 'Saving...' : 'Save Changes'}</span>
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* Account Created */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Account History</h3>
-        <div className="space-y-3">
-          <div className="flex justify-between items-center">
-            <span className="text-gray-600">Account Created</span>
-            <span className="text-gray-900">{new Date(accountSettings.createdAt).toLocaleDateString('de-DE')}</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-600">Total Holders</span>
-            <span className="text-gray-900">{jointAccountHolders.length} owners</span>
-          </div>
-          <div className="flex justify-between items-center">
-            <span className="text-gray-600">Account Age</span>
-            <span className="text-gray-900">
-              {Math.floor((new Date().getTime() - new Date(accountSettings.createdAt).getTime()) / (1000 * 60 * 60 * 24 * 365))} years
-            </span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderOwnersTab = () => (
-    <div className="space-y-6">
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-6">Account Holders</h2>
-        
-        <div className="space-y-6">
-          {jointAccountHolders.map((holder, index) => (
-            <div key={holder.id} className="border border-gray-200 rounded-lg p-6">
-              <div className="flex items-start space-x-4">
-                {/* Avatar */}
-                <div className="relative">
-                  <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
-                    {holder.initial}
-                  </div>
-                  {holder.role === 'Primary Owner' && (
-                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center">
-                      <Crown className="w-3 h-3 text-white" />
-                    </div>
-                  )}
-                </div>
-
-                {/* Holder Info */}
-                <div className="flex-1">
-                  <div className="flex items-center space-x-3 mb-2">
-                    <h3 className="text-lg font-semibold text-gray-900">{holder.name}</h3>
-                    <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                      holder.role === 'Primary Owner' 
-                        ? 'bg-yellow-100 text-yellow-800' 
-                        : 'bg-blue-100 text-blue-800'
-                    }`}>
-                      {holder.role}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                      <p className="text-gray-900">{holder.email}</p>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                      <p className="text-gray-900">{holder.phone}</p>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Date of Birth</label>
-                      <p className="text-gray-900">{new Date(holder.dateOfBirth).toLocaleDateString('de-DE')}</p>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Permissions</label>
-                      <div className="flex space-x-2">
-                        <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">View</span>
-                        <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">Transfer</span>
-                        {holder.role === 'Primary Owner' && (
-                          <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">Full Access</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Add New Holder */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Add Account Holder</h3>
-        <p className="text-gray-600 mb-4">
-          Add additional authorized users to this joint account. New holders will need to verify their identity.
-        </p>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors">
-          Add New Holder
-        </button>
-      </div>
-    </div>
-  );
-
-  const renderSecurityTab = () => (
-    <div className="space-y-6">
-      {/* Password & Authentication */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Security</h3>
-        <p className="text-sm text-gray-600 mb-4">
-          Security settings apply to all account holders and affect the entire joint account.
-        </p>
-        
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center space-x-3">
-              <Lock className="w-5 h-5 text-gray-600" />
-              <div>
-                <p className="font-medium text-gray-900">Account Password Protection</p>
-                <p className="text-sm text-gray-600">Both holders can change their individual passwords</p>
-              </div>
-            </div>
-            <button className="text-blue-600 hover:text-blue-700 font-medium">
-              Manage
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center space-x-3">
-              <Key className="w-5 h-5 text-gray-600" />
-              <div>
-                <p className="font-medium text-gray-900">Two-Factor Authentication</p>
-                <p className="text-sm text-gray-600">Required for all high-value transactions</p>
-              </div>
-            </div>
-            <button
-              onClick={() => handleSecurityToggle('twoFactorEnabled', !securitySettings.twoFactorEnabled)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                securitySettings.twoFactorEnabled ? 'bg-blue-600' : 'bg-gray-200'
-              }`}
-            >
-              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                securitySettings.twoFactorEnabled ? 'translate-x-6' : 'translate-x-1'
-              }`} />
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center space-x-3">
-              <Fingerprint className="w-5 h-5 text-gray-600" />
-              <div>
-                <p className="font-medium text-gray-900">Biometric Authentication</p>
-                <p className="text-sm text-gray-600">Each holder can enable biometric login</p>
-              </div>
-            </div>
-            <button
-              onClick={() => handleSecurityToggle('biometricEnabled', !securitySettings.biometricEnabled)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                securitySettings.biometricEnabled ? 'bg-blue-600' : 'bg-gray-200'
-              }`}
-            >
-              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                securitySettings.biometricEnabled ? 'translate-x-6' : 'translate-x-1'
-              }`} />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Trusted Devices */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Trusted Devices</h3>
-        <p className="text-sm text-gray-600 mb-4">
-          Devices that have been authorized to access this joint account.
-        </p>
-        
-        <div className="space-y-3">
-          {securitySettings.trustedDevices.map((device) => (
-            <div key={device.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  {device.type === 'Mobile' ? <Phone className="w-5 h-5 text-blue-600" /> : <User className="w-5 h-5 text-blue-600" />}
-                </div>
-                <div>
-                  <p className="font-medium text-gray-900">{device.name}</p>
-                  <p className="text-sm text-gray-600">
-                    Owner: {device.owner} • {device.location} • {new Date(device.lastUsed).toLocaleDateString('de-DE')}
-                  </p>
-                </div>
-              </div>
-              <button className="text-red-600 hover:text-red-700 text-sm font-medium">
-                Remove
-              </button>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Security Notifications */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Security Notifications</h3>
-        
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center space-x-3">
-              <Mail className="w-5 h-5 text-gray-600" />
-              <div>
-                <p className="font-medium text-gray-900">Email Security Alerts</p>
-                <p className="text-sm text-gray-600">Both account holders receive security notifications</p>
-              </div>
-            </div>
-            <button
-              onClick={() => handleSecurityToggle('emailNotifications', !securitySettings.emailNotifications)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                securitySettings.emailNotifications ? 'bg-blue-600' : 'bg-gray-200'
-              }`}
-            >
-              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                securitySettings.emailNotifications ? 'translate-x-6' : 'translate-x-1'
-              }`} />
-            </button>
-          </div>
-
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center space-x-3">
-              <Phone className="w-5 h-5 text-gray-600" />
-              <div>
-                <p className="font-medium text-gray-900">SMS Security Alerts</p>
-                <p className="text-sm text-gray-600">Send SMS alerts for critical security events</p>
-              </div>
-            </div>
-            <button
-              onClick={() => handleSecurityToggle('smsNotifications', !securitySettings.smsNotifications)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                securitySettings.smsNotifications ? 'bg-blue-600' : 'bg-gray-200'
-              }`}
-            >
-              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                securitySettings.smsNotifications ? 'translate-x-6' : 'translate-x-1'
-              }`} />
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderContent = () => {
-    switch (activeTab) {
-      case 'account':
-        return renderAccountTab();
-      case 'owners':
-        return renderOwnersTab();
-      case 'security':
-        return renderSecurityTab();
-      case 'notifications':
-        return (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Joint Account Notifications</h2>
-            <p className="text-gray-600">Notification preferences for both account holders coming soon...</p>
-          </div>
-        );
-      case 'preferences':
-        return (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-            <h2 className="text-xl font-semibold text-gray-900 mb-4">Account Preferences</h2>
-            <p className="text-gray-600">Shared account preferences coming soon...</p>
-          </div>
-        );
-      default:
-        return null;
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-30">
-        <MobileHeader toggleSidebar={() => setSidebarOpen(true)} />
+    <div className="max-w-6xl mx-auto p-6 space-y-6">
+      {/* Header */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Account Settings</h1>
+            <p className="text-gray-600 mt-1">Manage your DKB joint account preferences and security</p>
+          </div>
+          
+          {/* Save Status Indicator */}
+          {saveStatus !== 'idle' && (
+            <div className={`flex items-center space-x-2 px-4 py-2 rounded-lg ${
+              saveStatus === 'saving' ? 'bg-blue-50 text-blue-700' :
+              saveStatus === 'success' ? 'bg-green-50 text-green-700' :
+              'bg-red-50 text-red-700'
+            }`}>
+              {saveStatus === 'saving' && <div className="animate-spin w-4 h-4 border-2 border-blue-600 border-t-transparent rounded-full" />}
+              {saveStatus === 'success' && <CheckCircle size={16} />}
+              {saveStatus === 'error' && <AlertCircle size={16} />}
+              <span className="text-sm font-medium">
+                {saveStatus === 'saving' ? 'Saving...' :
+                 saveStatus === 'success' ? 'Saved successfully' :
+                 'Save failed'}
+              </span>
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="flex min-h-screen">
-        <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
-
-        <main className="flex-1 min-h-screen transition-all duration-300 ease-in-out lg:ml-64">
-          <div className="p-4 lg:p-8 pt-20 lg:pt-8">
-            
-            {/* Header */}
-            <div className="mb-8">
-              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">Joint Account Settings</h1>
-              <p className="text-gray-600">Manage settings for your shared banking account</p>
-            </div>
-
-            {/* Error Message */}
-            {error && (
-              <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg flex items-center space-x-3">
-                <AlertTriangle className="w-5 h-5 text-red-600" />
-                <p className="text-red-800">{error}</p>
-                <button 
-                  onClick={() => setError(null)}
-                  className="ml-auto text-red-600 hover:text-red-700"
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Tab Navigation */}
+        <div className="lg:col-span-1">
+          <nav className="space-y-1">
+            {tabs.map((tab) => {
+              const Icon = tab.icon;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`w-full flex items-center space-x-3 px-4 py-3 text-left rounded-lg transition-colors ${
+                    activeTab === tab.id
+                      ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                      : 'text-gray-600 hover:bg-gray-50'
+                  }`}
                 >
-                  <X size={16} />
+                  <Icon size={18} />
+                  <span className="font-medium">{tab.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* Tab Content */}
+        <div className="lg:col-span-3">
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            
+            {/* Profile Tab */}
+            {activeTab === 'profile' && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-semibold text-gray-900">Profile Information</h2>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                    <input
+                      type="text"
+                      value={profile.firstName}
+                      onChange={(e) => setProfile(prev => ({ ...prev, firstName: e.target.value }))}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                        errors.firstName ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    />
+                    {errors.firstName && <p className="text-red-500 text-xs mt-1">{errors.firstName}</p>}
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                    <input
+                      type="text"
+                      value={profile.lastName}
+                      onChange={(e) => setProfile(prev => ({ ...prev, lastName: e.target.value }))}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                        errors.lastName ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    />
+                    {errors.lastName && <p className="text-red-500 text-xs mt-1">{errors.lastName}</p>}
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <input
+                      type="email"
+                      value={profile.email}
+                      onChange={(e) => setProfile(prev => ({ ...prev, email: e.target.value }))}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                        errors.email ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    />
+                    {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Phone</label>
+                    <input
+                      type="tel"
+                      value={profile.phone}
+                      onChange={(e) => setProfile(prev => ({ ...prev, phone: e.target.value }))}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                        errors.phone ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                    />
+                    {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
+                  </div>
+                  
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Address</label>
+                    <input
+                      type="text"
+                      value={profile.address}
+                      onChange={(e) => setProfile(prev => ({ ...prev, address: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Date of Birth</label>
+                    <input
+                      type="date"
+                      value={profile.dateOfBirth}
+                      onChange={(e) => setProfile(prev => ({ ...prev, dateOfBirth: e.target.value }))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                </div>
+                
+                <button
+                  onClick={saveProfile}
+                  disabled={saveStatus === 'saving'}
+                  className="flex items-center space-x-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <Save size={16} />
+                  <span>Save Profile</span>
                 </button>
               </div>
             )}
 
-            {/* Save Status */}
-            {saveStatus === 'saved' && (
-              <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center space-x-3">
-                <CheckCircle className="w-5 h-5 text-green-600" />
-                <p className="text-green-800">Settings saved successfully!</p>
+            {/* Security Tab */}
+            {activeTab === 'security' && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-semibold text-gray-900">Security Settings</h2>
+                
+                {/* Change Password */}
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <h3 className="font-medium text-gray-900 mb-4">Change Password</h3>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          value={currentPassword}
+                          onChange={(e) => setCurrentPassword(e.target.value)}
+                          className={`w-full px-3 py-2 pr-10 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                            errors.currentPassword ? 'border-red-500' : 'border-gray-300'
+                          }`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+                        >
+                          {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </button>
+                      </div>
+                      {errors.currentPassword && <p className="text-red-500 text-xs mt-1">{errors.currentPassword}</p>}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                          errors.newPassword ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                      />
+                      {errors.newPassword && <p className="text-red-500 text-xs mt-1">{errors.newPassword}</p>}
+                    </div>
+                    
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                          errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                        }`}
+                      />
+                      {errors.confirmPassword && <p className="text-red-500 text-xs mt-1">{errors.confirmPassword}</p>}
+                    </div>
+                    
+                    <button
+                      onClick={changePassword}
+                      disabled={saveStatus === 'saving'}
+                      className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      <Lock size={16} />
+                      <span>Change Password</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Two-Factor Authentication */}
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-4">
+                    <div>
+                      <h3 className="font-medium text-gray-900">Two-Factor Authentication</h3>
+                      <p className="text-sm text-gray-600">Add an extra layer of security to your account</p>
+                    </div>
+                    <button
+                      onClick={toggle2FA}
+                      disabled={saveStatus === 'saving'}
+                      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                        security.twoFactorEnabled ? 'bg-blue-600' : 'bg-gray-200'
+                      }`}
+                    >
+                      <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                        security.twoFactorEnabled ? 'translate-x-6' : 'translate-x-1'
+                      }`} />
+                    </button>
+                  </div>
+                  {security.twoFactorEnabled && (
+                    <div className="flex items-center space-x-2 text-sm text-green-600">
+                      <CheckCircle size={16} />
+                      <span>2FA is enabled via SMS to {profile.phone}</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Trusted Devices */}
+                <div className="border border-gray-200 rounded-lg p-4">
+                  <h3 className="font-medium text-gray-900 mb-4">Trusted Devices</h3>
+                  <div className="space-y-3">
+                    {security.trustedDevices.map((device) => (
+                      <div key={device.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <Smartphone size={20} className="text-gray-400" />
+                          <div>
+                            <p className="font-medium text-gray-900">{device.name}</p>
+                            <p className="text-sm text-gray-600">
+                              Last used: {new Date(device.lastUsed).toLocaleDateString()}
+                              {device.current && <span className="text-green-600 ml-2">(Current device)</span>}
+                            </p>
+                          </div>
+                        </div>
+                        {!device.current && (
+                          <button
+                            onClick={() => removeTrustedDevice(device.id)}
+                            className="text-red-600 hover:text-red-800 p-1"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
 
-            <div className="flex flex-col lg:flex-row gap-8">
-              {/* Navigation Tabs */}
-              <div className="lg:w-64">
-                <nav className="bg-white rounded-xl shadow-sm border border-gray-100 p-2">
-                  {tabs.map((tab) => {
-                    const IconComponent = tab.icon;
-                    return (
+            {/* Notifications Tab */}
+            {activeTab === 'notifications' && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-semibold text-gray-900">Notification Preferences</h2>
+                
+                <div className="space-y-4">
+                  {Object.entries({
+                    email: 'Email Notifications',
+                    sms: 'SMS Notifications',
+                    push: 'Push Notifications',
+                    transactionAlerts: 'Transaction Alerts',
+                    securityAlerts: 'Security Alerts',
+                    monthlyStatements: 'Monthly Statements',
+                    marketingEmails: 'Marketing Emails'
+                  }).map(([key, label]) => (
+                    <div key={key} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                      <div>
+                        <h3 className="font-medium text-gray-900">{label}</h3>
+                        <p className="text-sm text-gray-600">
+                          {key === 'transactionAlerts' && 'Get notified of all account transactions'}
+                          {key === 'securityAlerts' && 'Important security notifications'}
+                          {key === 'monthlyStatements' && 'Monthly account statements'}
+                          {key === 'marketingEmails' && 'Product updates and offers'}
+                          {key === 'email' && 'General email notifications'}
+                          {key === 'sms' && 'SMS alerts for important updates'}
+                          {key === 'push' && 'Push notifications on mobile devices'}
+                        </p>
+                      </div>
                       <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`w-full flex items-center space-x-3 px-4 py-3 text-left rounded-lg transition-colors ${
-                          activeTab === tab.id
-                            ? 'bg-blue-100 text-blue-700'
-                            : 'text-gray-700 hover:bg-gray-50'
+                        onClick={() => setNotifications(prev => ({ ...prev, [key]: !prev[key as keyof NotificationSettings] }))}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                          notifications[key as keyof NotificationSettings] ? 'bg-blue-600' : 'bg-gray-200'
                         }`}
                       >
-                        <IconComponent size={20} />
-                        <span className="font-medium">{tab.label}</span>
-                        {activeTab === tab.id && <ChevronRight size={16} className="ml-auto" />}
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                          notifications[key as keyof NotificationSettings] ? 'translate-x-6' : 'translate-x-1'
+                        }`} />
                       </button>
-                    );
-                  })}
-                </nav>
+                    </div>
+                  ))}
+                </div>
               </div>
+            )}
 
-              {/* Content Area */}
-              <div className="flex-1">
-                {renderContent()}
+            {/* Preferences Tab */}
+            {activeTab === 'preferences' && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-semibold text-gray-900">Preferences</h2>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      <Globe size={20} className="text-gray-400" />
+                      <div>
+                        <h3 className="font-medium text-gray-900">Language</h3>
+                        <p className="text-sm text-gray-600">Choose your preferred language</p>
+                      </div>
+                    </div>
+                    <select
+                      value={profile.language}
+                      onChange={(e) => setProfile(prev => ({ ...prev, language: e.target.value as 'en' | 'de' }))}
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="en">English</option>
+                      <option value="de">Deutsch</option>
+                    </select>
+                  </div>
+                  
+                  <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                    <div className="flex items-center space-x-3">
+                      {profile.theme === 'light' ? <Sun size={20} className="text-gray-400" /> : <Moon size={20} className="text-gray-400" />}
+                      <div>
+                        <h3 className="font-medium text-gray-900">Theme</h3>
+                        <p className="text-sm text-gray-600">Choose your preferred theme</p>
+                      </div>
+                    </div>
+                    <select
+                      value={profile.theme}
+                      onChange={(e) => setProfile(prev => ({ ...prev, theme: e.target.value as 'light' | 'dark' | 'auto' }))}
+                      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="light">Light</option>
+                      <option value="dark">Dark</option>
+                      <option value="auto">Auto</option>
+                    </select>
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
+
+            {/* Data & Privacy Tab */}
+            {activeTab === 'data' && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-semibold text-gray-900">Data & Privacy</h2>
+                
+                <div className="space-y-4">
+                  <div className="border border-gray-200 rounded-lg p-4">
+                    <h3 className="font-medium text-gray-900 mb-2">Export Your Data</h3>
+                    <p className="text-sm text-gray-600 mb-4">Download a copy of your account information and settings</p>
+                    <button
+                      onClick={exportData}
+                      disabled={saveStatus === 'saving'}
+                      className="flex items-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      <Download size={16} />
+                      <span>Download Data</span>
+                    </button>
+                  </div>
+                  
+                  <div className="border border-red-200 rounded-lg p-4 bg-red-50">
+                    <h3 className="font-medium text-red-900 mb-2">Delete Account</h3>
+                    <p className="text-sm text-red-700 mb-4">
+                      Permanently delete your account and all associated data. This action cannot be undone.
+                    </p>
+                    <button className="flex items-center space-x-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                      <Trash2 size={16} />
+                      <span>Delete Account</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
           </div>
-        </main>
+        </div>
       </div>
     </div>
   );
