@@ -5,12 +5,27 @@ import { useRouter } from 'next/navigation';
 import Sidebar from '@/components/Sidebar/Sidebar';
 import MobileHeader from '@/components/Header/MobileHeader';
 import { useAuth } from '@/contexts/AuthContext';
-import { settingsAPI } from '@/lib/api';
 import { 
   User, Shield, Bell, Settings as SettingsIcon, Database,
   Edit3, Save, X, CheckCircle, AlertTriangle, ChevronRight,
   Camera, Lock, Key, Fingerprint, Mail, Phone
 } from 'lucide-react';
+
+// Demo users data - same as in Sidebar
+const demoUsers = [
+  {
+    id: 'celestina',
+    name: 'Celestina White',
+    email: 'celestina.white@dkb.de',
+    initial: 'C'
+  },
+  {
+    id: 'mark',
+    name: 'Mark Peters',
+    email: 'mark.peters@dkb.de',
+    initial: 'M'
+  }
+];
 
 interface UserProfile {
   id: string;
@@ -50,95 +65,112 @@ interface SecuritySettings {
 export default function SettingsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'saved' | 'error'>('idle');
   const [isEditing, setIsEditing] = useState(false);
+  const [currentUser, setCurrentUser] = useState(demoUsers[0]); // Demo user switching
   
-  // Data states
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [securitySettings, setSecuritySettings] = useState<SecuritySettings | null>(null);
+  // Data states - start with demo data
+  const [profile, setProfile] = useState<UserProfile>({
+    id: '1',
+    firstName: currentUser.name.split(' ')[0],
+    lastName: currentUser.name.split(' ')[1],
+    email: currentUser.email,
+    phone: '+49 170 123 4567',
+    dateOfBirth: '1990-03-15',
+    address: {
+      street: 'Unter den Linden 1',
+      city: 'Berlin',
+      postalCode: '10117',
+      country: 'Germany'
+    },
+    accountType: 'Premium',
+    memberSince: '2022-01-15',
+    lastLogin: new Date().toISOString()
+  });
+
+  const [securitySettings, setSecuritySettings] = useState<SecuritySettings>({
+    twoFactorEnabled: true,
+    biometricEnabled: false,
+    emailNotifications: true,
+    smsNotifications: false,
+    loginNotifications: true,
+    sessionTimeout: 30,
+    trustedDevices: [
+      {
+        id: '1',
+        name: 'Current Device',
+        type: 'Web',
+        lastUsed: new Date().toISOString(),
+        location: 'Berlin, Germany'
+      }
+    ]
+  });
   
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
+
+  // Update profile when user switches
+  useEffect(() => {
+    setProfile(prev => ({
+      ...prev,
+      firstName: currentUser.name.split(' ')[0],
+      lastName: currentUser.name.split(' ')[1],
+      email: currentUser.email
+    }));
+  }, [currentUser]);
+
+  // Switch between demo users
+  const switchUser = () => {
+    const nextUser = currentUser.id === 'celestina' ? demoUsers[1] : demoUsers[0];
+    setCurrentUser(nextUser);
+  };
 
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       router.push('/login');
       return;
     }
-
-    if (isAuthenticated) {
-      loadSettings();
-    }
   }, [isAuthenticated, authLoading, router]);
-
-  const loadSettings = async () => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      if (activeTab === 'profile') {
-        const profileRes = await settingsAPI.getProfile();
-        if (profileRes.success && profileRes.data) {
-          setProfile(profileRes.data);
-        } else {
-          setError(profileRes.error || 'Failed to load profile');
-        }
-      } else if (activeTab === 'security') {
-        const securityRes = await settingsAPI.getSecuritySettings();
-        if (securityRes.success && securityRes.data) {
-          setSecuritySettings(securityRes.data);
-        } else {
-          setError(securityRes.error || 'Failed to load security settings');
-        }
-      }
-    } catch (err) {
-      console.error('Settings load error:', err);
-      setError('Failed to load settings');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Load settings when tab changes
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadSettings();
-    }
-  }, [activeTab]);
 
   const handleSaveProfile = async () => {
     if (!profile) return;
 
     setSaveStatus('saving');
-    const result = await settingsAPI.updateProfile(profile);
     
-    if (result.success) {
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       setSaveStatus('saved');
       setIsEditing(false);
       setTimeout(() => setSaveStatus('idle'), 2000);
-    } else {
+    } catch (err) {
       setSaveStatus('error');
-      setError(result.error || 'Failed to save profile');
+      setError('Failed to save profile');
     }
   };
 
   const handleSecurityToggle = async (setting: keyof SecuritySettings, value: boolean) => {
     if (!securitySettings) return;
 
+    // Update immediately for better UX
     const updatedSettings = { ...securitySettings, [setting]: value };
     setSecuritySettings(updatedSettings);
 
-    const result = await settingsAPI.updateSecuritySettings({ [setting]: value });
-    if (!result.success) {
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 500));
+      console.log(`Updated ${setting} to ${value}`);
+    } catch (err) {
       // Revert on error
       setSecuritySettings(securitySettings);
-      setError(result.error || 'Failed to update security settings');
+      setError('Failed to update security settings');
     }
   };
 
-  if (authLoading || loading) {
+  if (authLoading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -164,17 +196,25 @@ export default function SettingsPage() {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-semibold text-gray-900">Personal Information</h2>
-          <button
-            onClick={() => setIsEditing(!isEditing)}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
-              isEditing 
-                ? 'bg-red-100 text-red-700 hover:bg-red-200' 
-                : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
-            }`}
-          >
-            {isEditing ? <X size={16} /> : <Edit3 size={16} />}
-            <span>{isEditing ? 'Cancel' : 'Edit'}</span>
-          </button>
+          <div className="flex items-center space-x-3">
+            <button
+              onClick={switchUser}
+              className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+            >
+              Switch to {currentUser.id === 'celestina' ? 'Mark Peters' : 'Celestina White'}
+            </button>
+            <button
+              onClick={() => setIsEditing(!isEditing)}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                isEditing 
+                  ? 'bg-red-100 text-red-700 hover:bg-red-200' 
+                  : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+              }`}
+            >
+              {isEditing ? <X size={16} /> : <Edit3 size={16} />}
+              <span>{isEditing ? 'Cancel' : 'Edit'}</span>
+            </button>
+          </div>
         </div>
 
         {profile && (
@@ -182,7 +222,7 @@ export default function SettingsPage() {
             {/* Profile Picture */}
             <div className="relative">
               <div className="w-24 h-24 bg-blue-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                {profile.firstName?.charAt(0) || profile.email.charAt(0)}
+                {currentUser.initial}
               </div>
               {isEditing && (
                 <button className="absolute -bottom-2 -right-2 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors">
@@ -199,11 +239,11 @@ export default function SettingsPage() {
                   <input
                     type="text"
                     value={profile.firstName}
-                    onChange={(e) => setProfile(prev => prev ? { ...prev, firstName: e.target.value } : null)}
+                    onChange={(e) => setProfile(prev => ({ ...prev, firstName: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 ) : (
-                  <p className="text-gray-900">{profile.firstName || 'Not set'}</p>
+                  <p className="text-gray-900">{profile.firstName}</p>
                 )}
               </div>
 
@@ -213,11 +253,11 @@ export default function SettingsPage() {
                   <input
                     type="text"
                     value={profile.lastName}
-                    onChange={(e) => setProfile(prev => prev ? { ...prev, lastName: e.target.value } : null)}
+                    onChange={(e) => setProfile(prev => ({ ...prev, lastName: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 ) : (
-                  <p className="text-gray-900">{profile.lastName || 'Not set'}</p>
+                  <p className="text-gray-900">{profile.lastName}</p>
                 )}
               </div>
 
@@ -227,7 +267,7 @@ export default function SettingsPage() {
                   <input
                     type="email"
                     value={profile.email}
-                    onChange={(e) => setProfile(prev => prev ? { ...prev, email: e.target.value } : null)}
+                    onChange={(e) => setProfile(prev => ({ ...prev, email: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 ) : (
@@ -241,11 +281,11 @@ export default function SettingsPage() {
                   <input
                     type="tel"
                     value={profile.phone}
-                    onChange={(e) => setProfile(prev => prev ? { ...prev, phone: e.target.value } : null)}
+                    onChange={(e) => setProfile(prev => ({ ...prev, phone: e.target.value }))}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   />
                 ) : (
-                  <p className="text-gray-900">{profile.phone || 'Not set'}</p>
+                  <p className="text-gray-900">{profile.phone}</p>
                 )}
               </div>
 
@@ -293,6 +333,25 @@ export default function SettingsPage() {
           </div>
         )}
       </div>
+
+      {/* Address Section */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Address Information</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="md:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Street Address</label>
+            <p className="text-gray-900">{profile.address.street}</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+            <p className="text-gray-900">{profile.address.city}</p>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Postal Code</label>
+            <p className="text-gray-900">{profile.address.postalCode}</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 
@@ -316,100 +375,94 @@ export default function SettingsPage() {
             </button>
           </div>
 
-          {securitySettings && (
-            <>
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <Key className="w-5 h-5 text-gray-600" />
-                  <div>
-                    <p className="font-medium text-gray-900">Two-Factor Authentication</p>
-                    <p className="text-sm text-gray-600">Add an extra layer of security</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => handleSecurityToggle('twoFactorEnabled', !securitySettings.twoFactorEnabled)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    securitySettings.twoFactorEnabled ? 'bg-blue-600' : 'bg-gray-200'
-                  }`}
-                >
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    securitySettings.twoFactorEnabled ? 'translate-x-6' : 'translate-x-1'
-                  }`} />
-                </button>
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center space-x-3">
+              <Key className="w-5 h-5 text-gray-600" />
+              <div>
+                <p className="font-medium text-gray-900">Two-Factor Authentication</p>
+                <p className="text-sm text-gray-600">Add an extra layer of security</p>
               </div>
+            </div>
+            <button
+              onClick={() => handleSecurityToggle('twoFactorEnabled', !securitySettings.twoFactorEnabled)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                securitySettings.twoFactorEnabled ? 'bg-blue-600' : 'bg-gray-200'
+              }`}
+            >
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                securitySettings.twoFactorEnabled ? 'translate-x-6' : 'translate-x-1'
+              }`} />
+            </button>
+          </div>
 
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <Fingerprint className="w-5 h-5 text-gray-600" />
-                  <div>
-                    <p className="font-medium text-gray-900">Biometric Login</p>
-                    <p className="text-sm text-gray-600">Use fingerprint or face recognition</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => handleSecurityToggle('biometricEnabled', !securitySettings.biometricEnabled)}
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    securitySettings.biometricEnabled ? 'bg-blue-600' : 'bg-gray-200'
-                  }`}
-                >
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                    securitySettings.biometricEnabled ? 'translate-x-6' : 'translate-x-1'
-                  }`} />
-                </button>
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center space-x-3">
+              <Fingerprint className="w-5 h-5 text-gray-600" />
+              <div>
+                <p className="font-medium text-gray-900">Biometric Login</p>
+                <p className="text-sm text-gray-600">Use fingerprint or face recognition</p>
               </div>
-            </>
-          )}
+            </div>
+            <button
+              onClick={() => handleSecurityToggle('biometricEnabled', !securitySettings.biometricEnabled)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                securitySettings.biometricEnabled ? 'bg-blue-600' : 'bg-gray-200'
+              }`}
+            >
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                securitySettings.biometricEnabled ? 'translate-x-6' : 'translate-x-1'
+              }`} />
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Login Notifications */}
-      {securitySettings && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Login Notifications</h3>
-          
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <Mail className="w-5 h-5 text-gray-600" />
-                <div>
-                  <p className="font-medium text-gray-900">Email Notifications</p>
-                  <p className="text-sm text-gray-600">Get notified via email for security events</p>
-                </div>
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Login Notifications</h3>
+        
+        <div className="space-y-4">
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center space-x-3">
+              <Mail className="w-5 h-5 text-gray-600" />
+              <div>
+                <p className="font-medium text-gray-900">Email Notifications</p>
+                <p className="text-sm text-gray-600">Get notified via email for security events</p>
               </div>
-              <button
-                onClick={() => handleSecurityToggle('emailNotifications', !securitySettings.emailNotifications)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  securitySettings.emailNotifications ? 'bg-blue-600' : 'bg-gray-200'
-                }`}
-              >
-                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  securitySettings.emailNotifications ? 'translate-x-6' : 'translate-x-1'
-                }`} />
-              </button>
             </div>
+            <button
+              onClick={() => handleSecurityToggle('emailNotifications', !securitySettings.emailNotifications)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                securitySettings.emailNotifications ? 'bg-blue-600' : 'bg-gray-200'
+              }`}
+            >
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                securitySettings.emailNotifications ? 'translate-x-6' : 'translate-x-1'
+              }`} />
+            </button>
+          </div>
 
-            <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center space-x-3">
-                <Phone className="w-5 h-5 text-gray-600" />
-                <div>
-                  <p className="font-medium text-gray-900">SMS Notifications</p>
-                  <p className="text-sm text-gray-600">Get notified via SMS for security events</p>
-                </div>
+          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+            <div className="flex items-center space-x-3">
+              <Phone className="w-5 h-5 text-gray-600" />
+              <div>
+                <p className="font-medium text-gray-900">SMS Notifications</p>
+                <p className="text-sm text-gray-600">Get notified via SMS for security events</p>
               </div>
-              <button
-                onClick={() => handleSecurityToggle('smsNotifications', !securitySettings.smsNotifications)}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  securitySettings.smsNotifications ? 'bg-blue-600' : 'bg-gray-200'
-                }`}
-              >
-                <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  securitySettings.smsNotifications ? 'translate-x-6' : 'translate-x-1'
-                }`} />
-              </button>
             </div>
+            <button
+              onClick={() => handleSecurityToggle('smsNotifications', !securitySettings.smsNotifications)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                securitySettings.smsNotifications ? 'bg-blue-600' : 'bg-gray-200'
+              }`}
+            >
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                securitySettings.smsNotifications ? 'translate-x-6' : 'translate-x-1'
+              }`} />
+            </button>
           </div>
         </div>
-      )}
+      </div>
     </div>
   );
 
@@ -423,21 +476,21 @@ export default function SettingsPage() {
         return (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Notification Settings</h2>
-            <p className="text-gray-600">Notification settings will be available here.</p>
+            <p className="text-gray-600">Notification settings coming soon...</p>
           </div>
         );
       case 'preferences':
         return (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">App Preferences</h2>
-            <p className="text-gray-600">App preferences will be available here.</p>
+            <p className="text-gray-600">App preferences coming soon...</p>
           </div>
         );
       case 'data':
         return (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-4">Data & Privacy</h2>
-            <p className="text-gray-600">Data and privacy settings will be available here.</p>
+            <p className="text-gray-600">Data and privacy settings coming soon...</p>
           </div>
         );
       default:
