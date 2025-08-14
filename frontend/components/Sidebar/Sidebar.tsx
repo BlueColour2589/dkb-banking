@@ -2,10 +2,10 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
-  X, Home, CreditCard, ArrowUpDown, Settings, LogOut, 
-  History, Repeat, Zap, TrendingUp, PiggyBank, BarChart3,
-  FileText, Mail, HelpCircle, Phone, Shield, ChevronRight,
-  Menu, Search
+  X, Home, ArrowUpDown, Settings, LogOut, 
+  History, TrendingUp, PiggyBank, BarChart3,
+  FileText, Mail, HelpCircle, Shield, ChevronRight,
+  Search, ChevronLeft
 } from 'lucide-react';
 import { SidebarProps, NavItem } from '@/types/dashboard';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,14 +15,7 @@ import { useState } from 'react';
 const quickAccessItems: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: Home },
   { label: 'Transfer Money', href: '/transfer', icon: ArrowUpDown },
-  { label: 'View Accounts', href: '/accounts', icon: CreditCard },
   { label: 'Transactions', href: '/transactions', icon: History },
-];
-
-const bankingItems: NavItem[] = [
-  { label: 'Standing Orders', href: '/standing-orders', icon: Repeat },
-  { label: 'Direct Debits', href: '/direct-debits', icon: Zap },
-  { label: 'Cards', href: '/cards', icon: CreditCard },
 ];
 
 const investmentItems: NavItem[] = [
@@ -38,17 +31,38 @@ const serviceItems: NavItem[] = [
   { label: 'Help Center', href: '/help', icon: HelpCircle },
 ];
 
+// Demo users data
+const demoUsers = [
+  {
+    id: 'celestina',
+    name: 'Celestina White',
+    email: 'celestina.white@dkb.de',
+    initial: 'C'
+  },
+  {
+    id: 'mark',
+    name: 'Mark Peters',
+    email: 'mark.peters@dkb.de',
+    initial: 'M'
+  }
+];
+
 export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
   const pathname = usePathname();
   const { logout, user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
+  const [currentUser, setCurrentUser] = useState(demoUsers[0]); // Default to Celestina
   const [expandedSections, setExpandedSections] = useState({
-    banking: true,
     investment: true,
     services: false
   });
   
   const handleLinkClick = (): void => {
+    // On mobile, keep sidebar open for easier navigation back
+    if (window.innerWidth < 1024) {
+      // Don't close immediately, let user navigate back easily
+      return;
+    }
     setIsOpen(false);
   };
 
@@ -68,8 +82,13 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
     }));
   };
 
+  const switchUser = () => {
+    const nextUser = currentUser.id === 'celestina' ? demoUsers[1] : demoUsers[0];
+    setCurrentUser(nextUser);
+  };
+
   // Filter all items based on search
-  const allItems = [...quickAccessItems, ...bankingItems, ...investmentItems, ...serviceItems];
+  const allItems = [...quickAccessItems, ...investmentItems, ...serviceItems];
   const filteredItems = searchTerm 
     ? allItems.filter(item => 
         item.label.toLowerCase().includes(searchTerm.toLowerCase())
@@ -171,6 +190,16 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
           <div className="p-4 border-b border-gray-100">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-3">
+                {/* Back button for mobile when on non-dashboard pages */}
+                {pathname !== '/dashboard' && (
+                  <Link 
+                    href="/dashboard"
+                    className="lg:hidden p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <ChevronLeft size={20} />
+                  </Link>
+                )}
+                
                 <svg className="h-8" viewBox="0 0 100 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <text 
                     x="2" 
@@ -211,22 +240,30 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
             </div>
           </div>
           
-          {/* User Info */}
-          {user && (
-            <div className="p-4 border-b border-gray-100">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium text-sm">
-                  {user.name?.charAt(0) || user.email?.charAt(0) || 'U'}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-900 truncate">
-                    {user.name || user.email}
-                  </p>
-                  <p className="text-xs text-gray-500">Premium Banking</p>
-                </div>
+          {/* User Info with Switch */}
+          <div className="p-4 border-b border-gray-100">
+            <div className="flex items-center space-x-3">
+              <button
+                onClick={switchUser}
+                className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium text-sm hover:bg-blue-700 transition-colors"
+                title="Switch user"
+              >
+                {currentUser.initial}
+              </button>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">
+                  {currentUser.name}
+                </p>
+                <p className="text-xs text-gray-500">Premium Banking</p>
               </div>
+              <button
+                onClick={switchUser}
+                className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Switch
+              </button>
             </div>
-          )}
+          </div>
           
           {/* Navigation - Scrollable */}
           <nav className="flex-1 overflow-y-auto py-4 space-y-6">
@@ -260,9 +297,6 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
                   </div>
                   {quickAccessItems.map((item) => renderNavItem(item, true))}
                 </div>
-
-                {/* Banking Services */}
-                {renderCollapsibleSection('Banking', bankingItems, 'banking', 'blue')}
                 
                 {/* Investment & Savings */}
                 {renderCollapsibleSection('Investments', investmentItems, 'investment', 'green')}
@@ -272,6 +306,19 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
               </>
             )}
           </nav>
+          
+          {/* Current Page Indicator */}
+          {pathname !== '/dashboard' && (
+            <div className="px-4 py-2 border-t border-gray-100 bg-gray-50">
+              <Link 
+                href="/dashboard"
+                className="flex items-center space-x-2 text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
+                <ChevronLeft size={16} />
+                <span>Back to Dashboard</span>
+              </Link>
+            </div>
+          )}
           
           {/* Security Status */}
           <div className="p-4 border-t border-gray-100">
