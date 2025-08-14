@@ -11,19 +11,43 @@ import AccountSummary from '@/components/Dashboard/AccountSummary';
 import TransactionList from '@/components/Dashboard/TransactionList';
 import QuickActions from '@/components/Dashboard/QuickActions';
 import IPInfo from '@/components/Dashboard/IPInfo';
+import BankConnection from '@/components/Banking/BankConnection';
 import { QuickAction } from '@/types/dashboard';
 import TransferForm from '@/components/TransferForm';
 import apiClient, { Account } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
+import { Building2, Plus, CheckCircle, AlertCircle } from 'lucide-react';
 
 export default function DashboardPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [accounts, setAccounts] = useState<Account[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showBankConnection, setShowBankConnection] = useState(false);
+  const [connectedBanks, setConnectedBanks] = useState<string[]>([]);
   
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
+
+  // Check for connected banks on load
+  useEffect(() => {
+    const checkConnectedBanks = () => {
+      const consent = localStorage.getItem('banking_consent');
+      const connectedAccounts = localStorage.getItem('connected_accounts');
+      
+      if (consent && connectedAccounts) {
+        try {
+          const accounts = JSON.parse(connectedAccounts);
+          const bankNames = accounts.map((acc: any) => acc.bankName || 'Connected Bank');
+          setConnectedBanks([...new Set(bankNames)]); // Remove duplicates
+        } catch (error) {
+          console.error('Failed to parse connected accounts:', error);
+        }
+      }
+    };
+
+    checkConnectedBanks();
+  }, []);
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -45,7 +69,25 @@ export default function DashboardPage() {
         setLoading(true);
         setError(null);
 
-        // Use your existing API client
+        // Check for real connected bank accounts first
+        const consent = localStorage.getItem('banking_consent');
+        const connectedAccounts = localStorage.getItem('connected_accounts');
+        
+        if (consent && connectedAccounts) {
+          try {
+            const realAccounts = JSON.parse(connectedAccounts);
+            if (realAccounts.length > 0) {
+              console.log('Using real connected bank accounts:', realAccounts.length);
+              setAccounts(realAccounts);
+              setLoading(false);
+              return;
+            }
+          } catch (error) {
+            console.error('Failed to parse connected accounts:', error);
+          }
+        }
+
+        // Use your existing API client as fallback
         const res = await apiClient.getAccounts();
         
         if (res.success && res.data) {
@@ -130,6 +172,12 @@ export default function DashboardPage() {
       primary: true,
     },
     {
+      id: 'connect-bank',
+      label: 'Connect German Bank',
+      onClick: () => setShowBankConnection(true),
+      primary: connectedBanks.length === 0,
+    },
+    {
       id: 'standing-orders',
       label: 'Standing Orders',
       onClick: () => router.push('/standing-orders'),
@@ -150,6 +198,19 @@ export default function DashboardPage() {
   ];
 
   const accountId = accounts?.[0]?.accountNumber || '';
+
+  const handleBankConnectionSuccess = (newAccounts: any[]) => {
+    console.log('Bank connection successful:', newAccounts);
+    setAccounts(newAccounts);
+    setShowBankConnection(false);
+    
+    // Update connected banks list
+    const bankNames = newAccounts.map(acc => acc.bankName || 'Connected Bank');
+    setConnectedBanks([...new Set(bankNames)]);
+    
+    // Show success message
+    alert(`Erfolgreich mit ${newAccounts.length} Konto(s) verbunden!`);
+  };
 
   // Show loading while authenticating
   if (authLoading) {
@@ -238,6 +299,76 @@ export default function DashboardPage() {
                 <Notifications />
               </div>
             </div>
+
+            {/* Connected Banks Status */}
+            {connectedBanks.length > 0 && (
+              <div className="animate-fade-in opacity-0 [animation-delay:0.35s] [animation-fill-mode:forwards]">
+                <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                  <div className="flex items-center space-x-3">
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <div>
+                      <h4 className="font-semibold text-green-800">Verbundene Banken</h4>
+                      <p className="text-sm text-green-700">
+                        {connectedBanks.join(', ')} • Live-Daten aktiv
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setShowBankConnection(true)}
+                      className="ml-auto bg-green-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-700 transition-colors flex items-center space-x-1"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Weitere Bank</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* No Connected Banks Warning */}
+            {connectedBanks.length === 0 && (
+              <div className="animate-fade-in opacity-0 [animation-delay:0.35s] [animation-fill-mode:forwards]">
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <div className="flex items-center space-x-3">
+                    <AlertCircle className="w-5 h-5 text-blue-600" />
+                    <div className="flex-1">
+                      <h4 className="font-semibold text-blue-800">Demo-Modus aktiv</h4>
+                      <p className="text-sm text-blue-700">
+                        Verbinden Sie Ihre echte Deutsche Bank für Live-Daten
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setShowBankConnection(true)}
+                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+                    >
+                      <Building2 className="w-4 h-4" />
+                      <span>Bank verbinden</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Bank Connection Modal */}
+            {showBankConnection && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                  <div className="p-6">
+                    <div className="flex items-center justify-between mb-6">
+                      <h2 className="text-2xl font-bold text-gray-900">Deutsche Bank verbinden</h2>
+                      <button
+                        onClick={() => setShowBankConnection(false)}
+                        className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+                      >
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                    <BankConnection onConnectionSuccess={handleBankConnectionSuccess} />
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Dashboard Content */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
