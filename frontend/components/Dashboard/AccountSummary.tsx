@@ -143,7 +143,7 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
             <span>Deutsche Kreditbank AG</span>
             <div className="w-1 h-1 bg-blue-400 rounded-full"></div>
             <span>Echtzeit-Bankdaten</span>
-            <Shield className="w-4 h-4 text-green-500" title="Sicher verschlüsselt" />
+            <Shield className="w-4 h-4 text-green-500" />
           </div>
         </div>
         <div className="flex items-center space-x-3">
