@@ -25,6 +25,7 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [showBankConnection, setShowBankConnection] = useState(false);
   const [connectedBanks, setConnectedBanks] = useState<string[]>([]);
+  const [isContentReady, setIsContentReady] = useState(false);
   
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
@@ -82,6 +83,8 @@ export default function DashboardPage() {
               console.log('Using real connected bank accounts:', realAccounts.length);
               setAccounts(realAccounts);
               setLoading(false);
+              // Add small delay to ensure content is ready before showing animations
+              setTimeout(() => setIsContentReady(true), 100);
               return;
             }
           } catch (error) {
@@ -159,6 +162,8 @@ export default function DashboardPage() {
         }
       } finally {
         setLoading(false);
+        // Add small delay to ensure content is ready before showing animations
+        setTimeout(() => setIsContentReady(true), 100);
       }
     };
 
@@ -266,57 +271,60 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-30">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
+      {/* Mobile Header - Fixed positioning with proper z-index */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white shadow-sm">
         <MobileHeader toggleSidebar={() => setSidebarOpen(true)} />
       </div>
 
       <div className="flex min-h-screen">
-        {/* Enhanced Sidebar */}
+        {/* Enhanced Sidebar with proper mobile handling */}
         <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
 
-        {/* Main Content */}
+        {/* Main Content with proper mobile padding */}
         <main className="flex-1 min-h-screen transition-all duration-300 ease-in-out lg:ml-64">
-          <div className="p-4 lg:p-8 space-y-6 lg:space-y-8">
+          {/* Mobile: Add top padding to account for fixed header */}
+          <div className="p-4 lg:p-8 space-y-6 lg:space-y-8 pt-20 lg:pt-8">
             {/* Desktop Header Components */}
             <div className="hidden lg:block space-y-4">
-              <div className="animate-fade-in opacity-0 [animation-delay:0.1s] [animation-fill-mode:forwards]">
+              <div className={`transition-all duration-500 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                 <TopBar />
               </div>
-              <div className="animate-fade-in opacity-0 [animation-delay:0.2s] [animation-fill-mode:forwards]">
+              <div className={`transition-all duration-500 delay-100 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                 <Greeting />
               </div>
-              <div className="animate-fade-in opacity-0 [animation-delay:0.3s] [animation-fill-mode:forwards]">
+              <div className={`transition-all duration-500 delay-200 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                 <Notifications />
               </div>
             </div>
 
-            {/* Mobile Header Components */}
-            <div className="lg:hidden space-y-4 pt-20">
-              <div className="animate-fade-in opacity-0 [animation-delay:0.1s] [animation-fill-mode:forwards]">
+            {/* Mobile Header Components - Remove extra padding */}
+            <div className="lg:hidden space-y-4">
+              <div className={`transition-all duration-500 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                 <Greeting />
               </div>
-              <div className="animate-fade-in opacity-0 [animation-delay:0.2s] [animation-fill-mode:forwards]">
+              <div className={`transition-all duration-500 delay-100 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                 <Notifications />
               </div>
             </div>
 
             {/* Connected Banks Status */}
             {connectedBanks.length > 0 && (
-              <div className="animate-fade-in opacity-0 [animation-delay:0.35s] [animation-fill-mode:forwards]">
+              <div className={`transition-all duration-500 delay-300 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                 <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                  <div className="flex items-center space-x-3">
-                    <CheckCircle className="w-5 h-5 text-green-600" />
-                    <div>
-                      <h4 className="font-semibold text-green-800">Verbundene Banken</h4>
-                      <p className="text-sm text-green-700">
-                        {connectedBanks.join(', ')} • Live-Daten aktiv
-                      </p>
+                  <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-3">
+                    <div className="flex items-center space-x-3 flex-1">
+                      <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-semibold text-green-800">Verbundene Banken</h4>
+                        <p className="text-sm text-green-700 break-words">
+                          {connectedBanks.join(', ')} • Live-Daten aktiv
+                        </p>
+                      </div>
                     </div>
                     <button
                       onClick={() => setShowBankConnection(true)}
-                      className="ml-auto bg-green-600 text-white px-3 py-1 rounded-lg text-sm hover:bg-green-700 transition-colors flex items-center space-x-1"
+                      className="w-full sm:w-auto bg-green-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-green-700 transition-colors flex items-center justify-center space-x-1"
                     >
                       <Plus className="w-4 h-4" />
                       <span>Weitere Bank</span>
@@ -328,19 +336,21 @@ export default function DashboardPage() {
 
             {/* No Connected Banks Warning */}
             {connectedBanks.length === 0 && (
-              <div className="animate-fade-in opacity-0 [animation-delay:0.35s] [animation-fill-mode:forwards]">
+              <div className={`transition-all duration-500 delay-300 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                 <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                  <div className="flex items-center space-x-3">
-                    <AlertCircle className="w-5 h-5 text-blue-600" />
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-blue-800">Demo-Modus aktiv</h4>
-                      <p className="text-sm text-blue-700">
-                        Verbinden Sie Ihre echte Deutsche Bank für Live-Daten
-                      </p>
+                  <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-3">
+                    <div className="flex items-center space-x-3 flex-1">
+                      <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <h4 className="font-semibold text-blue-800">Demo-Modus aktiv</h4>
+                        <p className="text-sm text-blue-700">
+                          Verbinden Sie Ihre echte Deutsche Bank für Live-Daten
+                        </p>
+                      </div>
                     </div>
                     <button
                       onClick={() => setShowBankConnection(true)}
-                      className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+                      className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
                     >
                       <Building2 className="w-4 h-4" />
                       <span>Bank verbinden</span>
@@ -350,16 +360,16 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* Bank Connection Modal */}
+            {/* Bank Connection Modal with improved mobile handling */}
             {showBankConnection && (
               <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
                 <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                  <div className="p-6">
+                  <div className="p-4 sm:p-6">
                     <div className="flex items-center justify-between mb-6">
-                      <h2 className="text-2xl font-bold text-gray-900">Deutsche Bank verbinden</h2>
+                      <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Deutsche Bank verbinden</h2>
                       <button
                         onClick={() => setShowBankConnection(false)}
-                        className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100"
+                        className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 flex-shrink-0"
                       >
                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -372,33 +382,36 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* Dashboard Content */}
+            {/* Dashboard Content with improved mobile layout */}
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
               {/* Left Column - Main Content */}
               <div className="xl:col-span-2 space-y-4 lg:space-y-6">
-                <div className="animate-scale-in opacity-0 [animation-delay:0.4s] [animation-fill-mode:forwards]">
+                <div className={`transition-all duration-500 delay-400 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                   <AccountSummary accounts={accounts ?? []} />
                 </div>
 
-                <div className="animate-scale-in opacity-0 [animation-delay:0.45s] [animation-fill-mode:forwards]">
+                <div className={`transition-all duration-500 delay-500 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                   <TransferForm accountId={accountId} />
                 </div>
 
-                <div className="animate-scale-in opacity-0 [animation-delay:0.5s] [animation-fill-mode:forwards]">
+                <div className={`transition-all duration-500 delay-600 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                   <TransactionList />
                 </div>
               </div>
 
               {/* Right Column - Enhanced Quick Actions & Info */}
               <div className="space-y-4 lg:space-y-6">
-                <div className="animate-scale-in opacity-0 [animation-delay:0.4s] [animation-fill-mode:forwards]">
+                <div className={`transition-all duration-500 delay-400 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                   <QuickActions actions={quickActions} />
                 </div>
-                <div className="animate-scale-in opacity-0 [animation-delay:0.5s] [animation-fill-mode:forwards]">
+                <div className={`transition-all duration-500 delay-500 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                   <IPInfo />
                 </div>
               </div>
             </div>
+
+            {/* Bottom padding for mobile to ensure content isn't cut off */}
+            <div className="h-4 lg:h-0"></div>
           </div>
         </main>
       </div>
