@@ -24,9 +24,22 @@ model User {
   otpCode         String?   @db.VarChar(6)   // Store the 6-digit OTP
   otpExpiresAt    DateTime?                  // When the OTP expires
   
+  // Additional User Fields
+  lastLogin       DateTime?
+  
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
+  
+  // Relations
   jointOwners     JointOwner[]
+  
+  // Settings Relations
+  profile               Profile?
+  securitySettings      SecuritySettings?
+  notificationSettings  NotificationSettings?
+  preferences           Preferences?
+  sessions              Session[]
+  securityLogs          SecurityLog[]
 }
 
 model JointAccount {
@@ -72,7 +85,147 @@ model Transaction {
   processedAt     DateTime?
 }
 
-// Enums
+// NEW SETTINGS MODELS
+
+model Profile {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Personal Information (phone is already in User model)
+  dateOfBirth   DateTime?
+  profilePicture String?
+  
+  // Address Information
+  street        String?
+  city          String?
+  postalCode    String?
+  country       String   @default("Germany")
+  
+  // Additional Profile Data
+  accountType   String   @default("Standard") // Standard, Premium
+  
+  // Metadata
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("profiles")
+}
+
+model SecuritySettings {
+  id                  String   @id @default(uuid())
+  userId              String   @unique
+  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Authentication Settings (twoFactorEnabled already exists in User)
+  biometricEnabled    Boolean  @default(false)
+  
+  // Notification Settings
+  emailNotifications  Boolean  @default(true)
+  smsNotifications    Boolean  @default(false)
+  loginNotifications  Boolean  @default(true)
+  
+  // Session Settings
+  sessionTimeout      Int      @default(30) // minutes
+  
+  // Metadata
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("security_settings")
+}
+
+model NotificationSettings {
+  id              String                    @id @default(uuid())
+  userId          String                    @unique
+  user            User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Notification Types
+  transactions    Boolean                   @default(true)
+  marketUpdates   Boolean                   @default(true)
+  accountAlerts   Boolean                   @default(true)
+  promotions      Boolean                   @default(false)
+  security        Boolean                   @default(true)
+  statements      Boolean                   @default(true)
+  
+  // Frequency
+  frequency       NotificationFrequency     @default(IMMEDIATE)
+  
+  // Channels
+  emailChannel    Boolean                   @default(true)
+  smsChannel      Boolean                   @default(false)
+  pushChannel     Boolean                   @default(true)
+  
+  // Metadata
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+
+  @@map("notification_settings")
+}
+
+model Preferences {
+  id                String      @id @default(uuid())
+  userId            String      @unique
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Language & Region
+  language          String      @default("en-US")
+  currency          String      @default("EUR")
+  timezone          String      @default("Europe/Berlin")
+  
+  // Display Settings
+  theme             Theme       @default(LIGHT)
+  dateFormat        String      @default("DD/MM/YYYY")
+  numberFormat      String      @default("European")
+  dashboardLayout   DashboardLayout @default(STANDARD)
+  
+  // Metadata
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@map("preferences")
+}
+
+model Session {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Session Information
+  sessionToken String  @unique
+  deviceName   String?
+  deviceType   String? // Mobile, Desktop, Web
+  location     String?
+  ipAddress    String?
+  userAgent    String?
+  
+  // Timestamps
+  createdAt    DateTime @default(now())
+  lastActive   DateTime @default(now())
+  expiresAt    DateTime
+
+  @@map("sessions")
+}
+
+model SecurityLog {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Log Information
+  action     String   // PASSWORD_CHANGE, LOGIN_ATTEMPT, SETTINGS_CHANGE, etc.
+  details    String?  // Additional details in JSON format
+  ipAddress  String?
+  userAgent  String?
+  success    Boolean  @default(true)
+  
+  // Metadata
+  createdAt  DateTime @default(now())
+
+  @@map("security_logs")
+}
+
+// Existing Enums
 enum AccountType {
   CHECKING
   SAVINGS
@@ -114,4 +267,23 @@ enum TransactionStatus {
   COMPLETED
   FAILED
   CANCELLED
+}
+
+// New Enums for Settings
+enum NotificationFrequency {
+  IMMEDIATE
+  DAILY
+  WEEKLY
+}
+
+enum Theme {
+  LIGHT
+  DARK
+  AUTO
+}
+
+enum DashboardLayout {
+  COMPACT
+  STANDARD
+  DETAILED
 }
