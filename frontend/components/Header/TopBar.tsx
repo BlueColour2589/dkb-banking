@@ -3,27 +3,48 @@ import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Bell, Settings, LogOut, Globe, Shield, User } from 'lucide-react';
 
+// Demo users data - same as in Sidebar
+const demoUsers = [
+  {
+    id: 'celestina',
+    name: 'Celestina White',
+    email: 'celestina.white@dkb.de',
+    initial: 'C'
+  },
+  {
+    id: 'mark',
+    name: 'Mark Peters',
+    email: 'mark.peters@dkb.de',
+    initial: 'M'
+  }
+];
+
 export default function TopBar() {
   const [open, setOpen] = useState(false);
+  const [currentUser, setCurrentUser] = useState(demoUsers[0]); // Default to Celestina
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { user, logout } = useAuth();
 
-  // Generate initials from user data
+  // Generate initials from demo user data
   const getInitials = () => {
-    if (user?.name) {
-      return user.name.split(' ').map(n => n[0]).join('').toUpperCase();
-    }
-    if (user?.email) {
-      return user.email.substring(0, 2).toUpperCase();
-    }
-    return 'U';
+    return currentUser.initial;
   };
 
-  // Get display name
+  // Get display name from demo user
   const getDisplayName = () => {
-    if (user?.name) return user.name;
-    if (user?.email) return user.email.split('@')[0];
-    return 'User';
+    return currentUser.name;
+  };
+
+  // Get email from demo user
+  const getEmail = () => {
+    return currentUser.email;
+  };
+
+  // Switch between demo users
+  const switchUser = () => {
+    const nextUser = currentUser.id === 'celestina' ? demoUsers[1] : demoUsers[0];
+    setCurrentUser(nextUser);
+    setOpen(false); // Close dropdown after switching
   };
 
   // Close dropdown on outside click
@@ -66,7 +87,7 @@ export default function TopBar() {
           </svg>
           <div className="h-6 w-px bg-gray-200"></div>
           <div>
-            <h1 className="text-lg font-semibold text-gray-900">Digital Banking</h1>
+            <h1 className="text-lg font-semibold text-gray-900">DKB Banking</h1>
             <p className="text-sm text-gray-500">
               {new Date().toLocaleDateString('en-US', { 
                 weekday: 'long', 
@@ -139,14 +160,20 @@ export default function TopBar() {
                     <div className="bg-blue-600 text-white text-sm font-medium w-8 h-8 flex items-center justify-center rounded-full">
                       {getInitials()}
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <div className="font-medium text-gray-900 text-sm">
                         {getDisplayName()}
                       </div>
                       <div className="text-xs text-gray-500">
-                        {user?.email}
+                        {getEmail()}
                       </div>
                     </div>
+                    <button
+                      onClick={switchUser}
+                      className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                    >
+                      Switch
+                    </button>
                   </div>
                 </div>
 
