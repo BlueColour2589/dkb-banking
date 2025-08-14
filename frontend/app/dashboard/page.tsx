@@ -38,8 +38,8 @@ export default function DashboardPage() {
       if (consent && connectedAccounts) {
         try {
           const accounts = JSON.parse(connectedAccounts);
-          const bankNames: string[] = accounts.map((acc: any) => acc.bankName || 'Connected Bank');
-          setConnectedBanks([...new Set(bankNames)]); // Remove duplicates
+          const bankNames = accounts.map((acc: any) => acc.bankName || 'Connected Bank') as string[];
+          setConnectedBanks(Array.from(new Set(bankNames))); // Remove duplicates
         } catch (error) {
           console.error('Failed to parse connected accounts:', error);
         }
