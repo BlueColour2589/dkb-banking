@@ -21,10 +21,10 @@ export async function GET(request: NextRequest) {
         language: 'en',
         currency: 'EUR',
         timezone: 'Europe/Berlin',
-        theme: 'LIGHT' as const,
+        theme: 'light',
         dateFormat: 'DD/MM/YYYY',
         numberFormat: 'European',
-        dashboardLayout: 'STANDARD' as const,
+        dashboardLayout: 'standard',
       };
       return NextResponse.json(defaultPreferences);
     }
@@ -66,7 +66,7 @@ export async function PUT(request: NextRequest) {
       dashboardLayout,
     } = body;
 
-    // Upsert app preferences
+    // Upsert app preferences using the correct model name
     await prisma.preferences.upsert({
       where: { userId },
       update: {
