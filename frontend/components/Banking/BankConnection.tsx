@@ -3,7 +3,18 @@
 
 import { useState } from 'react';
 import { Building2, Shield, CheckCircle, ArrowRight, AlertCircle, Loader2 } from 'lucide-react';
-import { GermanBankingFlow, GERMAN_BANKS } from '@/lib/yapily-banking-client';
+
+// Mock data for now - replace with real API later
+const GERMAN_BANKS = [
+  { id: 'dkb', name: 'Deutsche Kreditbank', fullName: 'Deutsche Kreditbank AG' },
+  { id: 'commerzbank', name: 'Commerzbank', fullName: 'Commerzbank AG' },
+  { id: 'deutsche-bank', name: 'Deutsche Bank', fullName: 'Deutsche Bank AG' },
+  { id: 'sparkasse', name: 'Sparkasse', fullName: 'Sparkassen-Finanzgruppe' },
+  { id: 'ing', name: 'ING', fullName: 'ING-DiBa AG' },
+  { id: 'postbank', name: 'Postbank', fullName: 'Deutsche Postbank AG' },
+  { id: 'hypovereinsbank', name: 'HypoVereinsbank', fullName: 'UniCredit Bank AG' },
+  { id: 'targobank', name: 'Targobank', fullName: 'Targobank AG' }
+];
 
 interface BankConnectionProps {
   onConnectionSuccess?: (accounts: any[]) => void;
@@ -25,11 +36,27 @@ export default function BankConnection({ onConnectionSuccess }: BankConnectionPr
       setConnecting(true);
       setError(null);
 
-      // Get authorization URL for selected German bank
-      const authUrl = await GermanBankingFlow.connectToGermanBank(selectedBank);
+      // For now, simulate the connection process
+      // Later replace with real German banking API
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Redirect user to bank's secure login
-      window.location.href = authUrl;
+      // Mock successful connection
+      const mockAccounts = [
+        {
+          id: 'real-account-1',
+          accountName: `${selectedBank} Girokonto`,
+          balance: 12500.50,
+          currency: 'EUR',
+          iban: 'DE89 3704 0044 0532 0130 00',
+          bankName: selectedBank
+        }
+      ];
+
+      setSuccess(true);
+      
+      if (onConnectionSuccess) {
+        onConnectionSuccess(mockAccounts);
+      }
       
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to connect to bank');
@@ -173,115 +200,6 @@ export default function BankConnection({ onConnectionSuccess }: BankConnectionPr
           </div>
         </>
       )}
-    </div>
-  );
-}
-
-// components/Banking/BankingCallback.tsx - Handle the return from bank login
-'use client';
-
-import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import { GermanBankingFlow } from '@/lib/yapily-banking-client';
-
-export default function BankingCallback() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-  const [message, setMessage] = useState('');
-  const [accounts, setAccounts] = useState<any[]>([]);
-
-  useEffect(() => {
-    const handleCallback = async () => {
-      try {
-        const consent = searchParams.get('consent');
-        const error = searchParams.get('error');
-
-        if (error) {
-          setStatus('error');
-          setMessage('Bankverbindung wurde abgebrochen oder ist fehlgeschlagen.');
-          return;
-        }
-
-        if (!consent) {
-          setStatus('error');
-          setMessage('Keine Berechtigung von der Bank erhalten.');
-          return;
-        }
-
-        // Store consent for future API calls
-        localStorage.setItem('banking_consent', consent);
-
-        // Fetch connected accounts
-        const connectedAccounts = await GermanBankingFlow.getConnectedAccounts(consent);
-        setAccounts(connectedAccounts);
-
-        // Store accounts data
-        localStorage.setItem('connected_accounts', JSON.stringify(connectedAccounts));
-
-        setStatus('success');
-        setMessage(`Erfolgreich verbunden! ${connectedAccounts.length} Konto(s) gefunden.`);
-
-        // Redirect to dashboard after 3 seconds
-        setTimeout(() => {
-          router.push('/dashboard');
-        }, 3000);
-
-      } catch (error) {
-        console.error('Banking callback error:', error);
-        setStatus('error');
-        setMessage('Fehler beim Abrufen der Kontodaten.');
-      }
-    };
-
-    handleCallback();
-  }, [searchParams, router]);
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md w-full text-center">
-        {status === 'loading' && (
-          <>
-            <Loader2 className="w-16 h-16 text-blue-500 mx-auto mb-4 animate-spin" />
-            <h2 className="text-xl font-bold text-gray-800 mb-2">Bankdaten werden abgerufen...</h2>
-            <p className="text-gray-600">Bitte warten Sie einen Moment.</p>
-          </>
-        )}
-
-        {status === 'success' && (
-          <>
-            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-green-600 mb-2">Erfolgreich verbunden!</h2>
-            <p className="text-gray-700 mb-4">{message}</p>
-            {accounts.length > 0 && (
-              <div className="bg-green-50 rounded-lg p-4 mb-4">
-                <h3 className="font-semibold text-green-800 mb-2">Gefundene Konten:</h3>
-                {accounts.map((account, index) => (
-                  <div key={account.id} className="text-sm text-green-700">
-                    {account.accountName} - {account.currency} {account.balance.toLocaleString('de-DE')}
-                  </div>
-                ))}
-              </div>
-            )}
-            <p className="text-sm text-gray-500">Sie werden automatisch zum Dashboard weitergeleitet...</p>
-          </>
-        )}
-
-        {status === 'error' && (
-          <>
-            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-red-600 mb-2">Verbindung fehlgeschlagen</h2>
-            <p className="text-gray-700 mb-4">{message}</p>
-            <button
-              onClick={() => router.push('/dashboard')}
-              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Zurück zum Dashboard
-            </button>
-          </>
-        )}
-      </div>
     </div>
   );
 }
