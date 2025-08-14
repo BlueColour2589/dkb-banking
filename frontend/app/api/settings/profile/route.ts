@@ -1,8 +1,8 @@
 // app/api/settings/profile/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
+import jwt from 'jsonwebtoken';
 
 const prisma = new PrismaClient();
 
@@ -20,29 +20,36 @@ const updateProfileSchema = z.object({
   })
 });
 
+// Helper function to get user from token
+async function getUserFromToken(request: NextRequest) {
+  const authHeader = request.headers.get('authorization');
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return null;
+  }
+
+  const token = authHeader.substring(7);
+  
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      include: { profile: true }
+    });
+    return user;
+  } catch (error) {
+    return null;
+  }
+}
+
 // GET /api/settings/profile - Get user profile
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession();
+    const user = await getUserFromToken(request);
     
-    if (!session?.user?.email) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
-      );
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      include: {
-        profile: true
-      }
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
       );
     }
 
@@ -77,9 +84,9 @@ export async function GET(request: NextRequest) {
 // PUT /api/settings/profile - Update user profile
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession();
+    const user = await getUserFromToken(request);
     
-    if (!session?.user?.email) {
+    if (!user) {
       return NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
@@ -88,17 +95,6 @@ export async function PUT(request: NextRequest) {
 
     const body = await request.json();
     const validatedData = updateProfileSchema.parse(body);
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email }
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
-    }
 
     // Update user basic info
     const updatedUser = await prisma.user.update({
