@@ -1,10 +1,10 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Bell, Settings, LogOut, Globe, Shield, User } from 'lucide-react';
+import { Settings, LogOut, Globe, Shield, User, Users } from 'lucide-react';
 
-// Demo users data - same as in Sidebar
-const demoUsers = [
+// Joint account holders data - same as in Sidebar
+const accountHolders = [
   {
     id: 'celestina',
     name: 'Celestina White',
@@ -21,28 +21,28 @@ const demoUsers = [
 
 export default function TopBar() {
   const [open, setOpen] = useState(false);
-  const [currentUser, setCurrentUser] = useState(demoUsers[0]); // Default to Celestina
+  const [currentUser, setCurrentUser] = useState(accountHolders[0]); // Default to Celestina
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { user, logout } = useAuth();
 
-  // Generate initials from demo user data
+  // Generate initials from current account holder
   const getInitials = () => {
     return currentUser.initial;
   };
 
-  // Get display name from demo user
+  // Get display name from current account holder
   const getDisplayName = () => {
     return currentUser.name;
   };
 
-  // Get email from demo user
+  // Get email from current account holder
   const getEmail = () => {
     return currentUser.email;
   };
 
-  // Switch between demo users
+  // Switch between account holders
   const switchUser = () => {
-    const nextUser = currentUser.id === 'celestina' ? demoUsers[1] : demoUsers[0];
+    const nextUser = currentUser.id === 'celestina' ? accountHolders[1] : accountHolders[0];
     setCurrentUser(nextUser);
     setOpen(false); // Close dropdown after switching
   };
@@ -105,14 +105,6 @@ export default function TopBar() {
             <Shield size={16} className="text-green-600" />
             <span className="text-sm font-medium text-green-800">Secure</span>
           </div>
-
-          {/* Notifications */}
-          <button className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
-            <Bell size={20} />
-            <span className="absolute -top-1 -right-1 bg-blue-600 text-xs text-white rounded-full w-4 h-4 flex items-center justify-center">
-              2
-            </span>
-          </button>
           
           {/* Settings */}
           <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors">
@@ -135,6 +127,7 @@ export default function TopBar() {
                 <div className="text-sm font-medium text-gray-900">
                   {getDisplayName()}
                 </div>
+                <div className="text-xs text-gray-500">Joint Account</div>
               </div>
               
               {/* Dropdown Arrow */}
@@ -152,10 +145,16 @@ export default function TopBar() {
             {open && (
               <div
                 ref={dropdownRef}
-                className="absolute right-0 top-full mt-2 w-56 bg-white shadow-lg rounded-lg overflow-hidden z-20 border border-gray-200"
+                className="absolute right-0 top-full mt-2 w-64 bg-white shadow-lg rounded-lg overflow-hidden z-20 border border-gray-200"
               >
-                {/* User Info Header */}
+                {/* Joint Account Header */}
                 <div className="px-4 py-3 border-b border-gray-100">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <Users size={16} className="text-blue-600" />
+                    <span className="text-xs font-semibold text-blue-600 uppercase tracking-wider">Joint Account</span>
+                  </div>
+                  
+                  {/* Current Active User */}
                   <div className="flex items-center space-x-3">
                     <div className="bg-blue-600 text-white text-sm font-medium w-8 h-8 flex items-center justify-center rounded-full">
                       {getInitials()}
@@ -165,7 +164,7 @@ export default function TopBar() {
                         {getDisplayName()}
                       </div>
                       <div className="text-xs text-gray-500">
-                        {getEmail()}
+                        Active Account Holder
                       </div>
                     </div>
                     <button
@@ -174,6 +173,29 @@ export default function TopBar() {
                     >
                       Switch
                     </button>
+                  </div>
+                  
+                  {/* Both Account Holders */}
+                  <div className="mt-3 pt-3 border-t border-gray-100">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <div className="flex -space-x-2">
+                          {accountHolders.map((holder) => (
+                            <div
+                              key={holder.id}
+                              className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-xs font-medium border-2 border-white ${
+                                holder.id === currentUser.id ? 'bg-blue-600' : 'bg-gray-400'
+                              }`}
+                            >
+                              {holder.initial}
+                            </div>
+                          ))}
+                        </div>
+                        <span className="text-xs text-gray-500">
+                          Celestina White & Mark Peters
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -186,7 +208,7 @@ export default function TopBar() {
                   
                   <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-3">
                     <Settings className="w-4 h-4 text-gray-400" />
-                    <span>Settings</span>
+                    <span>Account Settings</span>
                   </button>
 
                   <button className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors flex items-center space-x-3">
