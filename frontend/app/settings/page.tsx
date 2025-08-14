@@ -1,8 +1,9 @@
+'use client';
 import React, { useState, useEffect } from 'react';
 import { 
   User, Lock, Bell, Globe, Shield, Eye, EyeOff, 
   Smartphone, Download, Trash2, Save, AlertCircle, 
-  CheckCircle, Settings, Moon, Sun, Users, Upload
+  CheckCircle, Settings, Moon, Sun, Upload
 } from 'lucide-react';
 import { 
   settingsAPI, 
@@ -13,7 +14,7 @@ import {
   PasswordChangeData 
 } from '@/lib/api';
 
-export default function RealSettingsPage() {
+export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('profile');
   const [showPassword, setShowPassword] = useState(false);
   const [saveStatus, setSaveStatus] = useState<'idle' | 'loading' | 'saving' | 'success' | 'error'>('idle');
@@ -648,6 +649,43 @@ export default function RealSettingsPage() {
                             <div>
                               <p className="font-medium text-gray-900">{device.name}</p>
                               <p className="text-sm text-gray-600">
+                                Last used: {new Date(device.lastUsed).toLocaleDateString()}
+                                {device.location && ` • ${device.location}`}
+                              </p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => removeTrustedDevice(device.id)}
+                            className="text-red-600 hover:text-red-800 p-1"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Notifications Tab */}
+            {activeTab === 'notifications' && (
+              <div className="space-y-6">
+                <h2 className="text-xl font-semibold text-gray-900">Notification Preferences</h2>
+                
+                <div className="space-y-4">
+                  {Object.entries({
+                    transactions: 'Transaction Notifications',
+                    marketUpdates: 'Market Updates',
+                    accountAlerts: 'Account Alerts',
+                    promotions: 'Promotional Emails',
+                    security: 'Security Alerts',
+                    statements: 'Monthly Statements'
+                  }).map(([key, label]) => (
+                    <div key={key} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                      <div>
+                        <h3 className="font-medium text-gray-900">{label}</h3>
+                        <p className="text-sm text-gray-600">
                           {key === 'transactions' && 'Get notified of all account transactions'}
                           {key === 'marketUpdates' && 'Receive market news and updates'}
                           {key === 'accountAlerts' && 'Important account notifications'}
@@ -909,40 +947,4 @@ export default function RealSettingsPage() {
       </div>
     </div>
   );
-}      Last used: {new Date(device.lastUsed).toLocaleDateString()}
-                                {device.location && ` • ${device.location}`}
-                              </p>
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => removeTrustedDevice(device.id)}
-                            className="text-red-600 hover:text-red-800 p-1"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Notifications Tab */}
-            {activeTab === 'notifications' && (
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-gray-900">Notification Preferences</h2>
-                
-                <div className="space-y-4">
-                  {Object.entries({
-                    transactions: 'Transaction Notifications',
-                    marketUpdates: 'Market Updates',
-                    accountAlerts: 'Account Alerts',
-                    promotions: 'Promotional Emails',
-                    security: 'Security Alerts',
-                    statements: 'Monthly Statements'
-                  }).map(([key, label]) => (
-                    <div key={key} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                      <div>
-                        <h3 className="font-medium text-gray-900">{label}</h3>
-                        <p className="text-sm text-gray-600">
+}
