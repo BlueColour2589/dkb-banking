@@ -40,6 +40,7 @@ model User {
   preferences           Preferences?
   sessions              Session[]
   securityLogs          SecurityLog[]
+  trustedDevices        TrustedDevice[]  // ADDED: Direct relation to trusted devices
 }
 
 // BANKING MODELS
@@ -115,26 +116,59 @@ model Profile {
 }
 
 model SecuritySettings {
-  id                  String   @id @default(uuid())
-  userId              String   @unique
-  user                User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                  String          @id @default(uuid())
+  userId              String          @unique
+  user                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   // Authentication Settings (twoFactorEnabled already exists in User)
-  biometricEnabled    Boolean  @default(false)
+  biometricEnabled    Boolean         @default(false)
   
   // Notification Settings
-  emailNotifications  Boolean  @default(true)
-  smsNotifications    Boolean  @default(false)
-  loginNotifications  Boolean  @default(true)
+  emailNotifications  Boolean         @default(true)
+  smsNotifications    Boolean         @default(false)
+  loginNotifications  Boolean         @default(true)
   
   // Session Settings
-  sessionTimeout      Int      @default(30) // minutes
+  sessionTimeout      Int             @default(30) // minutes
+  
+  // Password Security - ADDED
+  passwordLastChanged DateTime?
+  
+  // Relations - ADDED
+  trustedDevices      TrustedDevice[]
   
   // Metadata
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 
   @@map("security_settings")
+}
+
+// ADDED: TrustedDevice model for device management
+model TrustedDevice {
+  id                    String           @id @default(uuid())
+  userId                String
+  user                  User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  securitySettingsId    String?
+  securitySettings      SecuritySettings? @relation(fields: [securitySettingsId], references: [id], onDelete: Cascade)
+  
+  // Device Information
+  deviceName            String
+  deviceType            String           // "mobile", "desktop", "tablet", "web"
+  deviceFingerprint     String           // Unique device identifier
+  location              String?
+  ipAddress             String?
+  userAgent             String?
+  
+  // Status
+  isActive              Boolean          @default(true)
+  lastUsed              DateTime         @default(now())
+  
+  // Metadata
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  
+  @@map("trusted_devices")
 }
 
 model NotificationSettings {
@@ -171,7 +205,7 @@ model Preferences {
   user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   // Language & Region
-  language          String      @default("en-US")
+  language          String      @default("en")  // UPDATED: Changed from "en-US" to "en" for consistency
   currency          String      @default("EUR")
   timezone          String      @default("Europe/Berlin")
   
