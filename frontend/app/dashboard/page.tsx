@@ -284,7 +284,7 @@ export default function DashboardPage() {
         {/* Main Content with proper mobile padding */}
         <main className="flex-1 min-h-screen transition-all duration-300 ease-in-out lg:ml-64">
           {/* Mobile: Add top padding to account for fixed header */}
-          <div className="px-3 sm:px-4 lg:px-8 pb-4 sm:pb-6 space-y-3 sm:space-y-4 lg:space-y-8 mobile-main-content lg:pt-8">
+          <div className="px-3 sm:px-4 lg:px-8 pb-4 sm:pb-6 space-y-3 sm:space-y-4 lg:space-y-8 pt-20 lg:pt-8">
             {/* Desktop Header Components */}
             <div className="hidden lg:block space-y-4">
               <div className={`transition-all duration-500 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
