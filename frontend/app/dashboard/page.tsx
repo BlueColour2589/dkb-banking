@@ -284,7 +284,7 @@ export default function DashboardPage() {
         {/* Main Content with proper mobile padding */}
         <main className="flex-1 min-h-screen transition-all duration-300 ease-in-out lg:ml-64">
           {/* Mobile: Add top padding to account for fixed header */}
-          <div className="p-4 lg:p-8 space-y-6 lg:space-y-8 mobile-main-content lg:pt-8">
+          <div className="px-3 sm:px-4 lg:px-8 pb-4 sm:pb-6 space-y-3 sm:space-y-4 lg:space-y-8 mobile-main-content lg:pt-8">
             {/* Desktop Header Components */}
             <div className="hidden lg:block space-y-4">
               <div className={`transition-all duration-500 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
@@ -298,62 +298,50 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Mobile Header Components - Remove extra padding */}
-            <div className="lg:hidden space-y-4">
+            {/* Mobile Header Components - Compact */}
+            <div className="lg:hidden space-y-2">
               <div className={`transition-all duration-500 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                <Greeting />
-              </div>
-              <div className={`transition-all duration-500 delay-100 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                <Notifications />
+                <div className="text-center">
+                  <h1 className="text-lg font-bold text-gray-900">Welcome back!</h1>
+                  <p className="text-xs text-gray-500">Your banking overview</p>
+                </div>
               </div>
             </div>
 
-            {/* Connected Banks Status */}
+            {/* Bank Status - Ultra Compact */}
             {connectedBanks.length > 0 && (
               <div className={`transition-all duration-500 delay-300 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-3">
-                    <div className="flex items-center space-x-3 flex-1">
-                      <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
-                      <div className="min-w-0 flex-1">
-                        <h4 className="font-semibold text-green-800">Verbundene Banken</h4>
-                        <p className="text-sm text-green-700 break-words">
-                          {connectedBanks.join(', ')} • Live-Daten aktiv
-                        </p>
-                      </div>
+                <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <CheckCircle className="w-4 h-4 text-green-600" />
+                      <span className="text-sm font-medium text-green-800">Live Banking Active</span>
                     </div>
                     <button
                       onClick={() => setShowBankConnection(true)}
-                      className="w-full sm:w-auto bg-green-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-green-700 transition-colors flex items-center justify-center space-x-1"
+                      className="text-xs text-green-600 px-2 py-1 bg-green-100 rounded"
                     >
-                      <Plus className="w-4 h-4" />
-                      <span>Weitere Bank</span>
+                      + Bank
                     </button>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* No Connected Banks Warning */}
+            {/* No Connected Banks Warning - Compact */}
             {connectedBanks.length === 0 && (
               <div className={`transition-all duration-500 delay-300 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-3">
-                    <div className="flex items-center space-x-3 flex-1">
-                      <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0" />
-                      <div className="min-w-0 flex-1">
-                        <h4 className="font-semibold text-blue-800">Demo-Modus aktiv</h4>
-                        <p className="text-sm text-blue-700">
-                          Verbinden Sie Ihre echte Deutsche Bank für Live-Daten
-                        </p>
-                      </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <AlertCircle className="w-4 h-4 text-blue-600" />
+                      <span className="text-sm font-medium text-blue-800">Demo Mode</span>
                     </div>
                     <button
                       onClick={() => setShowBankConnection(true)}
-                      className="w-full sm:w-auto bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center space-x-2"
+                      className="text-xs text-blue-600 px-2 py-1 bg-blue-100 rounded"
                     >
-                      <Building2 className="w-4 h-4" />
-                      <span>Bank verbinden</span>
+                      Connect
                     </button>
                   </div>
                 </div>
@@ -382,36 +370,44 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* Dashboard Content with improved mobile layout */}
-            <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 lg:gap-6">
-              {/* Left Column - Main Content */}
-              <div className="xl:col-span-2 space-y-4 lg:space-y-6">
-                <div className={`transition-all duration-500 delay-400 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                  <AccountSummary accounts={accounts ?? []} />
-                </div>
-
-                <div className={`transition-all duration-500 delay-500 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                  <TransferForm accountId={accountId} />
-                </div>
-
-                <div className={`transition-all duration-500 delay-600 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                  <TransactionList />
-                </div>
+            {/* Dashboard Content - Mobile Optimized Layout */}
+            <div className="space-y-3 sm:space-y-4 lg:space-y-6">
+              
+              {/* Account Summary - Always First */}
+              <div className={`transition-all duration-500 delay-400 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+                <AccountSummary accounts={accounts ?? []} />
               </div>
 
-              {/* Right Column - Enhanced Quick Actions & Info */}
-              <div className="space-y-4 lg:space-y-6">
-                <div className={`transition-all duration-500 delay-400 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                  <QuickActions actions={quickActions} />
+              {/* Quick Actions - Prominent on Mobile */}
+              <div className={`transition-all duration-500 delay-450 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+                <QuickActions actions={quickActions} />
+              </div>
+
+              {/* Two Column Layout on Desktop, Stacked on Mobile */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
+                
+                {/* Main Content */}
+                <div className="lg:col-span-2 space-y-3 sm:space-y-4 lg:space-y-6">
+                  <div className={`transition-all duration-500 delay-500 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+                    <TransferForm accountId={accountId} />
+                  </div>
+
+                  <div className={`transition-all duration-500 delay-550 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+                    <TransactionList />
+                  </div>
                 </div>
-                <div className={`transition-all duration-500 delay-500 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                  <IPInfo />
+
+                {/* Side Content */}
+                <div className="lg:col-span-1 space-y-3 sm:space-y-4 lg:space-y-6">
+                  <div className={`transition-all duration-500 delay-600 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+                    <IPInfo />
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Bottom padding for mobile to ensure content isn't cut off */}
-            <div className="h-4 lg:h-0"></div>
+            {/* Bottom padding for mobile scroll */}
+            <div className="h-6"></div>
           </div>
         </main>
       </div>
