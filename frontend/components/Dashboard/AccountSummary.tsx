@@ -85,24 +85,7 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
   useEffect(() => {
     const loadingTimer = setTimeout(() => {
       setIsLoading(false);
-
-      const targetBalance = primaryAccount.balance;
-      const duration = 2000;
-      const steps = 60;
-      const increment = targetBalance / steps;
-      let currentBalance = 0;
-
-      const countingTimer = setInterval(() => {
-        currentBalance += increment;
-        if (currentBalance >= targetBalance) {
-          setDisplayBalance(targetBalance);
-          clearInterval(countingTimer);
-        } else {
-          setDisplayBalance(Math.floor(currentBalance));
-        }
-      }, duration / steps);
-
-      return () => clearInterval(countingTimer);
+      setDisplayBalance(primaryAccount.balance); // Set immediately to correct balance
     }, 1500);
 
     return () => clearTimeout(loadingTimer);
@@ -245,7 +228,7 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
           {/* Balance Display */}
           <div className="text-left sm:text-right">
             <div className="text-2xl sm:text-3xl font-bold text-blue-700 transition-all duration-300 mb-1">
-              {balanceVisible ? formatGermanAmount(displayBalance) : '••••••••'}
+              {balanceVisible ? formatGermanAmount(primaryAccount.balance) : '••••••••'}
             </div>
             <div className="text-sm font-medium text-green-600 mb-1 sm:mb-2">
               Netto: +{formatGermanAmount(netChange)}
@@ -307,7 +290,7 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
           <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-blue-200">
             <span className="text-blue-700 font-semibold text-sm">Aktueller Kontostand</span>
             <span className="text-blue-700 font-bold text-base sm:text-lg">
-              {balanceVisible ? formatGermanAmount(18000000) : '••••••••'}
+              {balanceVisible ? formatGermanAmount(primaryAccount.balance) : '••••••••'}
             </span>
           </div>
         </div>
