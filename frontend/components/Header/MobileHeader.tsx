@@ -18,9 +18,9 @@ export default function MobileHeader({ toggleSidebar }: MobileHeaderProps) {
   return (
     <header className="lg:hidden bg-white shadow-sm border-b border-gray-200 w-full">
       {/* Fixed height container to prevent layout shifts */}
-      <div className="h-16 sm:h-20 flex flex-col">
+      <div className="h-20 flex flex-col">
         {/* Top Row - Main Header */}
-        <div className="flex-1 px-3 sm:px-4 flex items-center justify-between min-h-[48px]">
+        <div className="flex-1 px-3 sm:px-4 flex items-center justify-between min-h-[56px]">
           {/* Menu Button */}
           <button
             onClick={toggleSidebar}
