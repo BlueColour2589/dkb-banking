@@ -51,12 +51,12 @@ export default function QuickActions({ actions }: QuickActionsProps) {
     );
   }
 
-  // Enhanced German banking quick actions (simplified - removed cards and standing orders)
+  // Simplified German banking quick actions (mobile-optimized)
   const germanQuickActions = [
     {
       id: 'transfer',
-      label: 'Geld überweisen',
-      description: 'SEPA-Überweisung oder Echtzeitüberweisung',
+      label: 'Transfer Money',
+      description: 'Send money instantly',
       icon: <ArrowUpDown className="w-5 h-5" />,
       onClick: () => {
         setIsLoading(true);
@@ -65,20 +65,9 @@ export default function QuickActions({ actions }: QuickActionsProps) {
       variant: 'primary'
     },
     {
-      id: 'accounts',
-      label: 'Konten anzeigen',
-      description: `Guthaben: ${formatBalance(currentBalance)}`,
-      icon: <Euro className="w-5 h-5" />,
-      onClick: () => {
-        setIsLoading(true);
-        router.push('/accounts');
-      },
-      variant: 'secondary'
-    },
-    {
       id: 'transactions',
-      label: 'Umsätze',
-      description: 'Alle Transaktionen anzeigen',
+      label: 'Transactions',
+      description: 'View transaction history',
       icon: <History className="w-5 h-5" />,
       onClick: () => {
         setIsLoading(true);
@@ -89,14 +78,25 @@ export default function QuickActions({ actions }: QuickActionsProps) {
     },
     {
       id: 'portfolio',
-      label: 'Depot',
-      description: 'Wertpapiere und Performance',
+      label: 'View Portfolio',
+      description: 'Investment overview',
       icon: <TrendingUp className="w-5 h-5" />,
       onClick: () => {
         setIsLoading(true);
         router.push('/portfolio');
       },
       variant: 'accent'
+    },
+    {
+      id: 'accounts',
+      label: 'All Accounts',
+      description: `Balance: ${formatBalance(currentBalance)}`,
+      icon: <Euro className="w-5 h-5" />,
+      onClick: () => {
+        setIsLoading(true);
+        router.push('/accounts');
+      },
+      variant: 'secondary'
     }
   ];
 
@@ -116,13 +116,13 @@ export default function QuickActions({ actions }: QuickActionsProps) {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 space-y-3 sm:space-y-0">
         <div className="flex-1">
-          <h3 className="text-xl sm:text-2xl font-bold text-blue-600 mb-1">Schnellzugriff</h3>
-          <p className="text-sm text-blue-500">Häufig verwendete Banking-Funktionen</p>
+          <h3 className="text-xl sm:text-2xl font-bold text-blue-600 mb-1">Quick Actions</h3>
+          <p className="text-sm text-blue-500">Essential banking functions</p>
         </div>
         <div className="flex items-center space-x-2 bg-white/80 rounded-lg px-3 py-2 self-start sm:self-auto">
           <Eye className="w-4 h-4 text-blue-500 flex-shrink-0" />
           <span className="text-xs sm:text-sm font-medium text-blue-600 truncate">
-            <span className="hidden sm:inline">Guthaben: </span>{formatBalance(currentBalance)}
+            <span className="hidden sm:inline">Balance: </span>{formatBalance(currentBalance)}
           </span>
         </div>
       </div>
@@ -197,10 +197,10 @@ export default function QuickActions({ actions }: QuickActionsProps) {
       <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-blue-200">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0">
           <div className="text-xs text-blue-500">
-            Letzte Aktualisierung: {new Date().toLocaleTimeString('de-DE')}
+            Last updated: {new Date().toLocaleTimeString('en-US')}
           </div>
           <div className="text-xs text-blue-500">
-            <span className="hidden sm:inline">Sicheres Banking • </span>256-Bit Verschlüsselung
+            <span className="hidden sm:inline">Secure Banking • </span>256-Bit Encryption
           </div>
         </div>
       </div>
