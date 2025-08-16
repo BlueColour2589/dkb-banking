@@ -16,14 +16,14 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
   const [showDetails, setShowDetails] = useState(false);
   const [showActivity, setShowActivity] = useState(false);
 
-  // Enhanced realistic balance progression with German banking context
+  // Enhanced realistic balance progression with weekly timeline
   const balanceHistory = [
-    0,          // Konto eröffnet
-    23000000,   // Eingang von Juwelier Barok im Linden Center
-    18000000,   // Nach Steuerzahlung an Finanzamt
-    18000000,   // Aktuell (keine weiteren Transaktionen)
-    18000000,
-    18000000,
+    0,          // Monday - Account opened
+    23000000,   // Tuesday - Payment from Juwelier Barok received
+    23000000,   // Wednesday - No transactions
+    18000000,   // Thursday - Tax payment made (-5M)
+    18000000,   // Friday - No transactions
+    18000000,   // Today (Saturday) - Current balance
     18000000
   ];
 
@@ -220,7 +220,7 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
             </div>
             
             <p className="text-blue-500 text-xs mt-2">
-              <span className="hidden sm:inline">Recently opened • 2 transactions • Securely encrypted</span>
+              <span className="hidden sm:inline">Opened Monday • 2 transactions • Securely encrypted</span>
               <span className="sm:hidden">2 transactions • Secure</span>
             </p>
           </div>
@@ -343,7 +343,7 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
           })}
         </div>
         <div className="flex justify-between mt-2 text-xs text-blue-500">
-          <span>Account Opening</span>
+          <span>Monday (Account Opening)</span>
           <span>Today</span>
         </div>
       </div>
