@@ -15,8 +15,6 @@ import { useState, useEffect } from 'react';
 const quickAccessItems: NavItem[] = [
   { label: 'Dashboard', href: '/dashboard', icon: Home },
   { label: 'Transfer', href: '/transfer', icon: ArrowUpDown },
-  { label: 'Transactions', href: '/transactions', icon: History },
-  { label: 'Cards', href: '/cards', icon: CreditCard },
 ];
 
 const moreItems: NavItem[] = [
@@ -27,29 +25,18 @@ const moreItems: NavItem[] = [
   { label: 'Help', href: '/help', icon: HelpCircle },
 ];
 
-// Simplified account holders for mobile
-const accountHolders = [
-  {
-    id: 'celestina',
-    name: 'Celestina W.',
-    fullName: 'Celestina White',
-    email: 'celestina.white@dkb.de',
-    initial: 'C'
-  },
-  {
-    id: 'mark',
-    name: 'Mark P.',
-    fullName: 'Mark Peters', 
-    email: 'mark.peters@dkb.de',
-    initial: 'M'
-  }
-];
+// Account holder info (no switching)
+const accountHolder = {
+  name: 'Celestina W.',
+  fullName: 'Celestina White & Mark Peters',
+  email: 'celestina.white@dkb.de',
+  initial: 'C'
+};
 
 export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
   const pathname = usePathname();
   const { logout, user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
-  const [currentUser, setCurrentUser] = useState(accountHolders[0]);
   const [isMobile, setIsMobile] = useState(false);
   
   // Check if mobile
@@ -80,8 +67,8 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
   };
 
   const switchUser = () => {
-    const nextUser = currentUser.id === 'celestina' ? accountHolders[1] : accountHolders[0];
-    setCurrentUser(nextUser);
+    // User switching disabled
+    return;
   };
 
   // Filter items based on search
@@ -214,31 +201,21 @@ export default function Sidebar({ isOpen, setIsOpen }: SidebarProps) {
             </div>
           </div>
           
-          {/* Simplified Joint Account Info for Mobile */}
+          {/* Joint Account Info - No Switching */}
           <div className="p-3 sm:p-4 border-b border-gray-100 bg-gray-50">
             <div className="flex items-center space-x-3">
-              <button
-                onClick={switchUser}
-                className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium text-sm hover:bg-blue-700 transition-colors flex-shrink-0 touch-manipulation"
-                title="Switch account holder"
-              >
-                {currentUser.initial}
-              </button>
+              <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-medium text-sm flex-shrink-0">
+                {accountHolder.initial}
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">
-                  {isMobile ? currentUser.name : currentUser.fullName}
+                  {isMobile ? accountHolder.name : accountHolder.fullName}
                 </p>
                 <div className="flex items-center space-x-2">
                   <Users size={12} className="text-blue-600 flex-shrink-0" />
                   <span className="text-xs text-blue-600 font-medium">Joint Account</span>
                 </div>
               </div>
-              <button
-                onClick={switchUser}
-                className="text-xs text-blue-600 hover:text-blue-700 font-medium px-2 py-1 rounded-md hover:bg-blue-50 transition-colors touch-manipulation"
-              >
-                Switch
-              </button>
             </div>
           </div>
           
