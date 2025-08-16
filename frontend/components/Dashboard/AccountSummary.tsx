@@ -119,12 +119,12 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
       {/* Mobile-Optimized Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 space-y-3 sm:space-y-0">
         <div className="flex-1">
-          <h3 className="text-xl sm:text-2xl font-bold text-blue-600 mb-1">Kontoübersicht</h3>
+          <h3 className="text-xl sm:text-2xl font-bold text-blue-600 mb-1">Account Overview</h3>
           <div className="flex items-center space-x-2 text-xs sm:text-sm text-blue-500">
             <Building2 className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
             <span className="truncate">Deutsche Kreditbank AG</span>
             <div className="w-1 h-1 bg-blue-400 rounded-full flex-shrink-0"></div>
-            <span className="hidden sm:inline">Echtzeit-Bankdaten</span>
+            <span className="hidden sm:inline">Real-time Banking Data</span>
             <span className="sm:hidden">Live</span>
             <Shield className="w-3 h-3 sm:w-4 sm:h-4 text-green-500 flex-shrink-0" />
           </div>
@@ -213,15 +213,15 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
                   <span className="font-mono">{primaryAccount.bic}</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className="font-medium">Kontoinhaber:</span>
+                  <span className="font-medium">Account Holder:</span>
                   <span>{primaryAccount.accountHolder}</span>
                 </div>
               </div>
             </div>
             
             <p className="text-blue-500 text-xs mt-2">
-              <span className="hidden sm:inline">Kürzlich eröffnet • 2 Transaktionen • Sicher verschlüsselt</span>
-              <span className="sm:hidden">2 Transaktionen • Sicher</span>
+              <span className="hidden sm:inline">Recently opened • 2 transactions • Securely encrypted</span>
+              <span className="sm:hidden">2 transactions • Secure</span>
             </p>
           </div>
           
@@ -231,13 +231,13 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
               {balanceVisible ? formatGermanAmount(primaryAccount.balance) : '••••••••'}
             </div>
             <div className="text-sm font-medium text-green-600 mb-1 sm:mb-2">
-              Netto: +{formatGermanAmount(netChange)}
+              Net: +{formatGermanAmount(netChange)}
             </div>
             <div className="text-xs text-gray-500">
-              Verfügbar: {balanceVisible ? formatGermanAmount(availableBalance) : '••••••••'}
+              Available: {balanceVisible ? formatGermanAmount(availableBalance) : '••••••••'}
             </div>
             <div className="text-xs text-gray-400">
-              (inkl. Dispo)
+              (incl. overdraft)
             </div>
           </div>
         </div>
@@ -248,7 +248,7 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
         <div className="flex items-center justify-between mb-3">
           <h5 className="font-semibold text-blue-800 flex items-center space-x-2">
             <TrendingUp className="w-4 h-4" />
-            <span>Letzte Aktivitäten</span>
+            <span>Recent Activity</span>
           </h5>
           
           {/* Mobile Toggle */}
@@ -288,7 +288,7 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
           </div>
           
           <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-blue-200">
-            <span className="text-blue-700 font-semibold text-sm">Aktueller Kontostand</span>
+            <span className="text-blue-700 font-semibold text-sm">Current Account Balance</span>
             <span className="text-blue-700 font-bold text-base sm:text-lg">
               {balanceVisible ? formatGermanAmount(primaryAccount.balance) : '••••••••'}
             </span>
@@ -323,19 +323,19 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
                 {/* Mobile: Only show labels on larger bars */}
                 {isSecond && (
                   <div className="absolute -top-8 sm:-top-10 bg-green-600 text-white text-xs px-1 sm:px-2 py-0.5 sm:py-1 rounded shadow-lg">
-                    <span className="hidden sm:inline">+23M€</span>
-                    <span className="sm:hidden">+23M</span>
+                    <span className="hidden sm:inline">+€23M</span>
+                    <span className="sm:hidden">+€23M</span>
                   </div>
                 )}
                 {isThird && (
                   <div className="absolute -top-8 sm:-top-10 bg-red-600 text-white text-xs px-1 sm:px-2 py-0.5 sm:py-1 rounded shadow-lg">
-                    <span className="hidden sm:inline">-5M€</span>
-                    <span className="sm:hidden">-5M</span>
+                    <span className="hidden sm:inline">-€5M</span>
+                    <span className="sm:hidden">-€5M</span>
                   </div>
                 )}
                 {isLast && (
                   <div className="absolute -top-8 sm:-top-10 bg-blue-600 text-white text-xs px-1 sm:px-2 py-0.5 sm:py-1 rounded shadow-lg">
-                    Aktuell
+                    Current
                   </div>
                 )}
               </div>
@@ -343,8 +343,8 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
           })}
         </div>
         <div className="flex justify-between mt-2 text-xs text-blue-500">
-          <span>Kontoeröffnung</span>
-          <span>Heute</span>
+          <span>Account Opening</span>
+          <span>Today</span>
         </div>
       </div>
 
