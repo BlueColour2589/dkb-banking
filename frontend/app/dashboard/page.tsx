@@ -170,7 +170,7 @@ export default function DashboardPage() {
     fetchAccounts();
   }, [isAuthenticated, authLoading, router, user?.id]);
 
-  // Enhanced quick actions with all new features
+  // Enhanced quick actions - essential functions
   const quickActions: QuickAction[] = [
     {
       id: 'transfer',
@@ -185,21 +185,9 @@ export default function DashboardPage() {
       primary: connectedBanks.length === 0,
     },
     {
-      id: 'standing-orders',
-      label: 'Standing Orders',
-      onClick: () => router.push('/standing-orders'),
-      primary: false,
-    },
-    {
       id: 'portfolio',
       label: 'View Portfolio',
       onClick: () => router.push('/portfolio'),
-      primary: false,
-    },
-    {
-      id: 'cards',
-      label: 'Manage Cards',
-      onClick: () => router.push('/cards'),
       primary: false,
     },
   ];
@@ -305,14 +293,14 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Bank Status - Ultra Compact */}
-            {connectedBanks.length > 0 && (
+            {/* Bank Status - Show as Live Banking */}
+            {connectedBanks.length > 0 ? (
               <div className={`transition-all duration-500 delay-300 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                 <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <CheckCircle className="w-4 h-4 text-green-600" />
-                      <span className="text-sm font-medium text-green-800">Live Banking Active</span>
+                      <span className="text-sm font-medium text-green-800">Live Banking Connected</span>
                     </div>
                     <button
                       onClick={() => setShowBankConnection(true)}
@@ -323,22 +311,19 @@ export default function DashboardPage() {
                   </div>
                 </div>
               </div>
-            )}
-
-            {/* No Connected Banks Warning - Compact */}
-            {connectedBanks.length === 0 && (
+            ) : (
               <div className={`transition-all duration-500 delay-300 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
-                      <AlertCircle className="w-4 h-4 text-blue-600" />
-                      <span className="text-sm font-medium text-blue-800">Demo Mode</span>
+                      <CheckCircle className="w-4 h-4 text-blue-600" />
+                      <span className="text-sm font-medium text-blue-800">DKB Account Active</span>
                     </div>
                     <button
                       onClick={() => setShowBankConnection(true)}
                       className="text-xs text-blue-600 px-2 py-1 bg-blue-100 rounded"
                     >
-                      Connect
+                      + Connect More
                     </button>
                   </div>
                 </div>
