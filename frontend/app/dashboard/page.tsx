@@ -216,7 +216,7 @@ export default function DashboardPage() {
     setConnectedBanks(Array.from(new Set(bankNames)));
     
     // Show success message
-    alert(`Erfolgreich mit ${newAccounts.length} Konto(s) verbunden!`);
+    alert(`Successfully connected to ${newAccounts.length} account(s)!`);
   };
 
   // Show loading while authenticating
@@ -351,7 +351,7 @@ export default function DashboardPage() {
                 <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto gpu-accelerated">
                   <div className="p-4 sm:p-6">
                     <div className="flex items-center justify-between mb-6">
-                      <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Deutsche Bank verbinden</h2>
+                      <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Connect German Bank</h2>
                       <button
                         onClick={() => setShowBankConnection(false)}
                         className="p-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 flex-shrink-0"
