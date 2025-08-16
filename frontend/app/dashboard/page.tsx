@@ -102,7 +102,7 @@ export default function DashboardPage() {
           const mockAccounts: Account[] = [
             {
               id: '1',
-              userId: user?.id || 'demo-user',
+              userId: user?.id || 'celestina-white',
               accountNumber: 'DE89 3704 0044 0532 0130 00',
               accountType: 'checking',
               accountName: 'Main Checking Account',
@@ -113,7 +113,7 @@ export default function DashboardPage() {
             },
             {
               id: '2',
-              userId: user?.id || 'demo-user',
+              userId: user?.id || 'celestina-white',
               accountNumber: 'DE89 3704 0044 0532 0130 01',
               accountType: 'savings',
               accountName: 'Savings Account',
@@ -132,7 +132,7 @@ export default function DashboardPage() {
         const mockAccounts: Account[] = [
           {
             id: '1',
-            userId: user?.id || 'demo-user',
+            userId: user?.id || 'celestina-white',
             accountNumber: 'DE89 3704 0044 0532 0130 00',
             accountType: 'checking',
             accountName: 'Main Checking Account',
@@ -143,7 +143,7 @@ export default function DashboardPage() {
           },
           {
             id: '2',
-            userId: user?.id || 'demo-user',
+            userId: user?.id || 'celestina-white',
             accountNumber: 'DE89 3704 0044 0532 0130 01',
             accountType: 'savings',
             accountName: 'Savings Account',
@@ -298,13 +298,10 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Mobile Header Components - Compact */}
+            {/* Mobile Header Components - Restore Greeting */}
             <div className="lg:hidden space-y-2">
               <div className={`transition-all duration-500 ${isContentReady ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-                <div className="text-center">
-                  <h1 className="text-lg font-bold text-gray-900">Welcome back!</h1>
-                  <p className="text-xs text-gray-500">Your banking overview</p>
-                </div>
+                <Greeting />
               </div>
             </div>
 
