@@ -23,14 +23,15 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
     23000000,   // Wednesday - No transactions
     18000000,   // Thursday - Tax payment made (-5M)
     18000000,   // Friday - No transactions
-    18000000,   // Today (Saturday) - Current balance
-    18000000
+    13000000,   // Saturday - Hanseatic Vault investment (-5M)
+    13000000    // Today (Sunday) - Current balance
   ];
 
   // Enhanced primary account with German banking details
   const primaryAccount = accounts.length > 0
     ? {
         ...accounts[0],
+        balance: 13000000.00, // Updated balance after Hanseatic Vault transaction
         iban: 'DE89 3704 0044 0532 0130 00',
         bic: 'COBADEFFXXX',
         bankName: 'Deutsche Kreditbank AG',
@@ -44,7 +45,7 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
         accountNumber: 'DE89 3704 0044 0532 0130 00',
         accountType: 'Girokonto',
         accountName: 'Hauptkonto',
-        balance: 18000000.00,
+        balance: 13000000.00, // Updated balance
         currency: 'EUR',
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -74,7 +75,7 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
     return iban.replace(/(.{4})/g, '$1 ').trim();
   };
 
-  const netChange = 18000000;
+  const netChange = 13000000; // Updated net change reflecting all transactions
   const availableBalance = primaryAccount.balance + (primaryAccount.overdraftLimit || 0);
 
   const handleRefresh = () => {
@@ -220,8 +221,8 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
             </div>
             
             <p className="text-blue-500 text-xs mt-2">
-              <span className="hidden sm:inline">Opened Monday • 2 transactions • Securely encrypted</span>
-              <span className="sm:hidden">2 transactions • Secure</span>
+              <span className="hidden sm:inline">Opened Monday • 3 transactions • Securely encrypted</span>
+              <span className="sm:hidden">3 transactions • Secure</span>
             </p>
           </div>
           
@@ -286,6 +287,18 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
               -{formatGermanAmount(5000000)}
             </span>
           </div>
+
+          <div className="flex items-center justify-between p-2 sm:p-3 bg-purple-50 rounded-lg border border-purple-200">
+            <div className="flex-1 min-w-0">
+              <span className="text-purple-800 font-medium text-sm block truncate">Investment - Hanseatic Vault</span>
+              <p className="text-xs text-purple-600">
+                <span className="hidden sm:inline">Private Banking Investment • </span>{new Date().toLocaleDateString('de-DE')}
+              </p>
+            </div>
+            <span className="text-purple-700 font-bold text-sm flex-shrink-0 ml-2">
+              -{formatGermanAmount(5000000)}
+            </span>
+          </div>
           
           <div className="flex items-center justify-between pt-2 sm:pt-3 border-t border-blue-200">
             <span className="text-blue-700 font-semibold text-sm">Current Account Balance</span>
@@ -306,13 +319,14 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
             const isLast = index === balanceHistory.length - 1;
             const isSecond = index === 1;
             const isThird = index === 2;
+            const isFifth = index === 5; // Saturday - Hanseatic Vault investment
 
             return (
               <div key={index} className="relative flex-1 flex justify-center items-end">
                 <div
                   className={`w-2 sm:w-3 rounded-t transition-all duration-1000 ${
                     isSecond ? 'bg-green-500 shadow-lg' : 
-                    isThird || isLast ? 'bg-blue-600 shadow-md' : 
+                    isThird || isFifth || isLast ? 'bg-blue-600 shadow-md' : 
                     'bg-blue-400'
                   }`}
                   style={{
@@ -330,6 +344,12 @@ export default function AccountSummary({ accounts }: AccountSummaryProps) {
                 {isThird && (
                   <div className="absolute -top-8 sm:-top-10 bg-red-600 text-white text-xs px-1 sm:px-2 py-0.5 sm:py-1 rounded shadow-lg">
                     <span className="hidden sm:inline">-€5M</span>
+                    <span className="sm:hidden">-€5M</span>
+                  </div>
+                )}
+                {isFifth && (
+                  <div className="absolute -top-8 sm:-top-10 bg-purple-600 text-white text-xs px-1 sm:px-2 py-0.5 sm:py-1 rounded shadow-lg">
+                    <span className="hidden sm:inline">-€5M Investment</span>
                     <span className="sm:hidden">-€5M</span>
                   </div>
                 )}
