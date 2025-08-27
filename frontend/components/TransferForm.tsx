@@ -32,6 +32,9 @@ export default function TransferForm({ accountId, onTransactionComplete }: Trans
 
   const { user } = useAuth();
 
+  // Updated available balance after Hanseatic Vault investment
+  const availableBalance = 13000000.00;
+
   // Load saved recipients
   useEffect(() => {
     const mockRecipients: SavedRecipient[] = [
@@ -78,7 +81,7 @@ export default function TransferForm({ accountId, onTransactionComplete }: Trans
         return;
       }
 
-      if (transferAmount > 18000000) {
+      if (transferAmount > availableBalance) {
         setError('Amount exceeds available balance');
         return;
       }
@@ -226,7 +229,7 @@ export default function TransferForm({ accountId, onTransactionComplete }: Trans
     const transferAmount = parseFloat(amount);
     const fee = getTransferFee();
     const totalAmount = transferAmount + fee;
-    const remainingBalance = 18000000 - totalAmount;
+    const remainingBalance = availableBalance - totalAmount;
 
     return (
       <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
@@ -326,7 +329,7 @@ export default function TransferForm({ accountId, onTransactionComplete }: Trans
               type="number"
               step="0.01"
               min="0.01"
-              max="18000000"
+              max={availableBalance}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base"
@@ -498,12 +501,12 @@ export default function TransferForm({ accountId, onTransactionComplete }: Trans
         </button>
       </form>
 
-      {/* Account Info - Compact for Mobile */}
+      {/* Account Info - UPDATED BALANCE */}
       <div className="mt-4 sm:mt-6 p-3 sm:p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-100">
         <div className="flex items-center justify-between">
           <div className="flex-1">
             <h4 className="text-xs sm:text-sm font-semibold text-blue-800">Available Balance</h4>
-            <p className="text-lg sm:text-2xl font-bold text-blue-900">€18,000,000.00</p>
+            <p className="text-lg sm:text-2xl font-bold text-blue-900">€{availableBalance.toLocaleString('de-DE', { minimumFractionDigits: 2 })}</p>
           </div>
           <CreditCard className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 flex-shrink-0" />
         </div>
