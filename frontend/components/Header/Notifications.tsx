@@ -25,6 +25,16 @@ export default function Notifications({ items }: NotificationsProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // Update current time every minute to keep "time ago" accurate
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 60000); // Update every minute
+    
+    return () => clearInterval(timer);
+  }, []);
 
   // Generate notifications based on your 3 real transactions
   useEffect(() => {
@@ -144,11 +154,12 @@ export default function Notifications({ items }: NotificationsProps) {
   };
 
   const getTimeAgo = (date: Date) => {
-    const now = new Date();
-    const diffInMinutes = Math.floor((now.getTime() - date.getTime()) / (1000 * 60));
+    const diffInMinutes = Math.floor((currentTime.getTime() - date.getTime()) / (1000 * 60));
     
-    if (diffInMinutes < 60) {
-      return `${diffInMinutes} minutes ago`;
+    if (diffInMinutes < 1) {
+      return 'Just now';
+    } else if (diffInMinutes < 60) {
+      return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
     } else if (diffInMinutes < 1440) {
       const hours = Math.floor(diffInMinutes / 60);
       return `${hours} hour${hours > 1 ? 's' : ''} ago`;
