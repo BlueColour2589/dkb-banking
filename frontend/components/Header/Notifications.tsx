@@ -26,7 +26,7 @@ export default function Notifications({ items }: NotificationsProps) {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
 
-  // Generate notifications based on your 2 real transactions only
+  // Generate notifications based on your 3 real transactions
   useEffect(() => {
     const generateRealisticNotifications = (): Notification[] => {
       const now = new Date();
@@ -35,7 +35,7 @@ export default function Notifications({ items }: NotificationsProps) {
           id: '1',
           title: 'Large Payment Received',
           message: 'Payment of €23,000,000.00 received from Juwelier Barok im Linden Center',
-          timestamp: new Date('2025-08-13T14:30:00'), // Realistic timestamp
+          timestamp: new Date('2025-08-13T14:30:00'), // 14 days ago
           type: 'transaction',
           priority: 'high',
           read: false,
@@ -48,7 +48,7 @@ export default function Notifications({ items }: NotificationsProps) {
           id: '2',
           title: 'Tax Payment Completed',
           message: 'Payment of €5,000,000.00 sent to Finanzamt Agency',
-          timestamp: new Date('2025-08-13T10:15:00'), // Realistic timestamp
+          timestamp: new Date('2025-08-13T10:15:00'), // 14 days ago
           type: 'transaction',
           priority: 'medium',
           read: false,
@@ -56,6 +56,19 @@ export default function Notifications({ items }: NotificationsProps) {
           amount: -5000000.00,
           relatedAccount: 'Main Checking Account',
           actionRequired: false
+        },
+        {
+          id: '3',
+          title: 'Investment Transaction Completed',
+          message: 'Investment of €5,000,000.00 transferred to Hanseatic Vault',
+          timestamp: new Date(), // Today
+          type: 'investment',
+          priority: 'high',
+          read: false,
+          details: 'Your private banking investment has been successfully processed and transferred to Hanseatic Vault. The investment amount has been debited from your Main Checking Account. This is a high-value investment transaction requiring your attention. Reference: HV-INV-2025-001',
+          amount: -5000000.00,
+          relatedAccount: 'Main Checking Account',
+          actionRequired: true
         }
       ];
     };
@@ -100,6 +113,8 @@ export default function Notifications({ items }: NotificationsProps) {
         return priority === 'high' 
           ? `${base} border-l-green-500 bg-green-50 hover:bg-green-100`
           : `${base} border-l-blue-500 bg-blue-50 hover:bg-blue-100`;
+      case 'investment':
+        return `${base} border-l-purple-500 bg-purple-50 hover:bg-purple-100`;
       case 'security':
         return `${base} border-l-red-500 bg-red-50 hover:bg-red-100`;
       default:
@@ -115,6 +130,8 @@ export default function Notifications({ items }: NotificationsProps) {
         } else {
           return <TrendingDown className="w-5 h-5 text-red-600" />;
         }
+      case 'investment':
+        return <TrendingUp className="w-5 h-5 text-purple-600" />;
       case 'security':
         return <AlertTriangle className="w-5 h-5 text-red-600" />;
       default:
@@ -191,7 +208,7 @@ export default function Notifications({ items }: NotificationsProps) {
 
       {/* Notification List */}
       <div className="space-y-3">
-        {(showAll ? notifications : notifications.slice(0, 2)).map((notification) => (
+        {(showAll ? notifications : notifications.slice(0, 3)).map((notification) => (
           <div
             key={notification.id}
             className={`${getTypeStyles(notification.type, notification.priority)} p-4 transition-all duration-200 cursor-pointer shadow-sm ${
@@ -271,7 +288,7 @@ export default function Notifications({ items }: NotificationsProps) {
       </div>
 
       {/* Show All Button */}
-      {notifications.length > 2 && (
+      {notifications.length > 3 && (
         <button 
           onClick={() => setShowAll(!showAll)}
           className="w-full mt-3 py-2 text-blue-600 hover:text-blue-800 text-sm font-medium transition-colors border-t border-blue-200 pt-3"
