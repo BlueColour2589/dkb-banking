@@ -18,7 +18,7 @@ export default function TransactionList() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showSearch, setShowSearch] = useState(false);
 
-  // Your realistic transaction data
+  // Your realistic transaction data - UPDATED with Hanseatic Vault
   const transactions: Transaction[] = [
     {
       id: 'txn-001',
@@ -37,6 +37,15 @@ export default function TransactionList() {
       type: 'outgoing',
       reference: 'TAX-2025-AUG',
       category: 'Tax Payment'
+    },
+    {
+      id: 'txn-003',
+      date: new Date().toISOString().split('T')[0], // Today's date
+      description: 'Investment - Hanseatic Vault',
+      amount: -5000000.00,
+      type: 'outgoing',
+      reference: 'Private Banking Investment - HV-INV-2025-001',
+      category: 'Investment'
     }
   ];
 
@@ -133,7 +142,7 @@ export default function TransactionList() {
         </div>
       )}
 
-      {/* Summary Cards */}
+      {/* Summary Cards - UPDATED */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
         <div className="bg-gray-50 rounded-lg p-3">
           <div className="text-xs sm:text-sm text-gray-500 mb-1">Total transactions</div>
@@ -183,7 +192,9 @@ export default function TransactionList() {
                 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center flex-shrink-0
                 ${transaction.type === 'incoming' 
                   ? 'bg-green-100 text-green-600' 
-                  : 'bg-red-100 text-red-600'
+                  : transaction.category === 'Investment'
+                    ? 'bg-purple-100 text-purple-600'
+                    : 'bg-red-100 text-red-600'
                 }
               `}>
                 {transaction.type === 'incoming' ? (
@@ -220,7 +231,12 @@ export default function TransactionList() {
                   <div className="text-right mt-2 sm:mt-0 sm:ml-4">
                     <div className={`
                       font-bold text-sm sm:text-base
-                      ${transaction.type === 'incoming' ? 'text-green-600' : 'text-red-600'}
+                      ${transaction.type === 'incoming' 
+                        ? 'text-green-600' 
+                        : transaction.category === 'Investment'
+                          ? 'text-purple-600'
+                          : 'text-red-600'
+                      }
                     `}>
                       {transaction.type === 'incoming' ? '+' : '-'}{formatAmount(transaction.amount)}
                     </div>
