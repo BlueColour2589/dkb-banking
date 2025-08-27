@@ -98,7 +98,7 @@ export default function DashboardPage() {
         if (res.success && res.data) {
           setAccounts(res.data);
         } else {
-          // If API fails, use realistic mock data with correct Account type
+          // If API fails, use realistic mock data with correct Account type - UPDATED BALANCE
           const mockAccounts: Account[] = [
             {
               id: '1',
@@ -106,7 +106,7 @@ export default function DashboardPage() {
               accountNumber: 'DE89 3704 0044 0532 0130 00',
               accountType: 'checking',
               accountName: 'Main Checking Account',
-              balance: 18000000.00,
+              balance: 13000000.00, // Updated: €13M after Hanseatic Vault investment
               currency: 'EUR',
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString()
@@ -128,7 +128,7 @@ export default function DashboardPage() {
       } catch (err) {
         console.error('Failed to fetch accounts:', err);
         
-        // Use realistic mock data as fallback with correct Account type
+        // Use realistic mock data as fallback with correct Account type - UPDATED BALANCE
         const mockAccounts: Account[] = [
           {
             id: '1',
@@ -136,7 +136,7 @@ export default function DashboardPage() {
             accountNumber: 'DE89 3704 0044 0532 0130 00',
             accountType: 'checking',
             accountName: 'Main Checking Account',
-            balance: 18000000.00,
+            balance: 13000000.00, // Updated: €13M after Hanseatic Vault investment
             currency: 'EUR',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString()
