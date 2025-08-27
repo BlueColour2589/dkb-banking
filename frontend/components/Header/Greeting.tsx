@@ -115,16 +115,16 @@ const Greeting: FC = () => {
         </div>
       </div>
 
-      {/* Quick Account Summary */}
+      {/* Quick Account Summary - UPDATED */}
       <div className="mt-4 pt-4 border-t border-blue-100">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div className="flex items-center justify-between">
             <span className="text-gray-600">Available Balance:</span>
-            <span className="font-bold text-green-600">€18,000,000.00</span>
+            <span className="font-bold text-green-600">€13,000,000.00</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-gray-600">Recent Activity:</span>
-            <span className="font-medium text-blue-600">2 transactions</span>
+            <span className="font-medium text-blue-600">3 transactions</span>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-gray-600">Security Status:</span>
